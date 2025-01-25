@@ -1,0 +1,46 @@
+/* 전체 레이아웃 스타일 */
+p {
+  color: white;
+}
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Arial', sans-serif;
+  }
+
+
+  
+  button img {
+    width: 24px;
+    height: 24px;
+    color:aliceblue;
+    filter: invert(1);
+  }
+
+  .layout-container {
+    position: relative;
+    min-height: 100vh;
+    z-index: 0;  /* 기본 레이어 */
+  }
+  
+  .content-wrapper {
+    position: relative;
+    z-index: 20;  /* ThreeBackground 위에 */
+  }
+  
+  main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;}
+  
+  #three-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;  /* 가장 아래에 */
+    pointer-events: none;
+  }
