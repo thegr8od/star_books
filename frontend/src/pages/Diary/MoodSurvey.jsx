@@ -1,12 +1,12 @@
 import { useState } from "react";
-import RadioButton from "../../components/RadioButton";
+import RadioButton from "./MoodSurveyButton";
 import Modal from "../../components/Modal";
 
 const MoodSurvey = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
-  const [index, setIndex] = useState(0);
+  // const [index, setIndex] = useState(0);
 
   const moods = ["매우 좋음", "좋음", "보통", "좋지 않음", "매우 좋지 않음"];
   const emotions = {
