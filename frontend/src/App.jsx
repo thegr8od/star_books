@@ -12,7 +12,8 @@ import { Universe, UniverseAnalysis } from './pages/Universe';
 function App() {
 
   return (
-<Routes>
+    <div className="h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121]">
+      <Routes>
       <Route path="/starbooks" element={<Layout />}>
         {/* Auth 관련 */}
         <Route path="" element={<Home />} />
@@ -55,6 +56,8 @@ function App() {
         </Route>
       </Route>
     </Routes>
+    </div>
+
   )
 }
 

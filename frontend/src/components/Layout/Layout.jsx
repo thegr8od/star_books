@@ -1,12 +1,12 @@
 import { Outlet } from 'react-router-dom';
 import Header from '../Header';
-import ThreeBackground from '../ThreeBackground';
+// import ThreeBackground from '../ThreeBackground';
 
 
 function Layout() {
   return (
     <>
-      <ThreeBackground />
+      {/* <ThreeBackground /> */}
       <Header />
       <Outlet />
     </>
