@@ -1,4 +1,4 @@
-const Button = ({ text, type, onClick, disabled, className = "" }) => {
+const Button = ({ text, type, onClick, disabled, className = "", imgSrc,imgClassName = ""  }) => {
   const typeClasses = {
     DEFAULT: "rounded-2xl text-white bg-[#8993c7] hover:bg-[#7580bb]",
     PREV: "rounded-2xl text-white bg-gray-400  hover:bg-gray-500",
@@ -6,6 +6,7 @@ const Button = ({ text, type, onClick, disabled, className = "" }) => {
   };
   return (
     <button onClick={onClick} disabled={disabled} className={`${typeClasses[type]} ${className}`}>
+      {imgSrc && <img src={imgSrc} alt="button icon" className={imgClassName} />}
       {text}
     </button>
   );
