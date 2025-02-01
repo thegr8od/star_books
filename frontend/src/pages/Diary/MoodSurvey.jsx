@@ -1,7 +1,6 @@
 import { useState } from "react";
 import RadioButton from "./MoodSurveyButton";
 import Modal from "../../components/Modal";
-import Button from "../../components/Button";
 
 const MoodSurvey = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
@@ -42,7 +41,7 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   // 모달 닫힐 때 상태 초기화
   const handleClose = () => {
     setStep(1);
-    selectedMood(null);
+    setSelectedMood(null);
     setSelectedEmotions([]);
     onClose();
   };
