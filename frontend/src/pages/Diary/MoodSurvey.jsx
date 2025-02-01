@@ -1,6 +1,7 @@
 import { useState } from "react";
 import RadioButton from "./MoodSurveyButton";
 import Modal from "../../components/Modal";
+import Button from "../../components/Button";
 
 const MoodSurvey = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
