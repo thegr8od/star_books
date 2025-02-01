@@ -2,6 +2,7 @@ package com.starbooks.backend.diary.service;
 
 import com.starbooks.backend.diary.dto.request.DiaryCreateRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
+import com.starbooks.backend.diary.exception.NotFoundException;
 import com.starbooks.backend.diary.model.*;
 import com.starbooks.backend.diary.repository.DiaryRepository;
 import com.starbooks.backend.diary.repository.HashtagRepository;
@@ -41,8 +42,8 @@ public class DiaryService {
         // 3. 감정 저장
         request.emotions().forEach(emotion -> {
             DiaryEmotion diaryEmotion = DiaryEmotion.builder()
-                    .xValue(emotion.getXValue())
-                    .yValue(emotion.getYValue())
+                    .xValue(emotion.xValue())
+                    .yValue(emotion.yValue())
                     .diary(diary) // DiaryEmotion에 Diary 설정
                     .build();
             diary.addEmotion(diaryEmotion);
@@ -82,15 +83,15 @@ public class DiaryService {
     }
 
     public DiaryResponse getDiary(Long diaryId) {
-        Diary diary = diaryRepository.findWithDetailsById(diaryId)
-                .orElseThrow(() -> new ChangeSetPersister.NotFoundException("Diary not found"));
+        Diary diary = diaryRepository.findByDiaryId(diaryId) // 또는 findByDiaryId()
+                .orElseThrow(() -> new NotFoundException("Diary not found"));
         return DiaryResponse.from(diary);
     }
 
     @Transactional
     public void deleteDiary(Long diaryId) {
         Diary diary = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new ChangeSetPersister.NotFoundException("Diary not found"));
+                .orElseThrow(() -> new NotFoundException("Diary not found"));
         diaryRepository.delete(diary);
     }
 }

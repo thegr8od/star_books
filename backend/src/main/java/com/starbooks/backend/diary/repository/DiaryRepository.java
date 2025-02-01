@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     @EntityGraph(attributePaths = {"content", "emotions", "hashtags", "images"})
-    Optional<Diary> findWithDetailsById(Long diaryId);
+    Optional<Diary> findByDiaryId(Long diaryId);
 
     @Query("SELECT d FROM Diary d WHERE d.user.userId = :userId ORDER BY d.createdAt DESC")
     Page<Diary> findAllByUserId(@Param("userId") Long userId, Pageable pageable);

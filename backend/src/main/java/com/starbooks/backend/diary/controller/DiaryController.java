@@ -2,6 +2,7 @@ package com.starbooks.backend.diary.controller;
 
 import com.starbooks.backend.diary.dto.request.DiaryCreateRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
+import com.starbooks.backend.diary.model.User;
 import com.starbooks.backend.diary.service.DiaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,9 @@ public class DiaryController {
     @PostMapping
     public ResponseEntity<DiaryResponse> createDiary(
             @Valid @RequestBody DiaryCreateRequest request,
-            @AuthenticationPrinscipal User user) {
+            @AuthenticationPrincipal User user) {
         DiaryResponse response = diaryService.createDiary(request, user);
-        return ResponseEntity.created(URI.create("/api/diaries/" + response.getDiaryId()))
+        return ResponseEntity.created(URI.create("/api/diaries/" + response.diaryId()))
                 .body(response);
     }
 
