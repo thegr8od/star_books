@@ -5,7 +5,11 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'sans': ['NotoSansKR', 'sans-serif'], // 기본 sans 폰트를 노토산스로 덮어씁니다
+      },
+    },
   },
   plugins: [],
 }

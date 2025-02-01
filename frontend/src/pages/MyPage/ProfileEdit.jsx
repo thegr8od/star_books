@@ -1,5 +1,5 @@
 import { useState } from "react";
-import defaultImage from "../../.././assets/default-profile.png";
+import defaultImage from "../.././assets/default-profile.png";
 
 const ProfileEdit = () => {
   const [imagePreview, setImagePreview] = useState(null);
