@@ -1,0 +1,14 @@
+const Button = ({ text, type, onClick, disabled }) => {
+  const typeClasses = {
+    DEFAULT: "rounded-2xl text-white bg-[#8993c7] hover:bg-[#7580bb]",
+    PREV: "rounded-2xl text-white bg-gray-400  hover:bg-gray-500",
+    NEXT: "rounded-2xl text-white bg-[#8993c7] hover:bg-[#7580bb] disabled:opacity-50 disabled:hover:[#a3add5]",
+  };
+  return (
+    <button onClick={onClick} disabled={disabled} className={typeClasses[type]}>
+      {text}
+    </button>
+  );
+};
+
+export default Button;
