@@ -1,8 +1,17 @@
-import Nav from '../Nav'
-function Header() {
+const Header = ({
+  title, 
+  leftChild, 
+  rightChild, 
+  className = "",
+  titleClassName = "", 
+  leftClassName = "", 
+  rightClassName = ""
+}) => {
   return (
-    <header>
-      <Nav/>
+    <header className={`pt-5 flex items-center justify-around text-white/80 ${className}`}>
+      <div className={leftClassName}>{leftChild}</div>
+      <div className={titleClassName}>{title}</div>
+      <div className={rightClassName}>{rightChild}</div>
     </header>
   );
 }
