@@ -1,4 +1,4 @@
-package com.starbooks.backend.user.repository.redis;
+package com.starbooks.backend.user.repository.jpa;
 
 import com.starbooks.backend.user.model.TokenBlacklist;
 import org.springframework.data.repository.CrudRepository;
