@@ -17,6 +17,7 @@ import RadioList from './pages/Radio/RadioList';
 import RadioShow from './pages/Radio/RadioShow';
 import Universe from './pages/Universe/Universe';
 import UniverseAnalysis from './pages/Universe/UniverseAnalysis';
+import Nav from './components/Nav';
 
 function App() {
 
@@ -54,6 +55,8 @@ function App() {
         <Route path="constellation/gallery/:year" element={<ConstellationGallery />} />
         <Route path="constellation/gallery/:year/detail" element={<ConstellationDetail />} />
       </Route>
+
+      <Route path="/nav" element={<Nav />}/>
     </Routes>
     </div>
 
