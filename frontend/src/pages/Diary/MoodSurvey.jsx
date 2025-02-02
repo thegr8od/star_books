@@ -55,9 +55,14 @@ const MoodSurvey = ({ isOpen, onClose }) => {
     setSelectedEmotions([]);
     onClose();
   };
-
-  const modalTitle =
-    step === 1 ? "기분을 선택해주세요" : "더 자세히 알려주세요 (최대 5개)";
+  const text = (
+    <>
+      더 자세히 알려주세요
+      <br />
+      <span className="font-medium text-gray-700 text-[18px]">(최대 5개)</span>
+    </>
+  );
+  const modalTitle = step === 1 ? "기분을 선택해주세요" : text;
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle}>

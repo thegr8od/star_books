@@ -9,16 +9,17 @@ const Modal = ({ isOpen, onClose, title, children }) => {
       {/* 내용 */}
       <div className="inset-0 z-50 bg-white rounded-lg shadow-xl min-w-[320px]">
         {/* 헤더 */}
-        <div className="relative flex items-center justify-center p-[10px]  mt-6">
-          <h2 className="text-[20px] font-semibold  text-center">{title}</h2>
+        <div className="flex mx-4 items-center justify-between  mt-6">
+          <h2 className="text-[20px] font-semibold  w-[80%]">{title}</h2>
           <Button
             onClick={onClose}
             type="DEFAULT"
             imgSrc="/public/icons/close2.png"
             imgClassName="w-3 h-3"
-            className="absolute right-5 top-1"
+            className=""
           />
         </div>
+        <hr className="mx-4 mt-4" />
         {/* body */}
         <div className="p-4">{children}</div>
       </div>
