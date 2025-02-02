@@ -41,7 +41,7 @@ const ProfileEdit = () => {
   return (
     <>
       <div className="text-white">
-        <div className="flex flex-col items-center space-y-[30px]">
+        <div className="flex flex-col items-center space-y-[30px] w-full h-full">
           {/* 이미지 */}
           <div className="relative">
             <div className="flex flex-col items-center">
