@@ -1,18 +1,23 @@
 package com.starbooks.backend.user.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.redis.core.RedisHash;
+import jakarta.persistence.*;
+import lombok.*;
 
-@RedisHash("tokenBlacklist")
+@Entity
+@Table(name = "token_blacklist")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TokenBlacklist {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
     private String token;
+
+    @Column(nullable = false)
+    private Long expiration; // 토큰 만료 시간 (UNIX timestamp)
 }

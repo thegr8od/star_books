@@ -2,18 +2,14 @@ package com.starbooks.backend.user.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "profile_image")
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProfileImage {
 
     @Id
@@ -24,19 +20,12 @@ public class ProfileImage {
     @Column(name = "save_file_path", nullable = false)
     private String saveFilePath;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public void updateImagePath(String newPath) {
-        this.saveFilePath = newPath;
+    // 이미지 경로 업데이트 메서드 추가
+    public void updateImagePath(String newFilePath) {
+        this.saveFilePath = newFilePath;
     }
 }

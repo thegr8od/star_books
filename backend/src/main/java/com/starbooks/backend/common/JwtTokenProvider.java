@@ -1,22 +1,23 @@
 package com.starbooks.backend.common;
 
-import com.starbooks.backend.config.CustomUserDetailsService;
-import com.starbooks.backend.exception.TokenExpiredException;
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.util.Date;
+import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import java.util.Base64;
-
-import javax.crypto.SecretKey;
-import java.util.Date;
+import com.starbooks.backend.config.CustomUserDetailsService;
+import com.starbooks.backend.exception.TokenExpiredException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Component
 @Getter
@@ -31,6 +32,9 @@ public class JwtTokenProvider {
     @Value("${jwt.refreshToken-expiration}")
     private long refreshTokenExpiration;
 
+    @Value("${jwt.oauth-sign-up-expiration}")
+    private long oauthTokenExpiration;
+
     @Value("${jwt.secret}")
     private String secretKeyString;
 
@@ -38,20 +42,10 @@ public class JwtTokenProvider {
 
     @PostConstruct
     protected void init() {
-        try {
-            byte[] keyBytes;
-            if (secretKeyString.contains("-") || secretKeyString.contains("_")) {
-                // Base64 URL-Safe 디코딩 사용
-                keyBytes = Base64.getUrlDecoder().decode(secretKeyString);
-            } else {
-                // 일반 Base64 디코딩 사용
-                keyBytes = Base64.getDecoder().decode(secretKeyString);
-            }
-            this.secretKey = Keys.hmacShaKeyFor(keyBytes);
-        } catch (IllegalArgumentException ex) {
-            throw new RuntimeException("Invalid JWT secret key: Ensure it is properly Base64-encoded.", ex);
-        }
+        byte[] keyBytes = Decoders.BASE64.decode(secretKeyString);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
+
     public String generateAccessToken(String userEmail) {
         return generateToken(userEmail, accessTokenExpiration);
     }
@@ -60,10 +54,24 @@ public class JwtTokenProvider {
         return generateToken(userEmail, refreshTokenExpiration);
     }
 
+    // OAuth 가입용 토큰 생성 시 "userEmail" 클레임 추가(인증 시 getUserEmail 사용)
+    public String generateOAuthSignUpToken(String userEmail, String userName) {
+        return Jwts.builder()
+                .issuer("StarBooks")
+                .subject("JWT Token")
+                .claim("userEmail", userEmail)    // 추가
+                .claim("email", userEmail)
+                .claim("name", userName)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + oauthTokenExpiration))
+                .signWith(secretKey)
+                .compact();
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(secretKey)  // 최신 버전 0.12.x 방식
+                    .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token);
             return true;
@@ -75,35 +83,37 @@ public class JwtTokenProvider {
     }
 
     public Claims getClaims(String token) {
-        try {
-            return Jwts.parser()
-                    .verifyWith(secretKey)  // 최신 버전 0.12.x 방식
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-        } catch (JwtException ex) {
-            throw new RuntimeException("Failed to parse JWT claims.", ex);
-        }
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public Authentication getAuthentication(String token) {
-        String userEmail = this.getUserEmail(token);
+        String userEmail = getUserEmail(token);
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
+    // "userEmail" 클레임을 우선 조회하고, 없으면 "email" 클레임으로 대체하여 반환
     public String getUserEmail(String token) {
-        return getClaims(token).get("userEmail", String.class);
+        Claims claims = getClaims(token);
+        String email = claims.get("userEmail", String.class);
+        if (email == null) {
+            email = claims.get("email", String.class);
+        }
+        return email;
     }
 
     private String generateToken(String userEmail, long expiration) {
-        long now = System.currentTimeMillis();
         return Jwts.builder()
+                .issuer("StarBooks")
                 .subject("JWT Token")
                 .claim("userEmail", userEmail)
-                .issuedAt(new Date(now))
-                .expiration(new Date(now + expiration))
-                .signWith(secretKey, Jwts.SIG.HS256)  // 최신 버전 0.12.x 방식
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(secretKey)
                 .compact();
     }
 }

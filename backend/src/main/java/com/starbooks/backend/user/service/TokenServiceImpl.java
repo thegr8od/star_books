@@ -3,13 +3,15 @@ package com.starbooks.backend.user.service;
 import com.starbooks.backend.common.JwtTokenProvider;
 import com.starbooks.backend.user.dto.response.ResponseRefreshTokenDTO;
 import com.starbooks.backend.user.model.RefreshToken;
-import com.starbooks.backend.user.model.TokenBlacklist;
-import com.starbooks.backend.user.repository.redis.RefreshTokenRepository;
-import com.starbooks.backend.user.repository.redis.TokenBlacklistRepository;
+import com.starbooks.backend.user.model.User;
+import com.starbooks.backend.user.repository.jpa.RefreshTokenRepository;
+import com.starbooks.backend.user.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +19,7 @@ public class TokenServiceImpl implements TokenService {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final TokenBlacklistRepository tokenBlacklistRepository;
+    private final UserRepository userRepository;
 
     @Override
     public String generateAccessToken(String email) {
@@ -25,25 +27,36 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
+    @Transactional
     public String generateRefreshToken(String email) {
         String refreshToken = jwtTokenProvider.generateRefreshToken(email);
+
+        // 기존 리프레시 토큰 삭제
+        refreshTokenRepository.findByUser_UserId(userRepository.findByEmail(email)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"))
+                        .getUserId())
+                .ifPresent(refreshTokenRepository::delete);
+
+        // 새로운 리프레시 토큰 저장
         saveRefreshToken(email, refreshToken);
         return refreshToken;
     }
 
     @Override
+    @Transactional
     public ResponseRefreshTokenDTO refreshToken(String refreshToken) {
-        if (isRefreshTokenBlacklisted(refreshToken)) {
-            return null;
-        }
         if (jwtTokenProvider.validateToken(refreshToken)) {
             String userEmail = jwtTokenProvider.getUserEmail(refreshToken);
-            RefreshToken storedToken = refreshTokenRepository.findById(userEmail).orElse(null);
-            if (storedToken != null && storedToken.getToken().equals(refreshToken)) {
-                refreshTokenRepository.deleteById(userEmail);
+            Optional<User> userOpt = userRepository.findByEmail(userEmail);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                refreshTokenRepository.deleteByUser_UserId(user.getUserId());
 
                 String newAccessToken = jwtTokenProvider.generateAccessToken(userEmail);
                 String newRefreshToken = jwtTokenProvider.generateRefreshToken(userEmail);
+
+                RefreshToken rt = new RefreshToken(null, user, newRefreshToken, System.currentTimeMillis() + jwtTokenProvider.getRefreshTokenExpiration());
+                refreshTokenRepository.save(rt);
 
                 return new ResponseRefreshTokenDTO(newAccessToken, newRefreshToken);
             }
@@ -52,27 +65,31 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
+    @Transactional
+    public void invalidateAllUserTokens(String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        userOpt.ifPresent(user -> refreshTokenRepository.deleteByUser_UserId(user.getUserId()));
+    }
+
+    @Override
     public void blacklistRefreshToken(String refreshToken) {
-        tokenBlacklistRepository.save(new TokenBlacklist(refreshToken));
+        // RefreshToken 삭제 로직
+        Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByToken(refreshToken);
+        tokenOpt.ifPresent(refreshTokenRepository::delete);
     }
 
     @Override
     public boolean isRefreshTokenBlacklisted(String refreshToken) {
-        return tokenBlacklistRepository.existsById(refreshToken);
-    }
-
-    @Override
-    public void invalidateAllUserTokens(String email) {
-        List<RefreshToken> userTokens = refreshTokenRepository.findAllByUserEmail(email);
-        for (RefreshToken token : userTokens) {
-            blacklistRefreshToken(token.getToken());
-            refreshTokenRepository.delete(token);
-        }
+        // Redis를 사용하지 않을 경우 항상 false 반환
+        return false;
     }
 
     private void saveRefreshToken(String userEmail, String refreshToken) {
-        long expiration = jwtTokenProvider.getClaims(refreshToken).getExpiration().getTime();
-        RefreshToken rt = new RefreshToken(userEmail, refreshToken, expiration);
-        refreshTokenRepository.save(rt);
+        Optional<User> userOpt = userRepository.findByEmail(userEmail);
+        userOpt.ifPresent(user -> {
+            refreshTokenRepository.deleteByUser_UserId(user.getUserId());
+            RefreshToken rt = new RefreshToken(null, user, refreshToken, System.currentTimeMillis() + jwtTokenProvider.getRefreshTokenExpiration());
+            refreshTokenRepository.save(rt);
+        });
     }
 }
