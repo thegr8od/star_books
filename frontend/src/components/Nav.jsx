@@ -1,5 +1,18 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+
+const Nav_ITEMS = [
+  { label: "홈", path: "/starbooks/home" },
+  { label: "마이페이지", path: "/starbooks/mypage/:id" },
+  { label: "나의 우주", path: "/starbooks/diary/calendar" },
+  { label: "우리의 우주", path: "/starbooks/universe" },
+  { label: "별자리 그리기", path: "/starbooks/constellation/create" },
+  { label: "별자리 갤러리", path: "/starbooks/constellation/gallery/:year" },
+  { label: "감정 통계", path: "/starbooks/universe/analysis" },
+  { label: "라디오", path: "/starbooks/radio/list" },
+  { label: "AI대화", path: "" },
+  { label: "로그아웃", path: "/starbooks/logout" },
+];
 
 const Nav = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,39 +28,11 @@ const Nav = () => {
       {isOpen && (
         <div>
           <ul onClick={toggleMenu}>
-            <li>
-              <Link to="/starbooks/home">홈</Link>
-            </li>
-            <li>
-              <Link to="/starbooks/login">로그인</Link>
-            </li>
-            <li>
-              <Link to="/starbooks/mypage/:id">마이페이지</Link>
-            </li>
-            <li>
-              <Link to="/starbooks/diary/calendar">나의 우주</Link>
-            </li>
-            <li>
-              <Link to="/starbooks/universe">우리의 우주</Link>
-            </li>
-            <li>
-              <Link to="/starbooks/constellation/create">별자리 그리기</Link>
-            </li>
-            <li>
-              <Link to="/starbooks/constellation/gallery/:year">별자리 갤러리</Link>
-            </li>
-            <li>
-              <Link to="/starbooks/universe/analysis">감정 통계</Link>
-            </li>
-            <li>
-              <Link to="/starbooks/radio/list">라디오</Link>
-            </li>
-            <li>
-              <Link to="">AI대화</Link>
-            </li>
-            <li>
-              <Link to="/starbooks/logout">로그아웃</Link>
-            </li>
+            {Nav_ITEMS.map((item, index) => (
+              <li key={index}>
+                <Link to={item.path}>{item.label}</Link>
+              </li>
+            ))}
           </ul>
         </div>
       )}
