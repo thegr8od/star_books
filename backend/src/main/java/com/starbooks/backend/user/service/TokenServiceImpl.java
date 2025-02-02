@@ -7,7 +7,6 @@ import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.user.repository.jpa.RefreshTokenRepository;
 import com.starbooks.backend.user.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,14 +29,6 @@ public class TokenServiceImpl implements TokenService {
     @Transactional
     public String generateRefreshToken(String email) {
         String refreshToken = jwtTokenProvider.generateRefreshToken(email);
-
-        // 기존 리프레시 토큰 삭제
-        refreshTokenRepository.findByUser_UserId(userRepository.findByEmail(email)
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found"))
-                        .getUserId())
-                .ifPresent(refreshTokenRepository::delete);
-
-        // 새로운 리프레시 토큰 저장
         saveRefreshToken(email, refreshToken);
         return refreshToken;
     }

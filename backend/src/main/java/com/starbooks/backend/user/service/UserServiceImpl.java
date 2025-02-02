@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -37,6 +38,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void registerUser(RequestRegisterDTO dto) {
+
+        //이메일 중복 체크
+        if (userRepository.existsByEmail(dto.getEmail())){
+            throw new ResponseStatusException(
+                    ErrorCode.EMAIL_ALREADY_EXIST.getHttpStatus(),
+                    ErrorCode.EMAIL_ALREADY_EXIST.getMessage()
+            );
+        }
+
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
         dto.setPassword(encodedPassword);
