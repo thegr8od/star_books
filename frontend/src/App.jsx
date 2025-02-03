@@ -55,8 +55,6 @@ function App() {
         <Route path="constellation/gallery/:year" element={<ConstellationGallery />} />
         <Route path="constellation/gallery/:year/detail" element={<ConstellationDetail />} />
       </Route>
-
-      <Route path="/nav" element={<Nav />}/>
     </Routes>
     </div>
 

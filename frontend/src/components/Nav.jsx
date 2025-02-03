@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 
 const Nav_ITEMS = [
   { label: "홈", path: "/starbooks/home" },
-  { label: "마이페이지", path: "/starbooks/mypage/:id" },
+  { label: "마이페이지", path: "/starbooks/mypage" },
   { label: "나의 우주", path: "/starbooks/diary/calendar" },
   { label: "우리의 우주", path: "/starbooks/universe" },
   { label: "별자리 그리기", path: "/starbooks/constellation/create" },
-  { label: "별자리 갤러리", path: "/starbooks/constellation/gallery/:year" },
+  { label: "별자리 갤러리", path: `/starbooks/constellation/gallery/${new Date().getFullYear()}` },
   { label: "감정 통계", path: "/starbooks/universe/analysis" },
   { label: "라디오", path: "/starbooks/radio/list" },
   { label: "AI대화", path: "" },
@@ -26,7 +26,7 @@ const Nav = () => {
       <button onClick={toggleMenu}>☰</button>
 
       {/* Backdrop */}
-      <div className={`fixed inset-0 bg-black bg-opacity-40 ${!isOpen && "hidden"}`} />
+      <div className={`fixed inset-0 bg-black bg-opacity-40 ${!isOpen && "hidden"}`} onClick={toggleMenu} />
 
       {/* Menu panel */}
       <div className={`fixed top-0 right-0 h-full w-60 bg-gray-900 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
@@ -36,7 +36,7 @@ const Nav = () => {
         <ul className="pt-16 pb-6 space-y-2">
           {Nav_ITEMS.map((item, index) => (
             <li key={index}>
-              <Link to={item.path} className="block px-6 py-3 hover:bg-purple-700 transition-colors">
+              <Link to={item.path} className="block px-6 py-3 hover:bg-purple-700 transition-colors" onClick={toggleMenu}>
                 {item.label}
               </Link>
             </li>
