@@ -16,7 +16,6 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             type="DEFAULT"
             imgSrc="/public/icons/close2.png"
             imgClassName="w-3 h-3"
-            className=""
           />
         </div>
         <hr className="mx-4 mt-4" />
