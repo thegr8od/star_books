@@ -17,7 +17,6 @@ import RadioList from './pages/Radio/RadioList';
 import RadioShow from './pages/Radio/RadioShow';
 import Universe from './pages/Universe/Universe';
 import UniverseAnalysis from './pages/Universe/UniverseAnalysis';
-import Nav from './components/Nav';
 
 function App() {
 
