@@ -3,12 +3,14 @@ import MoodSurveyButton from "./MoodSurveyButton";
 import Modal from "../../components/Modal";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
+import MoodSurveyToast from "./MoodSurveyToast";
 
 const MoodSurvey = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
+  const [showToast, setShowToast] = useState(false);
 
   const moods = ["매우 좋음", "좋음", "보통", "좋지 않음", "매우 좋지 않음"];
   const emotions = {
@@ -43,10 +45,10 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   const handleEmotionClick = (emotion) => {
     if (selectedEmotions.includes(emotion)) {
       setSelectedEmotions(selectedEmotions.filter((item) => item !== emotion));
+    } else if (selectedEmotions.length <= 4) {
+      setSelectedEmotions([...selectedEmotions, emotion]);
     } else {
-      if (selectedEmotions.length <= 4) {
-        setSelectedEmotions([...selectedEmotions, emotion]);
-      }
+      setShowToast(true);
     }
   };
 
@@ -77,102 +79,89 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle}>
-      {/* 오늘의 기분 설문 */}
-      {step === 1 && (
-        <div className="flex flex-col items-center h-[400px] w-[320px]">
-          <div className="flex justify-center mb-8">
-            <div className="flex flex-col gap-10 rounded-full bg-gray-200 p-3 border">
-              {moods.map((mood, index) => (
-                <MoodSurveyButton
-                  key={index}
-                  label={mood}
-                  selected={selectedMood === index}
-                  onClick={() => setSelectedMood(index)}
-                />
-              ))}
+    <>
+      <MoodSurveyToast
+        message={"감정은 5개까지만 선택 가능해요!"}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+      />
+      <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle}>
+        {/* 오늘의 기분 설문 */}
+        {step === 1 && (
+          <div className="flex flex-col items-center h-[400px] w-[320px]">
+            <div className="flex justify-center mb-8">
+              <div className="flex flex-col gap-10 rounded-full bg-gray-200 p-3 border">
+                {moods.map((mood, index) => (
+                  <MoodSurveyButton
+                    key={index}
+                    label={mood}
+                    selected={selectedMood === index}
+                    onClick={() => setSelectedMood(index)}
+                  />
+                ))}
+              </div>
             </div>
+
+            <Button
+              text="다음"
+              type="NEXT"
+              onClick={handleNext}
+              disabled={selectedMood === null}
+              className="px-8 py-2 mt-4 w-28"
+            />
           </div>
+        )}
 
-          <Button
-            text="다음"
-            type="NEXT"
-            onClick={handleNext}
-            disabled={selectedMood === null}
-            className="px-8 py-2 mt-4 w-28"
-          />
-        </div>
-      )}
-
-      {/* 세부 감정 설문 */}
-      {step === 2 && (
-        <div className="flex flex-col h-[400px] w-[320px]">
-          <div className="flex-1 overflow-y-auto pr-2">
-            {/* 감정 카테고리와 버튼들 */}
-            {getOrderedCategories().map((category) => (
-              <div key={category} className="mb-8">
-                <h3 className="text-[16px] font-medium mb-4 ml-2 text-gray-500">
-                  {category}
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {emotions[category].map((emotion) => (
-                    <button
-                      key={emotion}
-                      onClick={() => handleEmotionClick(emotion)}
-                      className={`p-3 rounded-full text-center transition-colors text-sm
+        {/* 세부 감정 설문 */}
+        {step === 2 && (
+          <div className="flex flex-col h-[400px] w-[320px]">
+            <div className="flex-1 overflow-y-auto pr-2">
+              {/* 감정 카테고리와 버튼들 */}
+              {getOrderedCategories().map((category) => (
+                <div key={category} className="mb-8">
+                  <h3 className="text-[16px] font-medium mb-4 ml-2 text-gray-500">
+                    {category}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {emotions[category].map((emotion) => (
+                      <button
+                        key={emotion}
+                        onClick={() => handleEmotionClick(emotion)}
+                        className={`p-3 rounded-full text-center transition-colors text-sm
                         ${
                           selectedEmotions.includes(emotion)
                             ? "bg-indigo-100 text-indigo-800"
                             : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                         }`}
-                    >
-                      {emotion}
-                    </button>
-                  ))}
+                      >
+                        {emotion}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
 
-            {/* 선택된 감정들 표시 */}
-            <div className="w-full p-4 bg-gray-100 rounded-md mb-4">
-              {selectedEmotions.length === 0 ? (
-                <p className="text-gray-500 text-center">
-                  선택된 감정이 없습니다
-                </p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {selectedEmotions.map((emotion) => (
-                    <span
-                      key={emotion}
-                      className="bg-indigo-100 text-indigo-800 px-3 py-2 rounded-full text-sm"
-                    >
-                      {emotion}
-                    </span>
-                  ))}
-                </div>
-              )}
+            {/* 버튼 */}
+            <div className="flex gap-6 mt-4 justify-center">
+              <Button
+                text="이전"
+                type="PREV"
+                onClick={handleBack}
+                className="px-8 py-2 w-28"
+              />
+              <Button
+                text="완료"
+                type="DEFAULT"
+                disabled={selectedEmotions.length === 0}
+                className="px-8 py-2 w-28"
+                onClick={handleComplete}
+              />
             </div>
           </div>
-
-          {/* 버튼 */}
-          <div className="flex gap-6 mt-4 justify-center">
-            <Button
-              text="이전"
-              type="PREV"
-              onClick={handleBack}
-              className="px-8 py-2 w-28"
-            />
-            <Button
-              text="완료"
-              type="DEFAULT"
-              disabled={selectedEmotions.length === 0}
-              className="px-8 py-2 w-28"
-              onClick={handleComplete}
-            />
-          </div>
-        </div>
-      )}
-    </Modal>
+        )}
+      </Modal>
+    </>
   );
 };
 
