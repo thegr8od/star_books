@@ -2,8 +2,10 @@ import { useState } from "react";
 import MoodSurveyButton from "./MoodSurveyButton";
 import Modal from "../../components/Modal";
 import Button from "../../components/Button";
+import { useNavigate } from "react-router-dom";
 
 const MoodSurvey = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
@@ -63,6 +65,16 @@ const MoodSurvey = ({ isOpen, onClose }) => {
     </>
   );
   const modalTitle = step === 1 ? "기분을 선택해주세요" : text;
+
+  // step2 완료 버튼 클릭 시 다이어리 작성 페이지로 이동
+  const handleComplete = () => {
+    handleClose();
+    navigate("../diary/write", {
+      state: {
+        emotions: selectedEmotions,
+      },
+    });
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle}>
@@ -155,6 +167,7 @@ const MoodSurvey = ({ isOpen, onClose }) => {
               type="DEFAULT"
               disabled={selectedEmotions.length === 0}
               className="px-8 py-2 w-28"
+              onClick={handleComplete}
             />
           </div>
         </div>
