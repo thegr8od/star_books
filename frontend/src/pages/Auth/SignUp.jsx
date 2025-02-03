@@ -4,6 +4,38 @@ import Layout from "../../components/Layout";
 import Button from "../../components/Button";
 
 const Signup = () => {
+  // 폼 입력 데이터
+  const [formData, setFormData] = useState({
+    email: "",
+    name: "",
+    birthDate: "",
+    gender: "",
+    password: "",
+  });
+
+  // 비밀번호 확인
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+
+  // 유효성 검사 메시지
+  const [validationMessages, setValidationMessages] = useState({
+    email: "",
+    name: "",
+    birthDate: "",
+    gender: "",
+    password: "",
+    passwordConfirm: "",
+  });
+
+  // 입력값 변경 핸들러
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    console.log(formData)
+  };
+
   return (
     <Layout>
       <div
@@ -25,27 +57,27 @@ const Signup = () => {
           <div className="space-y-2">
             <label>이메일</label>
             <div className="flex items-center space-x-2">
-              <input type="email" name="email" placeholder="이메일을 입력해 주세요" className="flex-1" />
+              <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="이메일을 입력해 주세요" className="flex-1" />
               <Button text="확인" type="DEFAULT" className="w-14 h-8" />
             </div>
-            <p>validation message</p>
+            {validationMessages.email && <p>{validationMessages.email}</p>}
           </div>
 
           {/* 이름 */}
           <div className="space-y-2">
             <label>이름</label>
             <div className="flex items-center space-x-2">
-              <input type="text" name="name" placeholder="이름을 입력해 주세요" className="flex-1" />
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="이름을 입력해 주세요" className="flex-1" />
               <Button text="확인" type="DEFAULT" className="w-14 h-8" />
             </div>
-            <p>validation message</p>
+            {validationMessages.name && <p>{validationMessages.name}</p>}
           </div>
 
           {/* 생년월일 */}
           <div className="space-y-2">
             <label>생년월일</label>
-            <input type="date" name="birthDate" className="w-full" />
-            <p>validation message</p>
+            <input type="date" name="birthDate" value={formData.birthDate} onChange={handleInputChange} className="w-full" />
+            {validationMessages.birthDate && <p>{validationMessages.birthDate}</p>}
           </div>
 
           {/* 성별 */}
@@ -53,29 +85,29 @@ const Signup = () => {
             <label>성별</label>
             <div className="flex space-x-8">
               <label className="flex items-center">
-                <input type="radio" name="gender" value="male" className="mr-2 text-blue-500" />
+                <input type="radio" name="gender" value="male" checked={formData.gender === "male"} onChange={handleInputChange} className="mr-2 text-blue-500" />
                 <span>남성</span>
               </label>
               <label className="flex items-center">
-                <input type="radio" name="gender" value="female" className="mr-2 text-blue-500" />
+                <input type="radio" name="gender" value="female" checked={formData.gender === "female"} onChange={handleInputChange} className="mr-2 text-blue-500" />
                 <span>여성</span>
               </label>
             </div>
-            <p>validation message</p>
+            {validationMessages.gender && <p>{validationMessages.gender}</p>}
           </div>
 
           {/* 비밀번호 */}
           <div className="space-y-2">
             <label>비밀번호</label>
-            <input type="password" name="password" placeholder="비밀번호를 입력해 주세요" className="w-full" />
-            <p>validation message</p>
+            <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder="비밀번호를 입력해 주세요" className="w-full" />
+            {validationMessages.password && <p>{validationMessages.password}</p>}
           </div>
 
           {/* 비밀번호 확인 */}
           <div className="space-y-2">
             <label>비밀번호 확인</label>
-            <input type="password" name="passwordConfirm" placeholder="비밀번호를 입력해 주세요" className="w-full" />
-            <p>validation message</p>
+            <input type="password" name="passwordConfirm" value={passwordConfirm} onChange={handleInputChange} placeholder="비밀번호를 입력해 주세요" className="w-full" />
+            {validationMessages.passwordConfirm && <p>{validationMessages.passwordConfirm}</p>}
           </div>
 
           {/* 제출 버튼 */}
