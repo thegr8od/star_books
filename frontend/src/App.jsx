@@ -21,7 +21,6 @@ import UniverseAnalysis from './pages/Universe/UniverseAnalysis';
 function App() {
 
   return (
-    <div className="min-h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121] p-4 sm:p-6 md:py-6 md:px-8 lg:py-8 lg:px-16">
       <Routes>
       <Route path="/starbooks">
         {/* Auth 관련 */}
@@ -55,8 +54,6 @@ function App() {
         <Route path="constellation/gallery/:year/detail" element={<ConstellationDetail />} />
       </Route>
     </Routes>
-    </div>
-
   )
 }
 
