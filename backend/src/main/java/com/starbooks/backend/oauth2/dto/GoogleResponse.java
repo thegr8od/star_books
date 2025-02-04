@@ -1,7 +1,10 @@
 package com.starbooks.backend.oauth2.dto;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Map;
 
+@Slf4j
 public class GoogleResponse implements OAuth2Response {
 
     private final Map<String, Object> attributes;
@@ -23,7 +26,13 @@ public class GoogleResponse implements OAuth2Response {
 
     @Override
     public String getEmail() {
-        return attributes.get("email").toString();
+        log.info("GoogleResponse Attributes: {}", attributes);
+        Object emailObj = attributes.get("email");
+        if (emailObj == null) {
+            log.error("Google에서 이메일 정보를 가져올 수 없습니다. 응답: {}", attributes);
+            throw new RuntimeException("구글 로그인 시 이메일을 가져올 수 없습니다.");
+        }
+        return emailObj.toString();
     }
 
     @Override
