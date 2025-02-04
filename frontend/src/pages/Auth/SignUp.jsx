@@ -26,14 +26,43 @@ const Signup = () => {
     passwordConfirm: "",
   });
 
+  // 비밀번호 규칙 함수
+  const passwordRules = (password) => {
+    if (!password) return "";
+
+    const isLengthValid = password.length >= 8 && password.length <= 15;
+    const hasSpecialChar = /[!@#$%^&*]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasLetter = /[a-z]/.test(password);
+
+    return !isLengthValid || !hasSpecialChar || !hasNumber || !hasLetter ? "8~15자, 숫자/영문(소문자)/특수문자(!@#$%^&*)를 모두 조합하여 입력해주세요." : "";
+  };
+
+  // 비밀번호 유효성 검사 메시지 핸들러
+  const handlePasswordValidation = (password, confirmPassword, checkRules) => {
+    setValidationMessages((prev) => ({
+      ...prev,
+      password: checkRules ? passwordRules(password) : prev.password,
+      passwordConfirm: confirmPassword && password !== confirmPassword ? "비밀번호가 일치하지 않습니다." : "",
+    }));
+  };
+
   // 입력값 변경 핸들러
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    console.log(formData)
+
+    if (name === "passwordConfirm") {
+      setPasswordConfirm(value);
+      handlePasswordValidation(formData.password, value, false); // 비밀번호 입력 시 비밀번호 확인 검증
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+      if (name === "password") {
+        handlePasswordValidation(value, passwordConfirm, true); // 비밀번호 입력 시 비밀번호 확인 재검증 & 비밀번호 검증
+      }
+    }
   };
 
   return (
