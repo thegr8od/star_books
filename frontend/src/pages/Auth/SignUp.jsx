@@ -16,6 +16,13 @@ const Signup = () => {
   // 비밀번호 확인
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // 이메일&이름 중복 확인
+  const [isChecking, setIsChecking] = useState({
+    email: false,
+    name: false,
+    password: false,
+  });
+
   // 유효성 검사 메시지
   const [validationMessages, setValidationMessages] = useState({
     email: "",
@@ -66,6 +73,13 @@ const Signup = () => {
       [name]: "",
     }));
 
+    if (name === "email" || name === "name") {
+      setIsChecking((prev) => ({
+        ...prev,
+        [name]: false,
+      }));
+    }
+
     if (name === "confirmPassword") {
       setConfirmPassword(value);
       handlePasswordValidation(formData.password, value, false);
@@ -79,6 +93,42 @@ const Signup = () => {
 
     if (name === "password") {
       handlePasswordValidation(value, confirmPassword, true);
+    }
+  };
+
+  // 중복 체크 핸들러
+  const handleDuplicateCheck = async (field) => {
+    if (isChecking[field]) return;
+
+    if (!formData[field]) {
+      setValidationMessages((prev) => ({
+        ...prev,
+        [field]: `${fieldNames[field]} 을(를) 입력해주세요.`,
+      }));
+      return;
+    }
+
+    try {
+      const response = await axios.get("/api/member", {
+        params: {
+          [field]: formData[field],
+        },
+      });
+
+      setIsChecking((prev) => ({
+        ...prev,
+        [field]: !response.data,
+      }));
+
+      setValidationMessages((prev) => ({
+        ...prev,
+        [field]: response.data ? `이미 사용 중인 ${fieldNames[field]}입니다.` : `사용 가능한 ${fieldNames[field]}입니다.`,
+      }));
+    } catch (error) {
+      setValidationMessages((prev) => ({
+        ...prev,
+        [field]: "확인 중 오류가 발생했습니다.",
+      }));
     }
   };
 
@@ -110,11 +160,23 @@ const Signup = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // 필수값 확인
     if (!validateForm()) {
       return;
     }
 
-    // 추가 제출 로직...
+    // 이메일, 이름, 비밀번호 확인 
+    if (!isChecking.email || !isChecking.name || !isChecking.password) {
+      setValidationMessages((prev) => ({
+        ...prev,
+        email: !isChecking.email ? "중복 확인이 필요합니다." : prev.email,
+        name: !isChecking.name ? "중복 확인이 필요합니다." : prev.name,
+        password: !isChecking.password ? "비밀번호 확인이 필요합니다." : prev.password,
+      }));
+      return;
+    }
+
+    // 회원가입 axios
   };
 
   return (
@@ -139,7 +201,9 @@ const Signup = () => {
             <label>이메일</label>
             <div className="flex items-center space-x-2">
               <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="이메일을 입력해 주세요" className="flex-1" />
-              <Button text="확인" type="DEFAULT" className="w-14 h-8" />
+              <button type="button" onClick={() => handleDuplicateCheck("email")} className="w-14 h-8 rounded-2xl text-white bg-[#8993c7] hover:bg-[#7580bb]">
+                확인
+              </button>
             </div>
             {validationMessages.email && <p>{validationMessages.email}</p>}
           </div>
@@ -149,7 +213,9 @@ const Signup = () => {
             <label>이름</label>
             <div className="flex items-center space-x-2">
               <input type="text" name="name" value={formData.name} onChange={handleInputChange} placeholder="이름을 입력해 주세요" className="flex-1" />
-              <Button text="확인" type="DEFAULT" className="w-14 h-8" />
+              <button type="button" onClick={() => handleDuplicateCheck("name")} className="w-14 h-8 rounded-2xl text-white bg-[#8993c7] hover:bg-[#7580bb]">
+                확인
+              </button>
             </div>
             {validationMessages.name && <p>{validationMessages.name}</p>}
           </div>
