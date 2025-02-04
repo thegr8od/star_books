@@ -14,7 +14,7 @@ const Signup = () => {
   });
 
   // 비밀번호 확인
-  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // 유효성 검사 메시지
   const [validationMessages, setValidationMessages] = useState({
@@ -23,11 +23,21 @@ const Signup = () => {
     birthDate: "",
     gender: "",
     password: "",
-    passwordConfirm: "",
+    confirmPassword: "",
   });
 
+  // 필드 이름 변환
+  const fieldNames = {
+    email: "이메일",
+    name: "이름",
+    birthDate: "생년월일",
+    gender: "성별",
+    password: "비밀번호",
+    confirmPassword: "비밀번호 확인",
+  };
+
   // 비밀번호 규칙 함수
-  const passwordRules = (password) => {
+  const validatePassword = (password) => {
     if (!password) return "";
 
     const isLengthValid = password.length >= 8 && password.length <= 15;
@@ -38,12 +48,12 @@ const Signup = () => {
     return !isLengthValid || !hasSpecialChar || !hasNumber || !hasLetter ? "8~15자, 숫자/영문(소문자)/특수문자(!@#$%^&*)를 모두 조합하여 입력해주세요." : "";
   };
 
-  // 비밀번호 유효성 검사 메시지 핸들러
+  // 비밀번호 유효성 메시지 핸들러
   const handlePasswordValidation = (password, confirmPassword, checkRules) => {
     setValidationMessages((prev) => ({
       ...prev,
-      password: checkRules ? passwordRules(password) : prev.password,
-      passwordConfirm: confirmPassword && password !== confirmPassword ? "비밀번호가 일치하지 않습니다." : "",
+      password: checkRules ? validatePassword(password) : prev.password,
+      confirmPassword: confirmPassword && password !== confirmPassword ? "비밀번호가 일치하지 않습니다." : "",
     }));
   };
 
@@ -51,18 +61,60 @@ const Signup = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "passwordConfirm") {
-      setPasswordConfirm(value);
-      handlePasswordValidation(formData.password, value, false); // 비밀번호 입력 시 비밀번호 확인 검증
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-      if (name === "password") {
-        handlePasswordValidation(value, passwordConfirm, true); // 비밀번호 입력 시 비밀번호 확인 재검증 & 비밀번호 검증
-      }
+    setValidationMessages((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+
+    if (name === "confirmPassword") {
+      setConfirmPassword(value);
+      handlePasswordValidation(formData.password, value, false);
+      return;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (name === "password") {
+      handlePasswordValidation(value, confirmPassword, true);
+    }
+  };
+
+  // 폼 제출 시 빈 값 체크 함수
+  const validateForm = () => {
+    const newMessages = {};
+    let isValid = true;
+
+    Object.keys(formData).forEach((field) => {
+      if (!formData[field]) {
+        newMessages[field] = `${fieldNames[field]} 을(를) 입력해주세요.`;
+        isValid = false;
+      }
+    });
+    if (!confirmPassword) {
+      newMessages.confirmPassword = "비밀번호 을(를) 입력해주세요.";
+      isValid = false;
+    }
+
+    setValidationMessages((prev) => ({
+      ...prev,
+      ...newMessages,
+    }));
+
+    return isValid;
+  };
+
+  // 폼 제출 핸들러
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    // 추가 제출 로직...
   };
 
   return (
@@ -135,12 +187,14 @@ const Signup = () => {
           {/* 비밀번호 확인 */}
           <div className="space-y-2">
             <label>비밀번호 확인</label>
-            <input type="password" name="passwordConfirm" value={passwordConfirm} onChange={handleInputChange} placeholder="비밀번호를 입력해 주세요" className="w-full" />
-            {validationMessages.passwordConfirm && <p>{validationMessages.passwordConfirm}</p>}
+            <input type="password" name="confirmPassword" value={confirmPassword} onChange={handleInputChange} placeholder="비밀번호를 입력해 주세요" className="w-full" />
+            {validationMessages.confirmPassword && <p>{validationMessages.confirmPassword}</p>}
           </div>
 
           {/* 제출 버튼 */}
-          <Button text="확인" type="DEFAULT" className="w-full h-10" />
+          <button type="submit" onClick={handleSubmit} className="w-full h-10 rounded-2xl text-white bg-[#8993c7] hover:bg-[#7580bb]">
+            확인
+          </button>
         </form>
       </div>
     </Layout>
