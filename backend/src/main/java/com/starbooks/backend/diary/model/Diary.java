@@ -1,5 +1,6 @@
 package com.starbooks.backend.diary.model;
 
+import com.starbooks.backend.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;

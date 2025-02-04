@@ -2,7 +2,7 @@ package com.starbooks.backend.diary.controller;
 
 import com.starbooks.backend.diary.dto.request.DiaryCreateRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
-import com.starbooks.backend.diary.model.User;
+import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.diary.service.DiaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
