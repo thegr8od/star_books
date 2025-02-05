@@ -1,8 +1,11 @@
 import { useState } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
+  const navigate = useNavigate();
+  
   // 입력 필드 상태
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -53,6 +56,7 @@ const Signup = () => {
         params: { email },
       });
 
+      console.log(response.data);
       setIsEmailChecked(!response.data);
       setEmailError(response.data ? "이미 사용 중인 이메일입니다." : "사용 가능한 이메일입니다.");
     } catch (error) {
@@ -67,6 +71,18 @@ const Signup = () => {
     if (!name) {
       setNameError("이름을 입력해주세요.");
       return;
+    }
+
+    try {
+      const response = await axios.get("/api/member/name", {
+        params: { email },
+      });
+
+      console.log(response.data);
+      setIsEmailChecked(!response.data);
+      setEmailError(response.data ? "이미 사용 중인 이름입니다." : "사용 가능한 이름입니다.");
+    } catch (error) {
+      setEmailError("확인 중 오류가 발생했습니다.");
     }
 
     // axios
@@ -115,14 +131,32 @@ const Signup = () => {
   };
 
   // 폼 제출 핸들러
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    // 추가 제출 로직...axios
+    // axios
+    try {
+      const response = await axios.post("/api/member", {
+        email,
+        name,
+        birthDate,
+        gender,
+        password,
+      });
+      console.log("회원가입 성공:", response.data);
+      navigate("/login");
+    } catch (error) {
+      if (error.response?.data) {
+        alert("회원가입 중 오류가 발생했습니다.");
+      } else {
+        alert("서버와의 통신 중 오류가 발생했습니다.");
+      }
+      console.error("회원가입 실패:", error);
+    }
   };
 
   return (
