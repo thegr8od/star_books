@@ -17,6 +17,7 @@ import RadioList from "./pages/Radio/RadioList";
 import RadioShow from "./pages/Radio/RadioShow";
 import Universe from "./pages/Universe/Universe";
 import UniverseAnalysis from "./pages/Universe/UniverseAnalysis";
+import ColorTest from "./components/ColorTest";
 
 function App() {
   const isHome = location.pathname === "/"; // 홈 페이지 여부 확인
@@ -59,6 +60,8 @@ function App() {
           path="constellation/gallery/:year/detail"
           element={<ConstellationDetail />}
         />
+        {/* TEST용 */}
+        <Route path="color" element={<ColorTest />} />
       </Routes>
     </div>
   );
