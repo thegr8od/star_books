@@ -4,6 +4,7 @@ import com.starbooks.backend.diary.dto.request.DiaryCreateRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
 import com.starbooks.backend.diary.exception.NotFoundException;
 import com.starbooks.backend.diary.model.*;
+import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.diary.repository.DiaryRepository;
 import com.starbooks.backend.diary.repository.HashtagRepository;
 import lombok.RequiredArgsConstructor;

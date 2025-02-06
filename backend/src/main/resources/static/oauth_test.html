@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth2 테스트 페이지</title>
+</head>
+<body>
+<h2>OAuth2 로그인 테스트</h2>
+
+<button onclick="loginWithProvider('google')">Google 로그인</button>
+<button onclick="loginWithProvider('naver')">Naver 로그인</button>
+
+<h3>JWT 토큰 확인</h3>
+<button onclick="checkToken()">JWT 토큰 확인</button>
+
+<h3>로그아웃</h3>
+<button onclick="logout()">로그아웃</button>
+
+<h3>응답 결과</h3>
+<pre id="responseOutput"></pre>
+
+<script>
+    const baseUrl = "http://localhost:8080";
+
+    function loginWithProvider(provider) {
+        window.location.href = `${baseUrl}/oauth2/authorization/${provider}`;
+    }
+
+    function checkToken() {
+        const refreshToken = getCookie("refreshToken");
+        const accessToken = localStorage.getItem("accessToken");
+
+        if (!accessToken) {
+            document.getElementById("responseOutput").innerText = "Access Token이 없습니다. 로그인 후 다시 시도하세요.";
+            return;
+        }
+
+        fetch(`${baseUrl}/member/detail`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("responseOutput").innerText = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                document.getElementById("responseOutput").innerText = "에러 발생: " + error;
+            });
+    }
+
+    function logout() {
+        fetch(`${baseUrl}/member/logout`, {
+            method: "POST",
+            credentials: "include"
+        })
+            .then(() => {
+                document.getElementById("responseOutput").innerText = "로그아웃 성공!";
+                localStorage.removeItem("accessToken");
+                document.cookie = "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            })
+            .catch(error => {
+                document.getElementById("responseOutput").innerText = "로그아웃 실패: " + error;
+            });
+    }
+
+    function getCookie(name) {
+        const cookies = document.cookie.split("; ");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].split("=");
+            if (cookie[0] === name) return cookie[1];
+        }
+        return null;
+    }
+</script>
+</body>
+</html>

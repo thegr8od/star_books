@@ -1,6 +1,6 @@
-package com.starbooks.backend.diary.repository;
+package com.starbooks.backend.user.repository.jpa;
 
-import com.starbooks.backend.diary.model.User;
+import com.starbooks.backend.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

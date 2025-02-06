@@ -1,19 +1,24 @@
 package com.starbooks.backend.diary.model;
 
+import com.starbooks.backend.user.model.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.xml.crypto.dsig.spec.HMACParameterSpec;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "diary")
 @Getter
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Diary {
 
     @Id
+    @Column(name = "diary_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long diaryId;
 

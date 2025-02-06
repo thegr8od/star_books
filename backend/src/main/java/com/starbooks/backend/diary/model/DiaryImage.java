@@ -8,12 +8,14 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "diary_image")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DiaryImage {
 
     @Id
+    @Column(name="diary_image_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
 
