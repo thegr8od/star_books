@@ -7,12 +7,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
-@SpringBootApplication(
-        exclude = {
-                org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration.class
-                // 혹은 'OAuth2ClientAutoConfiguration.class'
-        }
-)
+@SpringBootApplication
 @EnableWebSecurity
 @EnableScheduling
 public class BackendApplication {
