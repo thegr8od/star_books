@@ -35,7 +35,8 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<SignUp />} />
         {/* MyPage 관련 */}
-        <Route path="mypage/:id" element={<MyPage />} />
+        {/* <Route path="mypage/:id" element={<MyPage />} /> */}
+        <Route path="mypage/" element={<MyPage />} />
         <Route path="mypage/:id/edit" element={<ProfileEdit />} />
         {/* Universe 관련 */}
         <Route path="universe" element={<Universe />} />
@@ -53,10 +54,10 @@ function App() {
         {/* Constellation 관련 */}
         <Route path="constellation/create" element={<ConstellationCreate />} />
         <Route
-          path="constellation/gallery/:year"
+          path="constellation/gallery"
           element={<ConstellationGallery />}
         />
-        <Route
+        <Route 
           path="constellation/gallery/:year/detail"
           element={<ConstellationDetail />}
         />

@@ -23,7 +23,6 @@ const ProfileEdit = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    console.log(file);
 
     if (file) {
       const reader = new FileReader();
@@ -35,15 +34,15 @@ const ProfileEdit = () => {
   };
 
   return (
-    <div className="container">
+    <div className="">
       <h1>마이페이지 수정</h1>
-      <div className="profile-image">
+      <div className="">
         {imagePreview ? (
           <img src={imagePreview} alt="프로필 이미지" />
         ) : (
           <img src={defaultImage} alt="기본 프로필" />
         )}
-        <div className="upload-button">
+        <div>
           <input type="file" accept="image/*" onChange={handleImageChange} />
         </div>
       </div>
