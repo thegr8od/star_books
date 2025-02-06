@@ -1,8 +1,10 @@
 package com.starbooks.backend.diary.dto.request;
 
 
+import com.starbooks.backend.diary.model.Diary;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,7 +19,8 @@ public record DiaryCreateRequest(
 
         @NotEmpty
         List<EmotionRequest> emotions,
-        List<String> hashtags,
+        @NotNull
+        List<Diary.HashtagType> hashtags,
         List<MultipartFile> images
 ) {}
 

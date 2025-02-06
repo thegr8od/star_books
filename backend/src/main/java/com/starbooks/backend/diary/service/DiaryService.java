@@ -6,9 +6,7 @@ import com.starbooks.backend.diary.exception.NotFoundException;
 import com.starbooks.backend.diary.model.*;
 import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.diary.repository.DiaryRepository;
-import com.starbooks.backend.diary.repository.HashtagRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +20,6 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final FileStorageService fileStorageService;
-    private final HashtagRepository hashtagRepository;
 
     @Transactional
     public DiaryResponse createDiary(DiaryCreateRequest request, User user) {
@@ -51,14 +48,10 @@ public class DiaryService {
         });
 
         // 4. 해시태그 저장 (Hashtag 엔티티 사용)
-        request.hashtags().forEach(tagName -> {
-            // HashtagRepository 인스턴스 메서드로 변경
-            Hashtag hashtag = hashtagRepository.findByName(tagName)
-                    .orElseGet(() -> hashtagRepository.save(new Hashtag(tagName))); // save도 인스턴스 메서드
-
+        request.hashtags().forEach(tag -> {
             DiaryHashtag diaryHashtag = DiaryHashtag.builder()
                     .diary(diary)
-                    .tag(hashtag)
+                    .hashtag(tag) // Enum 값 그대로 저장
                     .build();
             diary.addHashtag(diaryHashtag);
         });
