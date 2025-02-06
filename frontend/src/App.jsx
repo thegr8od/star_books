@@ -53,11 +53,11 @@ function App() {
         {/* Constellation 관련 */}
         <Route path="constellation/create" element={<ConstellationCreate />} />
         <Route
-          path="constellation/gallery/:year"
+          path="constellation/gallery"
           element={<ConstellationGallery />}
         />
         <Route
-          path="constellation/gallery/:year/detail"
+          path="constellation/gallery/detail"
           element={<ConstellationDetail />}
         />
         {/* TEST용 */}
