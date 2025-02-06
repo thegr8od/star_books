@@ -6,6 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "diary_emotion")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -13,6 +14,7 @@ public class DiaryEmotion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "diary_emotion_id")
     private Long diaryEmotionId;
 
     @ManyToOne(fetch = FetchType.LAZY)
