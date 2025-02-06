@@ -2,23 +2,20 @@ package com.starbooks.backend.user.service;
 
 import com.starbooks.backend.common.JwtTokenProvider;
 import com.starbooks.backend.user.dto.response.ResponseRefreshTokenDTO;
-import com.starbooks.backend.user.model.RefreshToken;
-import com.starbooks.backend.user.model.User;
-import com.starbooks.backend.user.repository.jpa.RefreshTokenRepository;
-import com.starbooks.backend.user.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
+import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
 public class TokenServiceImpl implements TokenService {
-
+    private final StringRedisTemplate redisTemplate;
     private final JwtTokenProvider jwtTokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final UserRepository userRepository;
+
+    private static final String REFRESH_TOKEN_PREFIX = "refreshToken:";
+    private static final String BLACKLIST_PREFIX = "blacklist:";
 
     @Override
     public String generateAccessToken(String email) {
@@ -26,61 +23,45 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    @Transactional
     public String generateRefreshToken(String email) {
         String refreshToken = jwtTokenProvider.generateRefreshToken(email);
-        saveRefreshToken(email, refreshToken);
+        long expirationMillis = jwtTokenProvider.getRefreshTokenExpiration();
+        saveRefreshToken(email, refreshToken, expirationMillis);
         return refreshToken;
     }
 
     @Override
-    @Transactional
     public ResponseRefreshTokenDTO refreshToken(String refreshToken) {
-        if (jwtTokenProvider.validateToken(refreshToken)) {
-            String userEmail = jwtTokenProvider.getUserEmail(refreshToken);
-            Optional<User> userOpt = userRepository.findByEmail(userEmail);
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
-                refreshTokenRepository.deleteByUser_UserId(user.getUserId());
-
-                String newAccessToken = jwtTokenProvider.generateAccessToken(userEmail);
-                String newRefreshToken = jwtTokenProvider.generateRefreshToken(userEmail);
-
-                RefreshToken rt = new RefreshToken(null, user, newRefreshToken, System.currentTimeMillis() + jwtTokenProvider.getRefreshTokenExpiration());
-                refreshTokenRepository.save(rt);
-
-                return new ResponseRefreshTokenDTO(newAccessToken, newRefreshToken);
-            }
+        String email = jwtTokenProvider.getUserEmail(refreshToken);
+        if (validateRefreshToken(email, refreshToken) && !isRefreshTokenBlacklisted(refreshToken)) {
+            String newAccessToken = generateAccessToken(email);
+            return new ResponseRefreshTokenDTO(newAccessToken, generateRefreshToken(email));
         }
-        return null;
-    }
-
-    @Override
-    @Transactional
-    public void invalidateAllUserTokens(String email) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        userOpt.ifPresent(user -> refreshTokenRepository.deleteByUser_UserId(user.getUserId()));
+        throw new RuntimeException("Invalid or blacklisted refresh token");
     }
 
     @Override
     public void blacklistRefreshToken(String refreshToken) {
-        // RefreshToken 삭제 로직
-        Optional<RefreshToken> tokenOpt = refreshTokenRepository.findByToken(refreshToken);
-        tokenOpt.ifPresent(refreshTokenRepository::delete);
+        long expirationMillis = jwtTokenProvider.getRefreshTokenExpiration();
+        redisTemplate.opsForValue().set(BLACKLIST_PREFIX + refreshToken, "true", Duration.ofMillis(expirationMillis));
     }
 
     @Override
     public boolean isRefreshTokenBlacklisted(String refreshToken) {
-        // Redis를 사용하지 않을 경우 항상 false 반환
-        return false;
+        return redisTemplate.opsForValue().get(BLACKLIST_PREFIX + refreshToken) != null;
     }
 
-    private void saveRefreshToken(String userEmail, String refreshToken) {
-        Optional<User> userOpt = userRepository.findByEmail(userEmail);
-        userOpt.ifPresent(user -> {
-            refreshTokenRepository.deleteByUser_UserId(user.getUserId());
-            RefreshToken rt = new RefreshToken(null, user, refreshToken, System.currentTimeMillis() + jwtTokenProvider.getRefreshTokenExpiration());
-            refreshTokenRepository.save(rt);
-        });
+    @Override
+    public void invalidateAllUserTokens(String email) {
+        redisTemplate.delete(REFRESH_TOKEN_PREFIX + email);
+    }
+
+    private void saveRefreshToken(String email, String refreshToken, long expirationMillis) {
+        redisTemplate.opsForValue().set(REFRESH_TOKEN_PREFIX + email, refreshToken, Duration.ofMillis(expirationMillis));
+    }
+
+    private boolean validateRefreshToken(String email, String refreshToken) {
+        String storedToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + email);
+        return storedToken != null && storedToken.equals(refreshToken);
     }
 }

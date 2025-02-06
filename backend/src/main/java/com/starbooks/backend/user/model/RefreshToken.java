@@ -1,27 +1,26 @@
 package com.starbooks.backend.user.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
-@Entity
-@Table(name = "refresh_token")
-@Getter
-@Setter
+@RedisHash(value = "refreshToken", timeToLive = 1209600) // 14일
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class RefreshToken {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;  // 토큰 값 자체를 ID로 사용
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Indexed
+    private String userEmail;
+    private Long expiration;
 
-    @Column(nullable = false, unique = true)
-    private String token;
-
-    @Column(nullable = false)
-    private Long expiration; // 만료시간 (timestamp)
+    public static RefreshToken from(String token, String userEmail, Long expiration) {
+        return new RefreshToken(token, userEmail, expiration);
+    }
 }
