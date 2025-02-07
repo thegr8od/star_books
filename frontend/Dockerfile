@@ -2,6 +2,7 @@
 
 FROM node:18 AS build
 COPY package*.json ./
+COPY ./src/assets/ /home/ubuntu/images
 RUN npm install
 COPY . .
 RUN npm run build

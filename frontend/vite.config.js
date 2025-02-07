@@ -12,21 +12,21 @@ export default defineConfig({
       },
     },
   },
-  build: {
-    rollupOptions: {
-      input: {
-        main: "index.html",
-      },
-      output: {
-        assetFileNames: (assetInfo) => {
-          if (/\.(png|jpg|jpeg|svg|ico|gif|mp4|webm|ogg)$/.test(assetInfo.name)) {
-            return "assets/[name]-[hash][extname]";
-          }
-          return "assets/[name][extname]";
-        },
-      },
-    },
-  },
+  // build: {
+  //   rollupOptions: {
+  //     input: {
+  //       main: "index.html",
+  //     },
+  //     output: {
+  //       assetFileNames: (assetInfo) => {
+  //         if (/\.(png|jpg|jpeg|svg|ico|gif|mp4|webm|ogg)$/.test(assetInfo.name)) {
+  //           return "assets/[name]-[hash][extname]";
+  //         }
+  //         return "assets/[name][extname]";
+  //       },
+  //     },
+  //   },
+  // },
   // resolve: {
   //   alias: {
   //     "@assets": path.resolve(__dirname, "src/assets"), 
