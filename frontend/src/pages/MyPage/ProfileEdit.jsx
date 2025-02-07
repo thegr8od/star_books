@@ -1,5 +1,6 @@
 import { useState } from "react";
 import defaultImage from "../.././assets/default-profile.png";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 
@@ -51,10 +52,9 @@ const ProfileEdit = () => {
                   className="w-80 h-80"
                 />
               ) : (
-                <img
-                  src={defaultImage}
-                  alt="기본 프로필"
-                  className="w-40 h-40"
+                <PersonOutlineOutlinedIcon
+                  sx={{ fontSize: 50 }}
+                  className="text-black"
                 />
               )}
               {/* 이미지 업로드 버튼 */}

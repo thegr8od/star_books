@@ -41,7 +41,7 @@ function Mypage() {
                 ) : (
                   <div className="w-[60px] h-[60px] rounded-full bg-white flex justify-center items-center">
                     <PersonOutlineOutlinedIcon
-                      fontSize="large"
+                      sx={{ fontSize: 50 }}
                       className="text-black"
                     />
                   </div>
@@ -51,10 +51,13 @@ function Mypage() {
                 <div className="flex items-center gap-3">
                   <h1 className="text-xl font-bold">닉네임</h1>
                   <div
-                    className="w-[30px] h-[30px] rounded-full bg-white flex justify-center items-center opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
+                    className="w-[25px] h-[25px] rounded-full bg-white flex justify-center items-center opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
                     onClick={handleEditClick}
                   >
-                    <CreateOutlinedIcon className="text-black text-sm" />
+                    <CreateOutlinedIcon
+                      className="text-black"
+                      sx={{ fontSize: 19 }}
+                    />
                   </div>
                 </div>
                 <div className="flex gap-3 mt-3 text-gray-300">
