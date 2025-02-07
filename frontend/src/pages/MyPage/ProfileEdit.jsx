@@ -27,7 +27,6 @@ const ProfileEdit = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    console.log(file);
 
     if (file) {
       const reader = new FileReader();
@@ -39,6 +38,45 @@ const ProfileEdit = () => {
   };
 
   return (
+<<<<<<< HEAD
+    <div className="">
+      <h1>마이페이지 수정</h1>
+      <div className="">
+        {imagePreview ? (
+          <img src={imagePreview} alt="프로필 이미지" />
+        ) : (
+          <img src={defaultImage} alt="기본 프로필" />
+        )}
+        <div>
+          <input type="file" accept="image/*" onChange={handleImageChange} />
+        </div>
+      </div>
+      <span>이름(닉네임)</span>
+      <div className="input-group">
+        <input
+          name="name"
+          value={formData.name}
+          onChange={handleInputChange}
+          placeholder="이름을 입력하세요."
+        />
+      </div>
+      <span>이메일</span>
+      <div className="email-group">
+        <input
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+        />
+        <span>@</span>
+        <select onChange={handleInputChange}>
+          <option value="선택">선택</option>
+          <option value="gmail">gmail.com</option>
+          <option value="naver">naver.com</option>
+          <option value="daum">daum.net</option>
+          <option value="nate">nate.com</option>
+        </select>
+      </div>
+=======
     <>
       <div className="text-white">
         <div className="flex flex-col items-center space-y-[30px] w-full h-full">
@@ -70,6 +108,7 @@ const ProfileEdit = () => {
               </label>
             </div>
           </div>
+>>>>>>> 392a5c4c963736d963d27fc2adde31bd409827f1
 
           <div className="w-full max-w-sm space-y-[30px] ">
             {/* 이름 */}

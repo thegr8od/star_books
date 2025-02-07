@@ -75,7 +75,8 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<SignUp />} />
         {/* MyPage 관련 */}
-        <Route path="mypage/:id" element={<MyPage />} />
+        {/* <Route path="mypage/:id" element={<MyPage />} /> */}
+        <Route path="mypage/" element={<MyPage />} />
         <Route path="mypage/:id/edit" element={<ProfileEdit />} />
         {/* Universe 관련 */}
         <Route path="universe" element={<Universe />} />
@@ -96,8 +97,13 @@ function App() {
           path="constellation/gallery"
           element={<ConstellationGallery />}
         />
+<<<<<<< HEAD
+        <Route 
+          path="constellation/gallery/:year/detail"
+=======
         <Route
           path="constellation/gallery/detail"
+>>>>>>> 392a5c4c963736d963d27fc2adde31bd409827f1
           element={<ConstellationDetail />}
         />
         {/* TEST용 */}
