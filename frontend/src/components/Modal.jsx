@@ -1,3 +1,5 @@
+import Button from "./Button";
+
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
   return (
@@ -7,15 +9,16 @@ const Modal = ({ isOpen, onClose, title, children }) => {
       {/* 내용 */}
       <div className="inset-0 z-50 bg-white rounded-lg shadow-xl min-w-[320px]">
         {/* 헤더 */}
-        <div className="flex justify-center gap-5 p-[10px] relative">
-          <h2 className="text-[20px] font-semibold  text-center">{title}</h2>
-          <button
+        <div className="flex mx-4 items-center justify-between  mt-6">
+          <h2 className="text-[20px] font-semibold  w-[80%]">{title}</h2>
+          <Button
             onClick={onClose}
-            className="pr-2 text-black hover:text-gray-600 absolute right-2"
-          >
-            X
-          </button>
+            type="DEFAULT"
+            imgSrc="/public/icons/close2.png"
+            imgClassName="w-3 h-3"
+          />
         </div>
+        <hr className="mx-4 mt-4" />
         {/* body */}
         <div className="p-4">{children}</div>
       </div>

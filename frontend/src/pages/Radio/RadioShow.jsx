@@ -1,9 +1,9 @@
 function RadioShow() {
-    return (
-      <>
-        <p>RadioShow!</p>
-      </>
-    );
-  }
-  
-  export default RadioShow
+  return (
+    <>
+      <p>RadioShow!</p>
+    </>
+  );
+}
+
+export default RadioShow
