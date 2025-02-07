@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { users } from '../.././data/users';
-import Button from '../../components/Button';
+import axios from 'axios';
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loginStatus, setLoginStatus] = useState('');
 
@@ -25,94 +25,120 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (validateForm()) {
-      const user = users.find(
-        user => user.email === email && user.password === password
-      );
-      
-      if (user) {
-        setLoginStatus('success');
-        console.log('로그인 성공!');
-        // 로그인 성공 시 홈 화면으로 이동
-        setTimeout(() => {
-          navigate('/starbooks/diary/calendar');
-        }, 500); // 성공 메시지를 잠깐 보여주기 위해 0.5초 후 이동
-      } else {
+      try {
+        const response = await axios.post('/api/member/login', {
+          email: email,
+          password: password
+        });
+
+        if (response.data.statusCode === 200) {
+          setLoginStatus('success');
+          console.log(response.data.message);
+          
+          // 세션 스토리지에 사용자 정보 저장
+          sessionStorage.setItem('accessToken', response.data.data.accessToken);
+          sessionStorage.setItem('email', response.data.data.user.email);
+          sessionStorage.setItem('nickname', response.data.data.user.nickname);
+          
+          // 로그인 성공 후 홈으로 리다이렉션
+          setTimeout(() => {
+            navigate('/');
+          }, 500);
+        }
+      } catch (error) {
+        console.error('로그인 에러:', error);
         setLoginStatus('error');
+        
+        if (error.response && error.response.data) {
+          const errorData = error.response.data;
+          console.error(errorData.message);
+        }
       }
     }
   };
 
-  const handleSignUp = () => {
-    navigate('/starbooks/signup');
-  };
-
   return (
-    
-      <div className="max-w-md w-full space-y-8 p-8 rounded-lg shadow">        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <div className="relative mt-1">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-white/90 text-sm">
-                  email:
-                </span>
-                <input
-                  id="email"
-                  type="text"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-white/10 block w-full pl-16 text-sm rounded-md shadow-sm p-2 text-white/90"
-                  placeholder="starbooks@email.com"
-                />
-              </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600/80">{errors.email}</p>
-              )}
-            </div>
-
-            <div>
-              <div className="relative mt-1">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-2 text-white/90 text-sm">
-                  password:
-                </span>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="bg-white/10 block w-full pl-24 rounded-md shadow-sm p-2 text-white/90"
-                  placeholder=""
-                />
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600/80">{errors.password}</p>
-              )}
-            </div>
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 p-6 z-50">
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="space-y-4">
+          <div className="relative">
+            <span className="absolute left-0 top-1/2 transform -translate-y-1/2 text-white/60">e-mail:</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-0 py-2 bg-transparent text-white border-b border-white/30 focus:outline-none focus:border-white text-left pl-[60px]"
+            />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600/80">{errors.email}</p>
+            )}
           </div>
-
-          <div className="flex items-center justify-evenly">
-            <Button
-              imgSrc='../.././icons/google.png'
-              type='PREV'
-              className="bg-white/80 px-1 py-1 rounded-full mx-1 sm:mx-3"
+          <div className="relative">
+            <span className="absolute left-0 top-1/2 transform -translate-y-1/2 text-white/60">password:</span>
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-0 py-2 bg-transparent text-white border-b border-white/30 focus:outline-none focus:border-white pr-8 text-left pl-[83px]"
             />
-            <Button
-              text='로그인'
-              type='NEXT'
-              className="bg-white/10 px-6 sm:px-12 py-2 mx-1 rounded-lg text-sm font-normal text-white/80 hover:bg-white/20"
-            />
-            <Button
-              text='회원가입'
-              type='NEXT'
-              className="bg-white/10 px-10 sm:px-15 py-2 rounded-lg text-sm font-normal text-white/80 hover:bg-white/20"
-              onClick={handleSignUp}
-            />
+            <button 
+              type="button" 
+              className="absolute right-2 top-1/2 transform -translate-y-1/2"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              ) : (
+                <img src="/icons/show.png" alt="Show password" className="h-5 w-5 opacity-60" />
+              )}
+            </button>
+            {errors.password && (
+              <p className="mt-1 text-sm text-red-600/80">{errors.password}</p>
+            )}
           </div>
-        </form>
+        </div>
+        
+        <button
+          type="submit"
+          className="w-full py-3 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors duration-300"
+        >
+          로그인
+        </button>
+
+        <div className="flex items-center justify-center text-sm text-white/60">
+          <button type="button" className="hover:text-white">아이디/비밀번호 찾기</button>
+        </div>
+        <div className="flex items-center gap-3 justify-center text-sm text-white/60">
+          <div className="h-[1px] flex-1 bg-white/30"></div>
+          <span>or</span>
+          <div className="h-[1px] flex-1 bg-white/30"></div>
+        </div>
+
+        <div className="flex justify-center space-x-4">
+          <button type="button" className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors duration-300">
+            <img src="/icons/naver_burron_white.png" alt="Naver" className="w-6 h-6" />
+          </button>
+          <button type="button" className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors duration-300">
+            <img src="/icons/google_bueeon@2x.png" alt="Google" className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="text-center text-white/60">
+          <a 
+            href="#" 
+            onClick={() => navigate('signup/')} 
+            className="text-white hover:underline"
+          >
+            Sign up
+          </a>
+        </div>
 
         {loginStatus === 'success' && (
           <div className="mt-4 p-4 rounded-md bg-white/30 border border-green-500/50">
@@ -125,8 +151,8 @@ const Login = () => {
             <p className="text-red-200 font-medium text-sm">이메일 또는 비밀번호가 일치하지 않습니다.</p>
           </div>
         )}
-      </div>
-   
+      </form>
+    </div>
   );
 };
 
