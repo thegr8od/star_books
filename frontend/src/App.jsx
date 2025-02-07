@@ -18,17 +18,22 @@ import RadioShow from "./pages/Radio/RadioShow";
 import Universe from "./pages/Universe/Universe";
 import UniverseAnalysis from "./pages/Universe/UniverseAnalysis";
 import ColorTest from "./components/ColorTest";
+import Cursor from "./components/Cursor";
+import BackgroundStar from "./components/BackgroundStar"
 
 function App() {
   const isHome = location.pathname === "/"; // 홈 페이지 여부 확인
   return (
+    <>
     <div
       className={
         isHome
           ? ""
           : "min-h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121] p-4"
       }
+      
     >
+       {!isHome && <BackgroundStar />}
       <Routes>
         {/* Auth 관련 */}
         <Route path="" element={<Home />} />
@@ -64,6 +69,9 @@ function App() {
         <Route path="color" element={<ColorTest />} />
       </Routes>
     </div>
+    <Cursor/>
+    </>
+    
   );
 }
 
