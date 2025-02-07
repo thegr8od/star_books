@@ -1,6 +1,7 @@
 import { useState } from "react";
-import defaultImage from "../.././assets/default-profile.png";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
+import Layout from "../../components/Layout";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 
@@ -40,165 +41,186 @@ const ProfileEdit = () => {
 
   return (
     <>
-      <div className="text-white">
-        <div className="flex flex-col items-center space-y-[30px] w-full h-full">
-          {/* 이미지 */}
-          <div className="relative">
-            <div className="flex flex-col items-center">
-              {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="프로필 이미지"
-                  className="w-80 h-80"
-                />
-              ) : (
-                <PersonOutlineOutlinedIcon
-                  sx={{ fontSize: 50 }}
-                  className="text-black"
-                />
-              )}
-              {/* 이미지 업로드 버튼 */}
-              <label className="absolute bottom-0 right-0 cursor-pointer">
-                <img src="/public/icons/camera2.png" alt="수정버튼" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-            </div>
-          </div>
-
-          <div className="w-full max-w-sm space-y-[30px] ">
-            {/* 이름 */}
-            <div className="flex flex-col space-y-[10px]">
-              <span>이름(닉네임)</span>
-              <input
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="이름을 입력하세요."
-                className="w-full bg-transparent border-b border-gray-400 focus:outline-none pb-1"
-              />
-            </div>
-
-            {/* 이메일 */}
-            <div className="flex flex-col space-y-[10px]">
-              <span>이메일</span>
-              <div className="flex w-full items-center space-x-2">
-                <input
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-[45%] bg-transparent border-b border-gray-400 pb-1 focus:outline-none"
-                />
-                <span className="flex-[1]">@</span>
-                <select
-                  onChange={handleInputChange}
-                  className="w-[45%] bg-transparent border-b border-gray-400 pb-1"
-                >
-                  <option value="선택" className="text-black">
-                    선택
-                  </option>
-                  <option value="gmail" className="text-black">
-                    gmail.com
-                  </option>
-                  <option value="naver" className="text-black">
-                    naver.com
-                  </option>
-                  <option value="daum" className="text-black">
-                    daum.net
-                  </option>
-                  <option value="nate" className="text-black">
-                    nate.com
-                  </option>
-                </select>
+      <Layout>
+        <div className="text-white">
+          <div className="flex flex-col items-center space-y-[30px] w-full h-full">
+            {/* 이미지 */}
+            <div className="relative">
+              <div className="flex flex-col items-center">
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt="프로필 이미지"
+                    className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20"
+                  />
+                ) : (
+                  <div className="w-16 h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full bg-[#8993c7] flex justify-center items-center">
+                    <PersonOutlineOutlinedIcon
+                      sx={{
+                        fontSize: {
+                          xs: 50, // 모바일
+                          md: 65, // 태블릿
+                          lg: 80, // 데스크탑
+                        },
+                      }}
+                      className="text-white"
+                    />
+                  </div>
+                )}
+                {/* 이미지 업로드 버튼 */}
+                <label className="absolute bottom-0 right-0 cursor-pointer">
+                  <div className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full bg-gray-100 flex justify-center items-center">
+                    <CameraAltOutlinedIcon
+                      sx={{
+                        fontSize: {
+                          xs: 16, // 모바일: 16px
+                          md: 20, // 태블릿: 20px
+                          lg: 24, // 데스크탑: 24px
+                        },
+                      }}
+                      className="text-gray-700"
+                    />
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
               </div>
             </div>
 
-            {/* 생년월일 */}
-            <div className="flex flex-col space-y-[10px]">
-              <span>생년월일</span>
-              <div className="flex space-x-[5px]">
+            <div className="w-full max-w-sm space-y-[30px] ">
+              {/* 이름 */}
+              <div className="flex flex-col space-y-[10px]">
+                <span>이름(닉네임)</span>
                 <input
-                  name="birthYear"
-                  value={formData.birthYear}
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
-                  className="w-1/3 bg-transparent border-b border-gray-400 pb-1 text-center"
-                />
-                <p>.</p>
-                <input
-                  name="birthMonth"
-                  value={formData.birthMonth}
-                  onChange={handleInputChange}
-                  className="w-1/3 bg-transparent border-b border-gray-400 pb-1 text-center"
-                />
-                <p>.</p>
-                <input
-                  name="birthDay"
-                  value={formData.birthDay}
-                  onChange={handleInputChange}
-                  className="w-1/3 bg-transparent border-b border-gray-400 pb-1 text-center"
+                  placeholder="이름을 입력하세요."
+                  className="w-full bg-transparent border-b border-gray-400 focus:outline-none pb-1"
                 />
               </div>
-            </div>
 
-            {/* 성별 */}
-            <div className="flex flex-col space-y-[10px]">
-              <span>성별</span>
-              <div className="flex space-x-8">
-                <div className="flex items-center space-x-2">
+              {/* 이메일 */}
+              <div className="flex flex-col space-y-[10px]">
+                <span>이메일</span>
+                <div className="flex w-full items-center space-x-2">
                   <input
-                    type="radio"
-                    name="gender"
-                    value="male"
-                    checked={formData.gender === "male"}
+                    name="email"
+                    value={formData.email}
                     onChange={handleInputChange}
+                    className="w-[45%] bg-transparent border-b border-gray-400 pb-1 focus:outline-none"
                   />
-                  <span>남자</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="female"
-                    checked={formData.gender === "female"}
+                  <span className="flex-[1]">@</span>
+                  <select
                     onChange={handleInputChange}
-                  />
-                  <span>여자</span>
+                    className="w-[45%] bg-transparent border-b border-gray-400 pb-1"
+                  >
+                    <option value="선택" className="text-black">
+                      선택
+                    </option>
+                    <option value="gmail" className="text-black">
+                      gmail.com
+                    </option>
+                    <option value="naver" className="text-black">
+                      naver.com
+                    </option>
+                    <option value="daum" className="text-black">
+                      daum.net
+                    </option>
+                    <option value="nate" className="text-black">
+                      nate.com
+                    </option>
+                  </select>
                 </div>
               </div>
-            </div>
-            {/* 버튼 */}
-            <div className="flex flex-col items-center w-full gap-[30px]">
-              <div className="w-full">
-                <Button
-                  text={"비밀번호 변경"}
-                  type={"DEFAULT"}
-                  className="w-full px-8 py-2"
-                  onClick={() => setIsPasswordModalOpen(true)}
-                />
+
+              {/* 생년월일 */}
+              <div className="flex flex-col space-y-[10px]">
+                <span>생년월일</span>
+                <div className="flex space-x-[5px]">
+                  <input
+                    name="birthYear"
+                    value={formData.birthYear}
+                    onChange={handleInputChange}
+                    className="w-1/3 bg-transparent border-b border-gray-400 pb-1 text-center"
+                  />
+                  <p>.</p>
+                  <input
+                    name="birthMonth"
+                    value={formData.birthMonth}
+                    onChange={handleInputChange}
+                    className="w-1/3 bg-transparent border-b border-gray-400 pb-1 text-center"
+                  />
+                  <p>.</p>
+                  <input
+                    name="birthDay"
+                    value={formData.birthDay}
+                    onChange={handleInputChange}
+                    className="w-1/3 bg-transparent border-b border-gray-400 pb-1 text-center"
+                  />
+                </div>
               </div>
-              <div className="w-full">
-                <Button
-                  text={"변경사항 저장"}
-                  type={"DEFAULT"}
-                  className="w-full px-8 py-2"
-                />
+
+              {/* 성별 */}
+              <div className="flex flex-col space-y-[10px]">
+                <span>성별</span>
+                <div className="flex space-x-8">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="male"
+                      checked={formData.gender === "male"}
+                      onChange={handleInputChange}
+                    />
+                    <span>남자</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="female"
+                      checked={formData.gender === "female"}
+                      onChange={handleInputChange}
+                    />
+                    <span>여자</span>
+                  </div>
+                </div>
               </div>
-              <div className="w-full">
-                <button
-                  className="w-full px-6 pb-2 text-white opacity-80"
-                  onClick={() => setIsWithdrawModalOpen(true)}
-                >
-                  <span className=" border-b">회원탈퇴</span>
-                </button>
+              {/* 버튼 */}
+              <div className="flex flex-col items-center w-full gap-[30px]">
+                <div className="w-full">
+                  <Button
+                    text={"비밀번호 변경"}
+                    type={"DEFAULT"}
+                    className="w-full px-8 py-2"
+                    onClick={() => setIsPasswordModalOpen(true)}
+                  />
+                </div>
+                <div className="w-full">
+                  <Button
+                    text={"변경사항 저장"}
+                    type={"DEFAULT"}
+                    className="w-full px-8 py-2"
+                  />
+                </div>
+                <div className="w-full">
+                  <button
+                    className="w-full px-6 pb-2 text-white opacity-80"
+                    onClick={() => setIsWithdrawModalOpen(true)}
+                  >
+                    <span className=" border-b">회원탈퇴</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Layout>
       {/* 비밀번호 변경 모달 */}
       <Modal
         isOpen={isPasswordModalOpen}
