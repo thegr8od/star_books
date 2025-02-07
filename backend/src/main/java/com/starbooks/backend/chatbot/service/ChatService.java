@@ -2,6 +2,8 @@ package com.starbooks.backend.chatbot.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.starbooks.backend.chatbot.repository.ChatHistoryRepository;
@@ -19,30 +21,39 @@ public class ChatService {
     private String apiKey;
 
     private final ChatHistoryRepository chatHistoryRepository;
-    private final RestTemplate restTemplate;
-    private final UserRepository userRepository;  // ✅ JPA 기반 사용자 검증 추가
+    private final RestTemplate restTemplate;  // ✅ 정상적으로 주입됨
+    private final UserRepository userRepository;
 
     private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
+    @PreAuthorize("isAuthenticated()")
     public String chatWithGPT(String email, String message) {
-        // 이메일을 기반으로 사용자 확인
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (userOptional.isEmpty()) {
             return "Error: 사용자를 찾을 수 없습니다.";
         }
 
-        // 기존 대화 기록 가져오기
         List<String> history = chatHistoryRepository.getChatHistory(email);
-
-        // OpenAI API 요청 생성
         String requestBody = createRequestBody(history, message);
-        String responseBody = restTemplate.postForObject(OPENAI_URL, requestBody, String.class);
 
-        // 응답 저장
+        // ✅ HTTP 요청 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);  // ✅ Authorization 헤더 추가
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // ✅ RestTemplate을 사용하여 OpenAI API 호출
+        ResponseEntity<String> response = restTemplate.exchange(
+                OPENAI_URL, HttpMethod.POST, requestEntity, String.class
+        );
+
+        String responseBody = response.getBody();
         chatHistoryRepository.saveChat(email, message, responseBody);
         return responseBody;
     }
 
+    @PreAuthorize("isAuthenticated()")
     public List<String> getChatHistory(String email) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (userOptional.isEmpty()) {
@@ -53,7 +64,7 @@ public class ChatService {
 
     private String createRequestBody(List<String> history, String message) {
         StringBuilder jsonBuilder = new StringBuilder();
-        jsonBuilder.append("{\"model\":\"o3-mini\", \"messages\":[");
+        jsonBuilder.append("{\"model\":\"gpt-4\", \"messages\":[");
         jsonBuilder.append("{\"role\":\"system\",\"content\":\"You are a helpful assistant.\"}");
         for (String msg : history) {
             jsonBuilder.append(",{\"role\":\"user\",\"content\":\"").append(msg).append("\"}");

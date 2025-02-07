@@ -56,7 +56,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 기본적으로 인증 없이 접근 가능한 URL 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("api/member", "api/member/login", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/member", "/api/member/login", "/oauth2/**", "/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // OAuth2 로그인 설정
