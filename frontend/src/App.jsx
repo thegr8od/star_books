@@ -21,6 +21,7 @@ import ColorTest from "./components/ColorTest";
 
 function App() {
   const isHome = location.pathname === "/"; // 홈 페이지 여부 확인
+
   return (
     <div
       className={
@@ -30,6 +31,45 @@ function App() {
       }
     >
       <Routes>
+
+        <Route path="/starbooks">
+          {/* Auth 관련 */}
+          <Route path="" element={<Home />} />
+          <Route path="login" element={<Login />} />
+          <Route path="signup" element={<SignUp />} />
+          {/* MyPage 관련 */}
+          <Route path="mypage/:id" element={<MyPage />} />
+          {/* <Route path="mypage/:id/edit" element={<ProfileEdit />} /> */}
+          <Route path="mypage/edit" element={<ProfileEdit />} />
+          
+          {/* Universe 관련 */}
+          <Route path="universe" element={<Universe />} />
+          <Route path="universe/analysis" element={<UniverseAnalysis />} />
+          {/* Radio 관련 */}
+          <Route path="radio/:id" element={<RadioShow />} />
+          <Route path="radio/list" element={<RadioList />} />
+          {/* Diary 관련 */}
+          <Route path="diary/write" element={<DiaryWrite />} />
+          <Route path="diary/edit/:id" element={<DiaryEdit />} />
+          <Route path="diary/calendar" element={<DiaryCalendar />} />
+          <Route path="diary/monthly/:month" element={<MonthlyDiary />} />\
+          <Route path="diary/stars" element={<DiaryStars />} />{" "}
+          {/* 별 보기 추가 */}
+          {/* Constellation 관련 */}
+          <Route
+            path="constellation/create"
+            element={<ConstellationCreate />}
+          />
+          <Route
+            path="constellation/gallery/:year"
+            element={<ConstellationGallery />}
+          />
+          <Route
+            path="constellation/gallery/:year/detail"
+            element={<ConstellationDetail />}
+          />
+        </Route>
+
         {/* Auth 관련 */}
         <Route path="" element={<Home />} />
         <Route path="login" element={<Login />} />
@@ -61,7 +101,7 @@ function App() {
           element={<ConstellationDetail />}
         />
         {/* TEST용 */}
-        <Route path="color" element={<ColorTest />} />
+        <Route path="color" element={<ColorTest />} />                        
       </Routes>
     </div>
   );
