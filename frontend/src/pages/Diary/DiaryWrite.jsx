@@ -1,31 +1,48 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Layout from "../../components/Layout";
+import { Camera } from "lucide-react";
+import Button from "../../components/Button";
+
 const DiaryWrite = () => {
   const location = useLocation();
   const { emotions } = location.state;
+  const [text, setText] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
 
-  // 날짜, 요일 가져오기
   const getDayInfo = () => {
     const days = ["일", "월", "화", "수", "목", "금", "토", "일"];
-    // 추후 DB에 저장된 날 가져올 수 있도록 수정 필요
     const today = new Date();
-    // 월
     const month = today.getMonth() + 1;
-    // 날짜
     const dayNum = today.getDate();
-    // 요일
     const dayName = days[today.getDay()];
     return { dayNum, dayName, month };
   };
 
   const { dayNum, dayName, month } = getDayInfo();
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCameraClick = () => {
+    fileInputRef.current.click();
+  };
+
   return (
     <Layout>
-      <div className="h-full">
+      <div className="h-full flex flex-col space-y-6 pt-3">
         {/* 날짜 */}
-        <div className="text-white p-3 mb-3">
+        <div className="text-white px-3 text-lg">
           <div className="flex items-baseline gap-2 border-b border-white pb-1 w-fit">
             <span>{month}월</span>
             <span>{dayNum}일</span>
@@ -34,15 +51,68 @@ const DiaryWrite = () => {
         </div>
 
         {/* 콘텐츠 - 흰색 카드 */}
-        <div className="bg-white rounded-lg shadow-md"></div>
+        <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+          {/* 감정 아이콘 */}
+          <div className="flex justify-center">
+            <span className="rounded-full bg-[#7cb3cb] w-6 h-6" />
+          </div>
 
-        {/* 텍스트 입력 */}
+          {/* 텍스트 입력 칸*/}
+          <div className="flex flex-col relative">
+            <textarea
+              className="w-full h-[150px] resize-none border-none focus:outline-none text-gray-800 placeholder-gray-400"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="이곳을 클릭하여 오늘의 이야기를 적어보세요."
+            />
+          </div>
 
-        {/* 이미지 업로드 */}
+          {/* 이미지 업로드 */}
+          <div className="rounded-lg relative">
+            <div
+              className="w-full h-[280px] bg-gray-300 rounded-lg flex items-center justify-center cursor-pointer"
+              onClick={handleCameraClick}
+            >
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="preview"
+                  className="max-h-full max-w-full object-contain rounded-lg p-2"
+                />
+              ) : (
+                <div className="flex items-center justify-center">
+                  <Camera className="w-8 h-8 text-white" />
+                </div>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </div>
 
-        {/* 해시태그 */}
+          {/* 해시태그 */}
+          <div className="flex flex-wrap gap-3 px-2">
+            {emotions.map((emotion, index) => (
+              <span key={index} className="text-gray-500">
+                #{emotion}
+              </span>
+            ))}
+          </div>
+        </div>
 
         {/* 버튼 */}
+        <div className="flex justify-center gap-10 pt-1">
+          <div className="w-[120px]">
+            <Button text="취소" type="PREV" className="w-full py-2" />
+          </div>
+          <div className="w-[120px]">
+            <Button text="게시" type="NEXT" className="w-full py-2" />
+          </div>
+        </div>
       </div>
     </Layout>
   );
