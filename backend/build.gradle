@@ -38,6 +38,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    //웹소켓
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'com.neovisionaries:nv-websocket-client:2.14'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
     // AWS
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
     // 필요 시, 직접 S3 SDK 추가
@@ -80,6 +85,9 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
     testImplementation 'org.mockito:mockito-core:3.6.28'
     testImplementation 'org.mockito:mockito-junit-jupiter:3.6.28'
+
+    //라디오
+    implementation 'io.livekit:livekit-server:0.8.3'
 }
 
 tasks.named('test') {
