@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GIT_PROJECT_URL = credentials('GITLAB_PROJECT_URL')
-        GIT_CREDENTIALS_ID = credentials('GITTOKEN')
+        GIT_CREDENTIALS_ID = credentials('SER')
         FRONTEND_BRANCH = credentials('FRONTEND_BRANCH')
         MATTERMOST_WEBHOOK_URL = credentials('FRONT_MESSAGE')
         NGINX_CONTAINER_NAME = credentials('NGINX_CONTAINER_NAME')
