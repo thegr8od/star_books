@@ -93,38 +93,40 @@ pipeline {
     post {
         success {
             script {
-                def jsonMessage = """{
-                    "attachments": [{
-                        "text": "**✅ Backend Build 성공**\\n\\n- 상태: SUCCESS\\n\\n- [🔗 상세 정보](${env.BUILD_URL})",
-                        "color": "#00FF00"
-                    }]
-                }"""
+                withCredentials([string(credentialsId: 'BACKEND_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL')]) {
+                    def jsonMessage = """{
+                        "attachments": [{
+                            "text": "**✅ Backend Build 성공**\\n\\n- 상태: SUCCESS\\n\\n- [🔗 상세 정보](${env.BUILD_URL})",
+                            "color": "#00FF00"
+                        }]
+                    }"""
 
-                sh """
-                cat <<EOF > mattermost_payload.json
-                ${jsonMessage}
-                EOF
-                curl -X POST -H "Content-Type: application/json" --data @mattermost_payload.json '${MATTERMOST_WEBHOOK_URL}'
-                rm -f mattermost_payload.json
-                """
+                    sh """
+                    echo '${jsonMessage}' > mattermost_payload.json
+                    cat mattermost_payload.json
+                    curl -X POST -H "Content-Type: application/json" --data @mattermost_payload.json '${MATTERMOST_WEBHOOK_URL}'
+                    rm -f mattermost_payload.json
+                    """
+                }
             }
         }
         failure {
             script {
-                def jsonMessage = """{
-                    "attachments": [{
-                        "text": "**❌ Backend Build 실패**\\n\\n- 상태: FAILURE\\n\\n- [🔗 상세 정보](${env.BUILD_URL}/console) ",
-                        "color": "#FF0000"
-                    }]
-                }"""
+                withCredentials([string(credentialsId: 'BACKEND_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL')]) {
+                    def jsonMessage = """{
+                        "attachments": [{
+                            "text": "**❌ Backend Build 실패**\\n\\n- 상태: FAILURE\\n\\n- [🔗 상세 정보](${env.BUILD_URL}/console) ",
+                            "color": "#FF0000"
+                        }]
+                    }"""
 
-                sh """
-                cat <<EOF > mattermost_payload.json
-                ${jsonMessage}
-                EOF
-                curl -X POST -H "Content-Type: application/json" --data @mattermost_payload.json '${MATTERMOST_WEBHOOK_URL}'
-                rm -f mattermost_payload.json
-                """
+                    sh """
+                    echo '${jsonMessage}' > mattermost_payload.json
+                    cat mattermost_payload.json
+                    curl -X POST -H "Content-Type: application/json" --data @mattermost_payload.json '${MATTERMOST_WEBHOOK_URL}'
+                    rm -f mattermost_payload.json
+                    """
+                }
             }
         }
     }
