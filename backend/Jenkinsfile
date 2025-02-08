@@ -26,9 +26,9 @@ pipeline {
                         string(credentialsId: 'NAVER_CLIENT_ID', variable: 'NAVER_CLIENT_ID'),
                         string(credentialsId: 'NAVER_CLIENT_SECRET', variable: 'NAVER_CLIENT_SECRET'),
                         string(credentialsId: 'GOOGLE_CLIENT_ID', variable: 'GOOGLE_CLIENT_ID'),
-                        string(credentialsId: 'GOOGLE_CLIENT_SECRET', variable: 'GOOGLE_CLIENT_SECRET')
-                        string(credentialsId: 'DOCKER_CONTAINER_NAME', variable: 'DOCKER_CONTAINER_NAME')
-                        string(credentialsId: 'DOCKER_IMAGE_NAME', variable: 'DOCKER_IMAGE_NAME')
+                        string(credentialsId: 'GOOGLE_CLIENT_SECRET', variable: 'GOOGLE_CLIENT_SECRET'),
+                        string(credentialsId: 'DOCKER_CONTAINER_NAME', variable: 'DOCKER_CONTAINER_NAME'),
+                        string(credentialsId: 'DOCKER_IMAGE_NAME', variable: 'DOCKER_IMAGE_NAME'),
                         string(credentialsId: 'DOCKER_PORT', variable: 'DOCKER_PORT')
                     ]) {
                         env.MATTERMOST_WEBHOOK_URL = MATTERMOST_WEBHOOK_URL
