@@ -60,7 +60,7 @@ pipeline {
                 def message = """{
                     "text": "✅ *Frontend Build 성공*\n- 상태: ${currentBuild.result}\n- 상세 정보: ${env.BUILD_URL}"
                 }"""
-                sh "curl -X POST -H 'Content-Type: application/json' -d '${message}' ${MATTERMOST_WEBHOOK_URL}"
+                sh "curl -X POST -H 'Content-Type: application/json' -d '${message}' ${env.MATTERMOST_WEBHOOK_URL}"
             }
         }
         failure {
@@ -68,7 +68,7 @@ pipeline {
                 def message = """{
                     "text": "❌ *Frontend Build 실패*\n- 상태: ${currentBuild.result}\n- 상세 정보: ${env.BUILD_URL}/console"
                 }"""
-                sh "curl -X POST -H 'Content-Type: application/json' -d '${message}' ${MATTERMOST_WEBHOOK_URL}"
+                sh "curl -X POST -H 'Content-Type: application/json' -d '${message}' ${env.MATTERMOST_WEBHOOK_URL}"
             }
         }
     }
