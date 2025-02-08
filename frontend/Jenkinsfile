@@ -62,7 +62,8 @@ pipeline {
             script {
                 def buildResult = currentBuild.result ?: 'SUCCESS'
                 def jsonMessage = """{
-                    "text": "✅ *Frontend Build 성공*\\n\\n- 상태: ${buildResult}"
+                    "text": "✅ *Frontend Build 성공*
+                    - 상태: ${buildResult}"
                 }"""
 
                 sh """
@@ -76,7 +77,8 @@ pipeline {
             script {
                 def buildResult = currentBuild.result ?: 'FAILURE'
                 def jsonMessage = """{
-                    "text": "❌ *Frontend Build 실패*\\n\\n- 상태: ${buildResult}"
+                    "text": "❌ *Frontend Build 실패*
+                    - 상태: ${buildResult}"
                 }"""
 
                 sh """
