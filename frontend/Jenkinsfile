@@ -50,7 +50,7 @@ pipeline {
                     mkdir -p "$HOST_DIST_PATH"
                     docker cp frontend-container:/dist/. "$HOST_DIST_PATH"/
                     docker cp "$HOST_DIST_PATH"/. "$NGINX_CONTAINER_NAME":"$DIST_PATH"/
-                    docker rm frontend-container
+                    docker restart "$NGINX_CONTAINER_NAME"
                     '''
                 }
             }
@@ -60,34 +60,30 @@ pipeline {
     post {
         success {
             script {
-                sh '''#!/bin/bash
-                if [ -z "$MATTERMOST_WEBHOOK_URL" ]; then
-                    echo "Error: MATTERMOST_WEBHOOK_URL is not set"
-                    exit 1
-                fi
-                echo "MATTERMOST_WEBHOOK_URL: $MATTERMOST_WEBHOOK_URL"
-                curl -X POST -H "Content-Type: application/json" --data @- "$MATTERMOST_WEBHOOK_URL" <<EOF
-                {
-                    "text": "✅ *Frontend Build 성공*\n- 상태: ${currentBuild.result}\n- 상세 정보: ${env.BUILD_URL}"
-                }
-                EOF
-                '''
+                def buildResult = currentBuild.result ?: 'SUCCESS'
+                def jsonMessage = """{
+                    "text": "✅ *Frontend Build 성공*\n- 상태: ${buildResult}\n- 상세 정보: ${env.BUILD_URL}"
+                }"""
+
+                sh """
+                echo '${jsonMessage}' > mattermost_payload.json
+                curl -X POST -H "Content-Type: application/json" --data @mattermost_payload.json '${MATTERMOST_WEBHOOK_URL}'
+                rm -f mattermost_payload.json
+                """
             }
         }
         failure {
             script {
-                sh '''#!/bin/bash
-                if [ -z "$MATTERMOST_WEBHOOK_URL" ]; then
-                    echo "Error: MATTERMOST_WEBHOOK_URL is not set"
-                    exit 1
-                fi
-                echo "MATTERMOST_WEBHOOK_URL: $MATTERMOST_WEBHOOK_URL"
-                curl -X POST -H "Content-Type: application/json" --data @- "$MATTERMOST_WEBHOOK_URL" <<EOF
-                {
-                    "text": "❌ *Frontend Build 실패*\n- 상태: ${currentBuild.result}\n- 상세 정보: ${env.BUILD_URL}/console"
-                }
-                EOF
-                '''
+                def buildResult = currentBuild.result ?: 'FAILURE'
+                def jsonMessage = """{
+                    "text": "❌ *Frontend Build 실패*\n- 상태: ${buildResult}\n- 상세 정보: ${env.BUILD_URL}/console"
+                }"""
+
+                sh """
+                echo '${jsonMessage}' > mattermost_payload.json
+                curl -X POST -H "Content-Type: application/json" --data @mattermost_payload.json '${MATTERMOST_WEBHOOK_URL}'
+                rm -f mattermost_payload.json
+                """
             }
         }
     }
