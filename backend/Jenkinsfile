@@ -95,7 +95,10 @@ pipeline {
             script {
                 def jsonMessage = """{
                     "attachments": [{
-                        "text": "**✅ Backend Build 성공**\\n\\n- 상태: SUCCESS\\n\\n- [🔗 상세 정보](${env.BUILD_URL})",
+                        "text": """
+**✅ Backend Build 성공**
+- 상태: SUCCESS
+- [🔗 상세 정보](${env.BUILD_URL})""",
                         "color": "#00FF00"
                     }]
                 }"""
