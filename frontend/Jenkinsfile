@@ -33,7 +33,7 @@ pipeline {
                 script {
                     dir('frontend') {  
                         sh '''#!/bin/bash
-                        docker build -t ${env.FRONTEND_IMAGE_NAME} .
+                        docker build -t "$FRONTEND_IMAGE_NAME" .
                         '''
                     }
                 }
@@ -45,12 +45,12 @@ pipeline {
                 script {
                     sh '''#!/bin/bash
                     docker rm -f frontend-container || true
-                    docker create --name frontend-container ${env.FRONTEND_IMAGE_NAME}
-                    docker exec ${env.NGINX_CONTAINER_NAME} rm -rf ${env.DIST_PATH}/*
-                    rm -rf ${env.HOST_DIST_PATH}
-                    mkdir -p ${env.HOST_DIST_PATH}
-                    docker cp frontend-container:/dist/. ${env.HOST_DIST_PATH}/
-                    docker cp ${env.HOST_DIST_PATH}/. ${env.NGINX_CONTAINER_NAME}:${env.DIST_PATH}/
+                    docker create --name frontend-container "$FRONTEND_IMAGE_NAME"
+                    docker exec "$NGINX_CONTAINER_NAME" rm -rf "$DIST_PATH"/*
+                    rm -rf "$HOST_DIST_PATH"
+                    mkdir -p "$HOST_DIST_PATH"
+                    docker cp frontend-container:/dist/. "$HOST_DIST_PATH"/
+                    docker cp "$HOST_DIST_PATH"/. "$NGINX_CONTAINER_NAME":"$DIST_PATH"/
                     docker rm frontend-container
                     '''
                 }
