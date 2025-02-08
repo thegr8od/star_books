@@ -96,7 +96,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'BACKEND_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL')]) {
                     def jsonMessage = """{
                         "attachments": [{
-                            "text": "**✅ Backend Build 성공**\\n\\n- 상태: SUCCESS\\n\\n- [🔗 상세 정보](${env.BUILD_URL})",
+                            "text": "**✅ Backend Build 성공**\\\\n- 상태: SUCCESS\\\\n- [🔗 상세 정보](${env.BUILD_URL})",
                             "color": "#00FF00"
                         }]
                     }"""
@@ -115,7 +115,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'BACKEND_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL')]) {
                     def jsonMessage = """{
                         "attachments": [{
-                            "text": "**❌ Backend Build 실패**\\n\\n- 상태: FAILURE\\n\\n- [🔗 상세 정보](${env.BUILD_URL}/console) ",
+                            "text": "**❌ Backend Build 실패**\\\\n- 상태: FAILURE\\\\n- [🔗 상세 정보](${env.BUILD_URL}/console) ",
                             "color": "#FF0000"
                         }]
                     }"""
