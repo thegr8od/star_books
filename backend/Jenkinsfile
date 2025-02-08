@@ -18,7 +18,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([
-                        string(credentialsId: 'MATTERMOST_WEBHOOK_URL', variable: 'MATTERMOST_WEBHOOK_URL'),
+                        string(credentialsId: 'BACKEND_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL'),
                         string(credentialsId: 'DB_URL', variable: 'DB_URL'),
                         string(credentialsId: 'DB_USER', variable: 'DB_USER'),
                         string(credentialsId: 'DB_PASSWORD', variable: 'DB_PASSWORD'),
