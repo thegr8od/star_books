@@ -2,22 +2,39 @@ pipeline {
     agent any
 
     environment {
-        GIT_PROJECT_URL = credentials('GITLAB_PROJECT_URL')
-        GIT_CREDENTIALS_ID = credentials('SER')
-        FRONTEND_BRANCH = credentials('FRONTEND_BRANCH')
-        MATTERMOST_WEBHOOK_URL = credentials('FRONT_MESSAGE')
-        NGINX_CONTAINER_NAME = credentials('NGINX_CONTAINER_NAME')
-        FRONTEND_IMAGE_NAME = credentials('FRONTEND_IMAGE_NAME')
-        DIST_PATH = credentials('DIST_PATH')
-        HOST_DIST_PATH = credentials('HOST_DIST_PATH')
+        FRONTEND_BRANCH = 'feature-frontend'
     }
 
     stages {
+        stage('Load Credentials') {
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'FRONT_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL'),
+                        string(credentialsId: 'NGINX_CONTAINER_NAME', variable: 'NGINX_CONTAINER_NAME'),
+                        string(credentialsId: 'FRONTEND_IMAGE_NAME', variable: 'FRONTEND_IMAGE_NAME'),
+                        string(credentialsId: 'DIST_PATH', variable: 'DIST_PATH'),
+                        string(credentialsId: 'HOST_DIST_PATH', variable: 'HOST_DIST_PATH')
+                    ]) {
+
+                        env.MATTERMOST_WEBHOOK_URL = MATTERMOST_WEBHOOK_URL
+                        env.NGINX_CONTAINER_NAME = NGINX_CONTAINER_NAME
+                        env.FRONTEND_IMAGE_NAME = FRONTEND_IMAGE_NAME
+                        env.DIST_PATH = DIST_PATH
+                        env.HOST_DIST_PATH = HOST_DIST_PATH
+
+                    }
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
                     dir('frontend') {  
-                        sh 'docker build -t ${env.FRONTEND_IMAGE_NAME} .'  // Build Docker image
+                        sh '''#!/bin/bash
+                        docker build -t ${env.FRONTEND_IMAGE_NAME} .
+                        '''
                     }
                 }
             }
@@ -26,7 +43,7 @@ pipeline {
         stage('Deploy Frontend') {
             steps {
                 script {
-                    sh '''
+                    sh '''#!/bin/bash
                     docker rm -f frontend-container || true
                     docker create --name frontend-container ${env.FRONTEND_IMAGE_NAME}
                     docker exec ${env.NGINX_CONTAINER_NAME} rm -rf ${env.DIST_PATH}/*
@@ -44,18 +61,24 @@ pipeline {
     post {
         success {
             script {
-                def message = """{
+                sh '''#!/bin/bash
+                curl -X POST -H "Content-Type: application/json" --data @- <<EOF
+                {
                     "text": "✅ *Frontend Build 성공*\n- 상태: ${currentBuild.result}\n- 상세 정보: ${env.BUILD_URL}"
-                }"""
-                sh "curl -X POST -H 'Content-Type: application/json' -d '${message}' ${env.MATTERMOST_WEBHOOK_URL}"
+                }
+                EOF
+                ''' > "$MATTERMOST_WEBHOOK_URL"
             }
         }
         failure {
             script {
-                def message = """{
+                sh '''#!/bin/bash
+                curl -X POST -H "Content-Type: application/json" --data @- <<EOF
+                {
                     "text": "❌ *Frontend Build 실패*\n- 상태: ${currentBuild.result}\n- 상세 정보: ${env.BUILD_URL}/console"
-                }"""
-                sh "curl -X POST -H 'Content-Type: application/json' -d '${message}' ${env.MATTERMOST_WEBHOOK_URL}"
+                }
+                EOF
+                ''' > "$MATTERMOST_WEBHOOK_URL"
             }
         }
     }
