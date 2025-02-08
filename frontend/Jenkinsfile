@@ -16,13 +16,11 @@ pipeline {
                         string(credentialsId: 'DIST_PATH', variable: 'DIST_PATH'),
                         string(credentialsId: 'HOST_DIST_PATH', variable: 'HOST_DIST_PATH')
                     ]) {
-
                         env.MATTERMOST_WEBHOOK_URL = MATTERMOST_WEBHOOK_URL
                         env.NGINX_CONTAINER_NAME = NGINX_CONTAINER_NAME
                         env.FRONTEND_IMAGE_NAME = FRONTEND_IMAGE_NAME
                         env.DIST_PATH = DIST_PATH
                         env.HOST_DIST_PATH = HOST_DIST_PATH
-
                     }
                 }
             }
@@ -45,7 +43,8 @@ pipeline {
                 script {
                     sh '''#!/bin/bash
                     docker rm -f frontend-container || true
-                    docker create --name frontend-container "$FRONTEND_IMAGE_NAME"
+                    docker create --name frontend-container "$FRONTEND_IMAGE_NAME" || { echo "Error: Container creation failed"; exit 1; }
+                    docker start frontend-container || { echo "Error: Failed to start container"; exit 1; }
                     docker exec "$NGINX_CONTAINER_NAME" rm -rf "$DIST_PATH"/*
                     rm -rf "$HOST_DIST_PATH"
                     mkdir -p "$HOST_DIST_PATH"
@@ -62,23 +61,33 @@ pipeline {
         success {
             script {
                 sh '''#!/bin/bash
-                curl -X POST -H "Content-Type: application/json" --data @- <<EOF
+                if [ -z "$MATTERMOST_WEBHOOK_URL" ]; then
+                    echo "Error: MATTERMOST_WEBHOOK_URL is not set"
+                    exit 1
+                fi
+                echo "MATTERMOST_WEBHOOK_URL: $MATTERMOST_WEBHOOK_URL"
+                curl -X POST -H "Content-Type: application/json" --data @- "$MATTERMOST_WEBHOOK_URL" <<EOF
                 {
                     "text": "✅ *Frontend Build 성공*\n- 상태: ${currentBuild.result}\n- 상세 정보: ${env.BUILD_URL}"
                 }
                 EOF
-                ''' > "$MATTERMOST_WEBHOOK_URL"
+                '''
             }
         }
         failure {
             script {
                 sh '''#!/bin/bash
-                curl -X POST -H "Content-Type: application/json" --data @- <<EOF
+                if [ -z "$MATTERMOST_WEBHOOK_URL" ]; then
+                    echo "Error: MATTERMOST_WEBHOOK_URL is not set"
+                    exit 1
+                fi
+                echo "MATTERMOST_WEBHOOK_URL: $MATTERMOST_WEBHOOK_URL"
+                curl -X POST -H "Content-Type: application/json" --data @- "$MATTERMOST_WEBHOOK_URL" <<EOF
                 {
                     "text": "❌ *Frontend Build 실패*\n- 상태: ${currentBuild.result}\n- 상세 정보: ${env.BUILD_URL}/console"
                 }
                 EOF
-                ''' > "$MATTERMOST_WEBHOOK_URL"
+                '''
             }
         }
     }
