@@ -36,17 +36,68 @@ function DiaryStars() {
   const [stars, setStars] = useState(sampleWorryStars);
   const [isEdit, setIsEdit] = useState(false);
   const [originalStars, setOriginalStars] = useState(null);
+  const [selectedStar, setSelectedStar] = useState(null);
+  const [modifiedStars, setModifiedStars] = useState({});
+
+  // 드래그 앤 드롭 (별 위치 업데이트)
+  const handleStarDrag = (e) => {
+    if (!isEdit || selectedStar === null) return;
+
+    const container = document.querySelector(".star-container");
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    const newX = Math.max(0, Math.min(100, x));
+    const newY = Math.max(0, Math.min(100, y));
+
+    setStars((prev) => prev.map((star) => (star.id === selectedStar ? { ...star, x: newX, y: newY } : star)));
+
+    setModifiedStars((prev) => ({
+      ...prev,
+      [selectedStar]: {
+        x: newX,
+        y: newY,
+      },
+    }));
+  };
+
+  // 드래그 앤 드롭 (마우스 이벤트 처리)
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      handleStarDrag(e);
+    };
+
+    const handleMouseUp = () => {
+      setSelectedStar(null);
+    };
+
+    if (selectedStar !== null) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [selectedStar, isEdit]);
 
   // 편집 시작
   const handleEdit = () => {
     setOriginalStars([...stars]);
     setIsEdit(true);
+    setModifiedStars({}); 
   };
 
   // 변경 저장
   const handleSave = () => {
     setIsEdit(false);
     setOriginalStars(null);
+    setModifiedStars({}); 
   };
 
   // 편집 취소
@@ -54,13 +105,14 @@ function DiaryStars() {
     setStars(originalStars);
     setIsEdit(false);
     setOriginalStars(null);
+    setModifiedStars({}); 
   };
 
   return (
     <Layout>
       <div className="h-[calc(100vh-2rem)] flex flex-col">
         {/* 별 영역 */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative star-container">
           <div className="absolute left-1/2 -translate-x-1/2 text-center">
             <div className="text-white/60 text-xs">별들의 이야기가 시작되는 곳.</div>
             <div className="text-white/60 text-xs">당신의 별은 어떤 빛을 띄나요?</div>
@@ -78,10 +130,16 @@ function DiaryStars() {
               }}
             >
               <div
-                className="w-2 h-2 rounded-full animate-[pulse_2s_ease-in-out_infinite]"
+                className={`w-2 h-2 rounded-full animate-[pulse_2s_ease-in-out_infinite] ${isEdit ? "cursor-move" : ""}`}
                 style={{
                   background: `radial-gradient(circle at center, white 0%, ${star.color} 50%, transparent 100%)`,
                   boxShadow: `0 0 5px ${star.color}, 0 0 10px white`,
+                }}
+                onMouseDown={(e) => {
+                  if (isEdit) {
+                    e.preventDefault();
+                    setSelectedStar(star.id);
+                  }
                 }}
               />
             </div>
