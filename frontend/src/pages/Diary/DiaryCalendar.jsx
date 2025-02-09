@@ -42,31 +42,33 @@ function DiaryCalendar() {
 
   return (
     <Layout>
-      {/* 날짜 */}
-      <Header
-        className="mb-6"
-        title={formatDate.toDisplay(currentDate)}
-        titleClassName="text-base md:text-lg font-semibold"
-        leftChild={
-          <button onClick={handlePrevMonth}>
-            <KeyboardArrowLeft />
-          </button>
-        }
-        rightChild={
-          <button onClick={handleNextMonth} disabled={new Date(currentDate.getFullYear(), currentDate.getMonth() + 1) > today}>
-            <KeyboardArrowRight />
-          </button>
-        }
-      />
+      <div className="h-[calc(100vh-2rem)] flex flex-col">
+        {/* 날짜 */}
+        <Header
+          className="mb-6"
+          title={formatDate.toDisplay(currentDate)}
+          titleClassName="text-base md:text-lg font-semibold"
+          leftChild={
+            <button onClick={handlePrevMonth}>
+              <KeyboardArrowLeft />
+            </button>
+          }
+          rightChild={
+            <button onClick={handleNextMonth} disabled={new Date(currentDate.getFullYear(), currentDate.getMonth() + 1) > today}>
+              <KeyboardArrowRight />
+            </button>
+          }
+        />
 
-      {/* 메인 */}
-      {activeTab === 1 ? <DiaryStars /> : <DiaryCalendarStyle currentMonth={currentDate} />}
+        {/* 메인 */}
+        <div className="flex-1"> {activeTab === 1 ? <DiaryStars /> : <DiaryCalendarStyle currentMonth={currentDate} />}</div>
 
-      {/* 버튼 */}
-      <div className="flex justify-center items-center mt-3 space-x-8">
-        <Button text="나의 별" type={`${activeTab === 1 ? "NEXT" : "PREV"}`} onClick={() => setActiveTab(1)} className="w-24 h-9 text-sm" />
-        <Button text={<Add />} type="DEFAULT" className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent" onClick={() => setShowModal(!showModal)} />
-        <Button text="캘린더" type={`${activeTab === 2 ? "NEXT" : "PREV"}`} onClick={() => setActiveTab(2)} className="w-24 h-9 text-sm" />
+        {/* 버튼 */}
+        <div className="flex justify-center items-center mt-3 space-x-8">
+          <Button text="나의 별" type={`${activeTab === 1 ? "NEXT" : "PREV"}`} onClick={() => setActiveTab(1)} className="w-24 h-9 text-sm" />
+          <Button text={<Add />} type="DEFAULT" className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent" onClick={() => setShowModal(!showModal)} />
+          <Button text="캘린더" type={`${activeTab === 2 ? "NEXT" : "PREV"}`} onClick={() => setActiveTab(2)} className="w-24 h-9 text-sm" />
+        </div>
       </div>
 
       <MoodSurvey isOpen={showModal} onClose={() => setShowModal(false)} />

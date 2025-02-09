@@ -90,14 +90,14 @@ function DiaryStars() {
   const handleEdit = () => {
     setOriginalStars([...stars]);
     setIsEdit(true);
-    setModifiedStars({}); 
+    setModifiedStars({});
   };
 
   // 변경 저장
   const handleSave = () => {
     setIsEdit(false);
     setOriginalStars(null);
-    setModifiedStars({}); 
+    setModifiedStars({});
   };
 
   // 편집 취소
@@ -105,15 +105,15 @@ function DiaryStars() {
     setStars(originalStars);
     setIsEdit(false);
     setOriginalStars(null);
-    setModifiedStars({}); 
+    setModifiedStars({});
   };
 
   return (
-    <Layout>
-      <div className="h-[calc(100vh-2rem)] flex flex-col">
+    <>
+      <div className="flex flex-col h-full">
         {/* 별 영역 */}
-        <div className="flex-1 relative star-container">
-          <div className="absolute left-1/2 -translate-x-1/2 text-center">
+        <div className="flex-1 relative star-container border border-gray-700">
+          <div className="absolute left-1/2 -translate-x-1/2 text-center mt-3">
             <div className="text-white/60 text-xs">별들의 이야기가 시작되는 곳.</div>
             <div className="text-white/60 text-xs">당신의 별은 어떤 빛을 띄나요?</div>
           </div>
@@ -164,23 +164,23 @@ function DiaryStars() {
               </div>
             )}
           </div>
-        </div>
 
-        <style jsx global>{`
-          @keyframes pulse {
-            0%,
-            100% {
-              transform: scale(1);
-              opacity: 1;
+          <style jsx global>{`
+            @keyframes pulse {
+              0%,
+              100% {
+                transform: scale(1);
+                opacity: 1;
+              }
+              50% {
+                transform: scale(0.8);
+                opacity: 0.8;
+              }
             }
-            50% {
-              transform: scale(0.8);
-              opacity: 0.8;
-            }
-          }
-        `}</style>
+          `}</style>
+        </div>
       </div>
-    </Layout>
+    </>
   );
 }
 
