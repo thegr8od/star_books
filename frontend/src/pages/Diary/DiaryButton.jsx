@@ -1,18 +1,17 @@
 import Button from "../../components/Button";
-import { Link } from "react-router-dom";
 import { useState } from "react";
 import MoodSurvey from "./MoodSurvey";
+import { Add } from "@mui/icons-material";
 
-function DiaryCalendarButton() {
+function DiaryButton({ activeTab, setActiveTab }) {
   const [showModal, setShowModal] = useState(false);
+
   return (
     <>
-      <div className="flex justify-center mt-10">
-        <Link to="/starbooks/diary/stars">
-          <Button text="나의 별" type="PREV" className="px-8 py-2 rounded-full text-sm" />
-        </Link>
-        <Button imgSrc="../../../icons/plus2.png" type="PREV" className="px-1 py-1 mx-10 rounded-full " onClick={() => setShowModal(!showModal)} />
-        <Button text=" 캘린더" type="NEXT" className="px-8 py-2rounded-full text-sm" />
+      <div className="flex justify-center items-center mt-3 space-x-8">
+        <Button text="나의 별" type={`${activeTab === 1 ? "NEXT" : "PREV"}`} onClick={() => setActiveTab(1)} className="w-24 h-9 text-sm" />
+        <Button text={<Add />} type="DEFAULT" className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent" onClick={() => setShowModal(!showModal)} />
+        <Button text="캘린더" type={`${activeTab === 2 ? "NEXT" : "PREV"}`} onClick={() => setActiveTab(2)} className="w-24 h-9 text-sm" />
       </div>
 
       <MoodSurvey isOpen={showModal} onClose={() => setShowModal(false)} />
@@ -20,4 +19,4 @@ function DiaryCalendarButton() {
   );
 }
 
-export default DiaryCalendarButton;
+export default DiaryButton;
