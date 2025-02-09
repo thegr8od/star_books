@@ -8,4 +8,5 @@ import lombok.Setter;
 public class ChatRequest {
     private String email;
     private String message;
+    private int persona;
 }

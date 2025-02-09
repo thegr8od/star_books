@@ -3,7 +3,6 @@ package com.starbooks.backend.chatbot.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.starbooks.backend.chatbot.service.ChatService;
 import com.starbooks.backend.chatbot.dto.ChatRequest;
@@ -21,9 +20,15 @@ public class ChatController {
 
     @PostMapping("/message")
     public ResponseEntity<String> chat(@RequestBody ChatRequest request) {
-        log.debug("🔹 [ChatController] 요청된 사용자: {}", request.getEmail());
+        log.debug("🔹 [ChatController] 요청된 사용자: {}, 페르소나: {}",
+                request.getEmail(), request.getPersona());
 
-        String response = chatService.chatWithGPT(request.getEmail(), request.getMessage());
+        // 새로 추가된 persona 정보도 넘겨준다
+        String response = chatService.chatWithGPT(
+                request.getEmail(),
+                request.getMessage(),
+                request.getPersona()
+        );
         return ResponseEntity.ok(response);
     }
 
