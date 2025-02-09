@@ -78,9 +78,10 @@ function DiaryStars() {
               }}
             >
               <div
-                className="w-2 h-2 rounded-full"
+                className="w-2 h-2 rounded-full animate-[pulse_2s_ease-in-out_infinite]"
                 style={{
-                  backgroundColor: star.color,
+                  background: `radial-gradient(circle at center, white 0%, ${star.color} 50%, transparent 100%)`,
+                  boxShadow: `0 0 5px ${star.color}, 0 0 10px white`,
                 }}
               />
             </div>
@@ -106,6 +107,20 @@ function DiaryStars() {
             )}
           </div>
         </div>
+
+        <style jsx global>{`
+          @keyframes pulse {
+            0%,
+            100% {
+              transform: scale(1);
+              opacity: 1;
+            }
+            50% {
+              transform: scale(0.8);
+              opacity: 0.8;
+            }
+          }
+        `}</style>
       </div>
     </Layout>
   );
