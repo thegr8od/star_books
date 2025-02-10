@@ -37,7 +37,6 @@ const sampleWorryStars = [
 const sampleConnections = [];
 
 function Test() {
-  // =========== 상태 관리 ===========
   const [currentDate, setCurrentDate] = useState(new Date()); // 현재 선택된 날짜
   const [stars, setStars] = useState(sampleWorryStars); // 별들의 위치와 정보
   const [connections, setConnections] = useState(sampleConnections); // 별들 사이의 연결선
@@ -73,22 +72,36 @@ function Test() {
   };
 
   // =========== 별 조작 관련 함수 ===========
+  // x,y 값을 0 ~ 10으로 변환시키는 함수
+  const convertTo10Scale = (value) => {
+    return Math.round((value / 100) * 10);
+  };
+
   // 별 드래그 처리
   const handleStarDrag = (e, starId) => {
-    if (!isEditing || editMode !== "move") return; // 이동 모드일 때만 드래그 가능
+    // 편집모드, 이동모드 아니면 함수 실행 중단
+    if (!isEditing || editMode !== "move") return;
 
+    // star container 요소 위치, 크기 정보 가져옴
     const container = document.querySelector(".star-container");
     const rect = container.getBoundingClientRect();
-    // 마우스 위치를 백분율 좌표로 변환
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
 
+    // 마우스의 현재 위치(clientX, clientY)에서 컨테이너의 위치를 빼고
+    // 컨테이너의 크기로 나눠서 0~100 사이의 백분율 값으로 변환
+    // 정수 단위로만 이동 반올림
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+
+    // 좌표값 로깅 추가
+    console.log(`Star ${starId} Position:`, { x, y });
+
+    // stars 배열을 순회하면서 드래그 중인 별의 위치만 업데이트
     setStars((prev) =>
       prev.map((star) =>
         star.id === starId
           ? {
               ...star,
-              // 화면 범위를 벗어나지 않도록 제한
+              // x와 y값이 0~100 사이를 벗어나지 않도록 제한
               x: Math.max(0, Math.min(100, x)),
               y: Math.max(0, Math.min(100, y)),
             }
@@ -97,46 +110,52 @@ function Test() {
     );
   };
 
-  // 별 클릭 시 연결 처리
   const handleStarClick = (starId) => {
-    if (!isEditing || editMode !== "connect") return; // 연결 모드일 때만 동작
+    if (!isEditing || editMode !== "connect") return;
 
     if (connectingStars.length === 0) {
-      // 첫 번째 별 선택
+      // 아직 선택된 별이 없으면 첫 번째 별로 선택
       setConnectingStars([starId]);
     } else if (connectingStars[0] !== starId) {
       // 두 번째 별 선택 시 연결 생성
       const newConnection = {
         id: Date.now(),
-        star1: connectingStars[0],
-        star2: starId,
+        star1: connectingStars[0], // 첫번째 별
+        star2: starId, // 두번째 별
       };
+      // connections 배열에 새 연결 추가
       setConnections((prev) => [...prev, newConnection]);
-      setConnectingStars([]); // 연결 완료 후 선택 초기화
+      // 선택된 별 초기화
+      setConnectingStars([]);
     }
   };
 
   // =========== 드래그 이벤트 처리 ===========
   useEffect(() => {
-    // 마우스 이동 중 별 위치 업데이트
+    // 1. 이벤트 핸들러 함수들 정의의
+    // 마우스를 움직일 때마다 실행되는 함수
     const handleMouseMove = (e) => {
+      // 선택된 별이 있을 때만 위치 업데이트
       if (selectedStar !== null) {
         handleStarDrag(e, selectedStar);
       }
     };
 
-    // 마우스 놓을 때 드래그 종료
+    // 마우스 놓을 때 실행되는 함수
     const handleMouseUp = () => {
       setSelectedStar(null);
     };
 
-    // 드래그 중일 때만 이벤트 리스너 등록
+    // 2. 별이 선택되었을 때만 이벤트 리스너 등록
     if (selectedStar !== null) {
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
     }
 
-    // 컴포넌트 언마운트 또는 드래그 종료 시 이벤트 리스너 제거
+    // 3. 정리 함수
+    // 3-1. 컴포넌트가 화면에서 사라질 때
+    // 3-2. selectedStar가 변경될 때
+    // => 등록했던 이벤트 리스너들을 제거거
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
@@ -145,27 +164,31 @@ function Test() {
 
   // 편집 모드 시작
   const startEditing = () => {
-    setOriginalStars([...stars]); // 현재 상태 백업
+    // 현재 별과 연결 상태를 백업
+    setOriginalStars([...stars]);
     setOriginalConnections([...connections]);
-    setIsEditing(true);
-    setEditMode("move"); // 기본값은 이동 모드
+    setIsEditing(true); // 편집 활성화
+    setEditMode("move"); // 기본 편집 모드 -> 이동
   };
 
   // =========== 편집 모드 관련 함수 ===========
   // 변경사항 저장
   const handleSave = () => {
-    setIsEditing(false);
-    setConnectingStars([]);
+    setIsEditing(false); // 편집 비활성화
+    setConnectingStars([]); // 연결중이던 별들 초기화
+    // 백업해뒀던 거 초기화
     setOriginalStars(null);
     setOriginalConnections(null);
   };
 
   // 변경사항 취소
   const handleCancel = () => {
-    setStars(originalStars); // 백업해둔 상태로 복구
+    // 별, 연결 백업해둔 상태로 복구
+    setStars(originalStars);
     setConnections(originalConnections);
     setIsEditing(false);
     setConnectingStars([]);
+    // 백업해둔거 초기화
     setOriginalStars(null);
     setOriginalConnections(null);
   };
@@ -195,7 +218,7 @@ function Test() {
         </div>
 
         {/* 별자리 영역 */}
-        <div className="relative flex-1 w-full star-container mb-4 overflow-hidden">
+        <div className="relative flex-1 w-full star-container mb-4">
           {/* 안내 텍스트 */}
           <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center">
             <div className="text-white/60 text-xs whitespace-nowrap">
