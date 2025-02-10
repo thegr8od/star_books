@@ -31,7 +31,8 @@ pipeline {
                         string(credentialsId: 'DOCKER_IMAGE_NAME', variable: 'DOCKER_IMAGE_NAME'),
                         string(credentialsId: 'DOCKER_PORT', variable: 'DOCKER_PORT'),
                         string(credentialsId: 'REDIS_HOST', variable: 'REDIS_HOST'),
-                        string(credentialsId: 'OPENAI_REMOVED', variable: 'OPENAI_REMOVED')
+                        string(credentialsId: 'OPENAI_REMOVED', variable: 'OPENAI_REMOVED'),
+                        string(credentialsId: 'REDIS_PASSWORD', variable: 'REDIS_PASSWORD')
                     ]) {
                         env.MATTERMOST_WEBHOOK_URL = MATTERMOST_WEBHOOK_URL
                         env.DB_URL = DB_URL
@@ -47,6 +48,7 @@ pipeline {
                         env.DOCKER_PORT = DOCKER_PORT
                         env.REDIS_HOST = REDIS_HOST
                         env.OPENAI_REMOVED = OPENAI_REMOVED
+                        env.REDIS_PASSWORD = REDIS_PASSWORD
                     }
                 }
             }
@@ -89,6 +91,7 @@ pipeline {
                         -e "GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}" \
                         -e "OPENAI_REMOVED=${OPENAI_REMOVED}" \
                         -e "REDIS_HOST=${REDIS_HOST}" \
+                        -e "REDIS_PASSWORD=${REDIS_PASSWORD}" \
                         ${DOCKER_IMAGE_NAME}
                     """
                 }
