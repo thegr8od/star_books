@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Layout from "../../components/Layout";
+import { useState, useEffect } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import CreateIcon from "@mui/icons-material/Create";
 import OpenWithIcon from "@mui/icons-material/OpenWith";
 
+// 샘플 데이터
 const sampleWorryStars = [
   {
     id: 1,
@@ -36,98 +38,46 @@ const sampleWorryStars = [
 // 초기 연결선 배열 (비어있음)
 const sampleConnections = [];
 
-function Test() {
-  const [currentDate, setCurrentDate] = useState(new Date()); // 현재 선택된 날짜
-  const [stars, setStars] = useState(sampleWorryStars); // 별들의 위치와 정보
-  const [connections, setConnections] = useState(sampleConnections); // 별들 사이의 연결선
-  const [isEditing, setIsEditing] = useState(false); // 편집 모드 활성화 여부
-  const [editMode, setEditMode] = useState("move"); // 편집 모드 타입: 'move'(이동) 또는 'connect'(연결)
-  const [selectedStar, setSelectedStar] = useState(null); // 드래그 중인 별의 ID
-  const [connectingStars, setConnectingStars] = useState([]); // 연결 중인 별들의 ID 배열
-  const [originalStars, setOriginalStars] = useState(null); // 편집 전 별들의 원본 상태
-  const [originalConnections, setOriginalConnections] = useState(null); // 편집 전 연결선들의 원본 상태
-
-  // =========== 날짜 네비게이션 함수 ===========
-  // 이전 달로 이동
-  const handlePrevMonth = () => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev);
-      newDate.setMonth(prev.getMonth() - 1);
-      return newDate;
-    });
-  };
-
-  // 다음 달로 이동
-  const handleNextMonth = () => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev);
-      newDate.setMonth(prev.getMonth() + 1);
-      return newDate;
-    });
-  };
-
-  // 년월 포맷팅 (예: "2025년 1월")
-  const formatYearMonth = (date) => {
-    return `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
-  };
-
-  // =========== 별 조작 관련 함수 ===========
-  // x,y 값을 0 ~ 10으로 변환시키는 함수
-  const convertTo10Scale = (value) => {
-    return Math.round((value / 100) * 10);
-  };
+function ConstellationHandDetail() {
+  const { year, month } = useParams();
+  const navigate = useNavigate();
+  const [stars, setStars] = useState(sampleWorryStars);
+  const [connections, setConnections] = useState(sampleConnections);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editMode, setEditMode] = useState("move");
+  const [selectedStar, setSelectedStar] = useState(null);
+  const [connectingStars, setConnectingStars] = useState([]);
+  const [originalStars, setOriginalStars] = useState(null);
+  const [originalConnections, setOriginalConnections] = useState(null);
 
   // 별 드래그 처리
+  // 별 드래그 시작 함수
+  const handleMouseDown = (e, starId) => {
+    if (!isEditing || editMode !== "move") return;
+    e.stopPropagation(); // 이벤트 버블링 방지
+    setSelectedStar(starId);
+  };
+
+  // 별 드래그 처리 함수
   const handleStarDrag = (e, starId) => {
-    // 편집모드, 이동모드 아니면 함수 실행 중단
     if (!isEditing || editMode !== "move") return;
 
-    // star container 요소 위치, 크기 정보 가져옴
     const container = document.querySelector(".star-container");
     const rect = container.getBoundingClientRect();
 
-    // 마우스의 현재 위치(clientX, clientY)에서 컨테이너의 위치를 빼고
-    // 컨테이너의 크기로 나눠서 0~100 사이의 백분율 값으로 변환
-    // 정수 단위로만 이동 반올림
-    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
-    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+    // 마우스 위치를 퍼센트로 변환
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    // 좌표값 로깅 추가
-    console.log(`Star ${starId} Position:`, { x, y });
+    // 범위를 0~100으로 제한
+    const clampedX = Math.max(0, Math.min(100, x));
+    const clampedY = Math.max(0, Math.min(100, y));
 
-    // stars 배열을 순회하면서 드래그 중인 별의 위치만 업데이트
     setStars((prev) =>
       prev.map((star) =>
-        star.id === starId
-          ? {
-              ...star,
-              // x와 y값이 0~100 사이를 벗어나지 않도록 제한
-              x: Math.max(0, Math.min(100, x)),
-              y: Math.max(0, Math.min(100, y)),
-            }
-          : star
+        star.id === starId ? { ...star, x: clampedX, y: clampedY } : star
       )
     );
-  };
-
-  const handleStarClick = (starId) => {
-    if (!isEditing || editMode !== "connect") return;
-
-    if (connectingStars.length === 0) {
-      // 아직 선택된 별이 없으면 첫 번째 별로 선택
-      setConnectingStars([starId]);
-    } else if (connectingStars[0] !== starId) {
-      // 두 번째 별 선택 시 연결 생성
-      const newConnection = {
-        id: Date.now(),
-        star1: connectingStars[0], // 첫번째 별
-        star2: starId, // 두번째 별
-      };
-      // connections 배열에 새 연결 추가
-      setConnections((prev) => [...prev, newConnection]);
-      // 선택된 별 초기화
-      setConnectingStars([]);
-    }
   };
 
   // =========== 드래그 이벤트 처리 ===========
@@ -160,7 +110,7 @@ function Test() {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [selectedStar]);
+  }, [selectedStar, isEditing, editMode]);
 
   // 편집 모드 시작
   const startEditing = () => {
@@ -195,40 +145,9 @@ function Test() {
 
   return (
     <Layout>
-      <div className="flex flex-col h-screen">
-        {/* 상단 헤더 */}
-        <div className="flex flex-col items-center pt-8 pb-4">
-          <div className="flex items-center justify-center w-full">
-            <button
-              onClick={handlePrevMonth}
-              className="text-white text-2xl px-4"
-            >
-              {"<"}
-            </button>
-            <div className="text-white text-3xl font-bold">
-              {formatYearMonth(currentDate)}
-            </div>
-            <button
-              onClick={handleNextMonth}
-              className="text-white text-2xl px-4"
-            >
-              {">"}
-            </button>
-          </div>
-        </div>
-
+      <div className="flex flex-col h-full">
         {/* 별자리 영역 */}
-        <div className="relative flex-1 w-full star-container mb-4">
-          {/* 안내 텍스트 */}
-          <div className="absolute top-8 left-1/2 -translate-x-1/2 text-center">
-            <div className="text-white/60 text-xs whitespace-nowrap">
-              별들의 이야기가 시작되는 곳.
-            </div>
-            <div className="text-white/60 text-xs mt-0.5 whitespace-nowrap">
-              당신의 별은 어떤 빛을 띄나요?
-            </div>
-          </div>
-
+        <div className="relative flex-1 w-full star-container py-16 px-8 min-h-[60vh] ">
           {/* 별들 사이의 연결선 */}
           {connections.map((connection) => {
             const star1 = stars.find((s) => s.id === connection.star1);
@@ -255,21 +174,19 @@ function Test() {
           {stars.map((star) => (
             <div
               key={star.id}
-              className={`absolute cursor-${
-                isEditing && editMode === "move" ? "move" : "pointer"
+              className={`absolute ${
+                isEditing
+                  ? "cursor-pointer pointer-events-auto"
+                  : "pointer-events-none"
               }`}
               style={{
                 left: `${star.x}%`,
                 top: `${star.y}%`,
                 transform: "translate(-50%, -50%)",
+                zIndex: 1,
               }}
+              onMouseDown={(e) => handleMouseDown(e, star.id)}
               onClick={() => handleStarClick(star.id)}
-              onMouseDown={(e) => {
-                if (isEditing && editMode === "move") {
-                  e.preventDefault();
-                  setSelectedStar(star.id);
-                }
-              }}
             >
               <div className="relative group">
                 {/* 중심 별 */}
@@ -289,7 +206,7 @@ function Test() {
 
                 {/* 빛나는 효과 (내부 링) */}
                 <div
-                  className="absolute top-1/2 left-1/2 w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                  className="absolute top-1/2 left-1/2 w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
                   style={{
                     background: `radial-gradient(circle at center, ${star.color}50 0%, transparent 100%)`,
                     animation: isEditing ? "none" : "starGlow 3s infinite",
@@ -298,7 +215,7 @@ function Test() {
 
                 {/* 빛나는 효과 (외부 링) */}
                 <div
-                  className="absolute top-1/2 left-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                  className="absolute top-1/2 left-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
                   style={{
                     background: `radial-gradient(circle at center, ${star.color}30 0%, transparent 100%)`,
                     animation: isEditing ? "none" : "starGlow 4s infinite",
@@ -320,66 +237,52 @@ function Test() {
             </div>
           ))}
         </div>
-
         {/* 하단 네비게이션 */}
-        <div className="relative flex flex-col">
+        <div className="relative h-[120px] flex items-center justify-end px-4">
           {/* 편집 버튼들 */}
-          <div className="absolute right-4 bottom-24">
+          <div className="flex gap-1.5">
             {!isEditing ? (
               <button
                 onClick={startEditing}
-                className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none"
+                className="bg-[#1F1F59] text-white w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none"
               >
-                <EditIcon fontSize="15" />
+                <EditIcon sx={{ fontSize: { xs: 20, md: 25, lg: 30 } }} />
               </button>
             ) : (
               <div className="flex gap-1.5">
                 <button
                   onClick={handleCancel}
-                  className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none"
+                  className="bg-[#1F1F59] text-white w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none"
                 >
-                  <CloseIcon fontSize="15" />
+                  <CloseIcon sx={{ fontSize: { xs: 20, md: 25, lg: 30 } }} />
                 </button>
                 <button
                   onClick={() => setEditMode("move")}
-                  className={`bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none ${
+                  className={`bg-[#1F1F59] text-white w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none ${
                     editMode === "move" ? "ring-2 ring-white" : ""
                   }`}
                 >
-                  <OpenWithIcon fontSize="15" />
+                  <OpenWithIcon sx={{ fontSize: { xs: 20, md: 25, lg: 30 } }} />
                 </button>
                 <button
                   onClick={() => {
                     setEditMode("connect");
                     setConnectingStars([]);
                   }}
-                  className={`bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none ${
+                  className={`bg-[#1F1F59] text-white w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none ${
                     editMode === "connect" ? "ring-2 ring-white" : ""
                   }`}
                 >
-                  <CreateIcon fontSize="15" />
+                  <CreateIcon sx={{ fontSize: { xs: 20, md: 25, lg: 30 } }} />
                 </button>
                 <button
                   onClick={handleSave}
-                  className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none"
+                  className="bg-[#1F1F59] text-white w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center transition-all hover:bg-[#2a2a7a] select-none"
                 >
-                  <CheckIcon fontSize="15" />
+                  <CheckIcon sx={{ fontSize: { xs: 20, md: 25, lg: 30 } }} />
                 </button>
               </div>
             )}
-          </div>
-
-          {/* 하단 네비게이션 바 */}
-          <div className="flex justify-between items-center px-4 py-4 w-full">
-            <button className="bg-[#1F1F59]/50 text-white/70 px-8 py-3 rounded-full cursor-not-allowed select-none">
-              나의 별
-            </button>
-            <button className="bg-[#5252E9]/50 text-white/70 w-14 h-14 rounded-full flex items-center justify-center text-3xl font-light cursor-not-allowed select-none">
-              +
-            </button>
-            <button className="bg-[#1F1F59]/50 text-white/70 px-8 py-3 rounded-full cursor-not-allowed select-none">
-              캘린더
-            </button>
           </div>
         </div>
       </div>
@@ -412,4 +315,4 @@ function Test() {
   );
 }
 
-export default Test;
+export default ConstellationHandDetail;
