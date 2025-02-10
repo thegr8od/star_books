@@ -17,11 +17,11 @@ const CalendarTile = ({children, marker}) => {
   );
 };
 
-const DiaryCalendarStyle = () => {
+const DiaryCalendarStyle = ({currentMonth}) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  // const [currentMonth, setCurrentMonth] = useState(new Date());
   const [diaryEntries, setDiaryEntries] = useState(() => {
     // localStorage에서 데이터 불러오기
     const savedEntries = localStorage.getItem('diaryEntries');
@@ -128,7 +128,7 @@ const DiaryCalendarStyle = () => {
   return (
     <div className="flex flex-col items-center w-full h-full">
       <div className="w-full max-w-xs md:max-w-lg lg:max-w-xl">
-        <Header className='mb-6'
+        {/* <Header className='mb-6'
           title={formatMonthDisplay()}
           titleClassName="text-base md:text-lg font-semibold"
           leftChild={
@@ -150,7 +150,7 @@ const DiaryCalendarStyle = () => {
               imgClassName="w-4 h-4 md:w-5 md:h-5"
             />
           }
-        />
+        /> */}
         
         <div className="grid grid-cols-7 gap-1 md:gap-2">
           {weekdays.map((day) => (
