@@ -25,7 +25,7 @@ const sampleData = [
     date: "2025-01-05",
     color: "#9370DB",
     content: "우울하다~~~~",
-    hashtags: ["울적한", "슬픈", "외로운", "불안한"],
+    hashtags: ["울적한", "슬픈", "외로운", "불안한", "울적한", "슬픈", "외로운", "불안한"],
     image: null,
   },
 ];
@@ -53,44 +53,48 @@ const MonthlyDiary = () => {
 
   // 삭제
   const handleDelete = (id) => {
-    console.log("Delete diary:", id);
+    if (window.confirm("정말 일기를 삭제하시겠습니까?")) {
+      setDiaries(diaries.filter((diary) => diary.id !== id));
+    }
   };
 
   return (
     <Layout>
-      <div className=" bg-white rounded-t-3xl">
+      <div className="bg-white rounded-t-3xl">
         {diaries.map((diary) => {
           const { date, weekday } = formatDate(diary.date);
 
           return (
-            <div key={diary.id} className="p-3 space-y-3">
+            <div key={diary.id} className="px-8 py-3 space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: diary.color }} />
-                  <span className="text-gray-600">{date}</span>
-                  <span className="text-gray-400">{weekday}</span>
+                <div className="flex space-x-3">
+                  <div className="w-5 h-5 rounded-full" style={{ backgroundColor: diary.color }} />
+                  <div>
+                    <p className="text-gray-600">{date}</p>
+                    <p className="text-xs text-gray-400">{weekday}</p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button onClick={() => handleEdit(diary.id)} className="p-1 text-gray-400 hover:text-gray-700">
-                    <EditIcon fontSize="small" />
+                <div className="flex items-center space-x-4">
+                  <button onClick={() => handleEdit(diary.id)} className="text-gray-400 hover:text-gray-700">
+                    <EditIcon fontSize="inherit" />
                   </button>
-                  <button onClick={() => handleDelete(diary.id)} className="p-1 text-gray-400 hover:text-gray-700">
-                    <DeleteIcon fontSize="small" />
+                  <button onClick={() => handleDelete(diary.id)} className="text-gray-400 hover:text-gray-700">
+                    <DeleteIcon fontSize="inherit" />
                   </button>
                 </div>
               </div>
 
-              <p>{diary.content}</p>
+              <p className="text-sm">{diary.content}</p>
 
               {diary.image && (
                 <div>
-                  <img src={diary.image} alt="Diary entry" className="w-full h-48 object-cover rounded-lg" />
+                  <img src={diary.image} alt="Diary img" className="h-40 object-cover rounded-lg" />
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-x-3 gap-y-2">
+              <div className="flex flex-wrap gap-2">
                 {diary.hashtags.map((tag, index) => (
-                  <span key={index} className="text-sm text-gray-500">
+                  <span key={index} className="text-xs text-gray-400">
                     #{tag}
                   </span>
                 ))}
