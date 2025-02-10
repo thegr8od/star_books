@@ -8,7 +8,7 @@ import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
 import { useRef, useState } from "react";
 
 function RadioList() {
-  const categories = ["전체", "일상", "음악", "취미", "건강", "연애", "기타"];
+  const categories = ["전체", "일상", "연애", "음악", "취미", "건강", "기타"];
   const scrollContainerRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const categoryColors = {
@@ -123,7 +123,7 @@ function RadioList() {
                 WebkitOverflowScrolling: "touch",
               }}
             >
-              {Object.keys(categoryColors).map((category) => (
+              {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
@@ -134,7 +134,7 @@ function RadioList() {
                       : "border border-white hover:bg-gray-800"
                   }`}
                 >
-                  {category}
+                  # {category}
                 </button>
               ))}
             </div>
@@ -149,29 +149,46 @@ function RadioList() {
         </div>
 
         {/* 트랙 */}
-        <div className="grid grid-cols-2 gap-3">
-          {tracks.map((track) => (
-            <div key={track.id} className="flex flex-col items-center">
-              <div
-                className={`relative w-full aspect-square rounded-full 
-              bg-gradient-to-tl ${categoryColors[track.category].bg}
-              border-2 ${categoryColors[track.category].border}
-              flex items-center justify-center mb-2 transition-colors opacity-90`}
-              >
-                <PlayArrowOutlinedIcon className="w-8 h-8" />
+        <div className="mx-[-0.5rem] sm:mx-[-1.5rem]">
+          <div className="grid grid-cols-2">
+            {filteredTracks.map((track) => (
+              <div key={track.id} className="p-4 sm:p-2">
+                {/* 패딩으로 간격 조정 */}
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`relative w-full aspect-square rounded-full 
+                    bg-gradient-to-tl ${categoryColors[track.category].bg}
+                    border-2 ${categoryColors[track.category].border}
+                    flex items-center justify-center mb-2 transition-colors opacity-90`}
+                  >
+                    <PlayArrowOutlinedIcon className="w-8 h-8" />
+                  </div>
+                  <p className="text-sm text-center">{track.title}</p>
+                  <div className="flex space-x-2 text-xs text-gray-300">
+                    <div>
+                      <span>카테고리 : {track.category}</span>
+                      <div className="flex space-x-2">
+                        <span>
+                          <FavoriteOutlinedIcon
+                            sx={{ fontSize: 15 }}
+                            className="m-[3px]"
+                          />
+                          {track.likes}
+                        </span>
+                        <span>
+                          <ChatBubbleOutlinedIcon
+                            sx={{ fontSize: 15 }}
+                            className="m-[3px]"
+                          />
+                          {track.comments}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="text-sm text-center">{track.title}</p>
-              <div className="flex space-x-2 text-xs text-gray-300">
-                <span>
-                  <FavoriteOutlinedIcon sx={{ fontSize: 15 }} /> {track.likes}
-                </span>
-                <span>
-                  <ChatBubbleOutlinedIcon sx={{ fontSize: 15 }} />{" "}
-                  {track.comments}
-                </span>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </Layout>
