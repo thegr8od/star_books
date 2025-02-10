@@ -1,24 +1,32 @@
 package com.starbooks.backend.config;
 
+import com.starbooks.backend.config.JwtAuthenticationFilter;
 import com.starbooks.backend.common.JwtTokenProvider;
 import com.starbooks.backend.oauth2.handler.CustomOAuth2AuthenticationSuccessHandler;
 import com.starbooks.backend.oauth2.service.CustomOAuth2UserService;
+import com.starbooks.backend.config.CustomUserDetailsService;
 import com.starbooks.backend.user.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -38,36 +46,40 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(CustomUserDetailsService customUserDetailsService,
-                                                       PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(customUserDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        return new ProviderManager(authProvider);
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
-//
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF, CORS 설정 (필요에 따라 조정)
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable())
-                // 세션을 STATELESS로 설정
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // 기본적으로 인증 없이 접근 가능한 URL 설정
+
+                // 🔥 인증 실패 시 HTML이 아닌 JSON 응답 반환
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                )
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("api/member", "api/member/login", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        // ✅ 회원가입 및 로그인은 인증 없이 접근 가능
+                        .requestMatchers("/api/member", "/api/member/login", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        // ✅ API 엔드포인트 보호 (JWT 인증 필요)
+                        .requestMatchers(HttpMethod.POST, "/api/chat/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                // OAuth2 로그인 설정
+
+                // ✅ OAuth2 로그인 설정 (웹 애플리케이션 로그인)
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
-                        // 위에서 구현한 별도 핸들러를 successHandler로 등록
                         .successHandler(customOAuth2AuthenticationSuccessHandler)
                 )
-                // JWT 인증 필터를 UsernamePasswordAuthenticationFilter 전에 추가
+
+                // ✅ JWT 필터 추가 (OAuth2와 별개로 처리)
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -76,5 +88,16 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService);
+    }
+
+    // ✅ 인증 실패 시 HTML 반환이 아닌 JSON 응답으로 처리
+    public static class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+        @Override
+        public void commence(HttpServletRequest request, HttpServletResponse response,
+                             org.springframework.security.core.AuthenticationException authException) throws IOException {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"인증이 필요합니다.\"}");
+        }
     }
 }
