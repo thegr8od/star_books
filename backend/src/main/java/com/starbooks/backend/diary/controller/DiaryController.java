@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/api/diaries")
+@RequestMapping("/api/diary")
 @RequiredArgsConstructor
 public class DiaryController {
 
@@ -24,7 +24,7 @@ public class DiaryController {
             @Valid @RequestBody DiaryCreateRequest request,
             @AuthenticationPrincipal User user) {
         DiaryResponse response = diaryService.createDiary(request, user);
-        return ResponseEntity.created(URI.create("/api/diaries/" + response.diaryId()))
+        return ResponseEntity.created(URI.create("/api/diary/" + response.diaryId()))
                 .body(response);
     }
 
