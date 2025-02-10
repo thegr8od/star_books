@@ -12,12 +12,15 @@ function RadioList() {
   const scrollContainerRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const categoryColors = {
-    일상: { bg: "from-gray-200 to-blue-500", border: "border-cyan-500" },
-    음악: { bg: "from-gray-200 to-red-500", border: "border-orange-500" },
-    취미: { bg: "from-gray-200 to-green-500", border: "border-emerald-500" },
-    건강: { bg: "from-gray-200 to-yellow-500", border: "border-amber-500" },
-    연애: { bg: "from-gray-200 to-pink-500", border: "border-rose-500" },
-    기타: { bg: "from-gray-200 to-indigo-500", border: "border-violet-500" },
+    일상: { bg: "from-amber-100 to-amber-300", border: "border-amber-500" },
+    연애: { bg: "from-rose-100 to-rose-300", border: "border-rose-500" },
+    음악: { bg: "from-purple-100 to-purple-300", border: "border-purple-500" },
+    취미: {
+      bg: "from-emerald-100 to-emerald-300",
+      border: "border-emerald-500",
+    },
+    건강: { bg: "from-sky-100 to-sky-300", border: "border-sky-500" },
+    기타: { bg: "from-gray-50 to-gray-300", border: "border-gray-500" },
   };
   const tracks = [
     {
