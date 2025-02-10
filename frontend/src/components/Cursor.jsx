@@ -1,5 +1,3 @@
-//Cursor.jsx
-
 import { useEffect, useState, useRef } from "react";
 
 const Cursor = () => {
