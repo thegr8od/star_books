@@ -4,6 +4,8 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import OpenWithIcon from "@mui/icons-material/OpenWith";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 // 샘플 데이터
 const sampleWorryStars = [
@@ -40,6 +42,7 @@ function DiaryStars() {
   const [selectedStar, setSelectedStar] = useState(null); // 편집시 선택된 별
   const [modifiedStars, setModifiedStars] = useState({}); // 편집시 이동된 별(axios 요청 데이터)
 
+  const [showConnections, setShowConnections] = useState(true); // 선 표시
   // ==================================================== move 모드 ====================================================
   // 드래그 앤 드롭 (별 위치 업데이트)
   const handleStarDrag = (e) => {
@@ -124,7 +127,7 @@ function DiaryStars() {
 
   // 선 클릭 시 삭제하는 함수
   const handleConnectionClick = (connection) => {
-    setConnections((prev) => prev.filter((data) => !(data.start === connection.start && data.end === connection.end))); 
+    setConnections((prev) => prev.filter((data) => !(data.start === connection.start && data.end === connection.end)));
   };
 
   // ==================================================== 편집 함수 ====================================================
@@ -170,33 +173,34 @@ function DiaryStars() {
 
         {/* 선 (svg) */}
         <svg className="absolute w-full h-full pointer-events-none">
-          {connections.map((connection) => {
-            // 연결된 시작과 끝 별 찾기
-            const startStar = stars.find((star) => star.id === connection.start);
-            const endStar = stars.find((star) => star.id === connection.end);
-            // 연결된 별이 없으면 선 그리지 않음 (별이 삭제된 경우)
-            if (!startStar || !endStar) return null;
+          {(isEdit || showConnections) &&
+            connections.map((connection) => {
+              // 연결된 시작과 끝 별 찾기
+              const startStar = stars.find((star) => star.id === connection.start);
+              const endStar = stars.find((star) => star.id === connection.end);
+              // 연결된 별이 없으면 선 그리지 않음 (별이 삭제된 경우)
+              if (!startStar || !endStar) return null;
 
-            return (
-              <line
-                key={`${connection.start}-${connection.end}`}
-                x1={`${startStar.x}%`} // 시작 별 x 좌표
-                y1={`${startStar.y}%`} // 시작 별 y 좌표
-                x2={`${endStar.x}%`} // 끝 별 x 좌표
-                y2={`${endStar.y}%`} // 끝 별 y 좌표
-                stroke="rgba(255, 255, 255, 0.25)" // 선 색상
-                strokeWidth="1" // 선 두께
-                className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
-                style={{ pointerEvents: isEdit && editMode === "connect" ? "auto" : "none" }} // 편집 모드에서만 클릭 가능
-                onClick={() => {
-                  // 편집 상태이거나 connect 모드일 경우 -> 선 삭제 함수
-                  if (isEdit && editMode === "connect") {
-                    handleConnectionClick(connection);
-                  }
-                }}
-              />
-            );
-          })}
+              return (
+                <line
+                  key={`${connection.start}-${connection.end}`}
+                  x1={`${startStar.x}%`} // 시작 별 x 좌표
+                  y1={`${startStar.y}%`} // 시작 별 y 좌표
+                  x2={`${endStar.x}%`} // 끝 별 x 좌표
+                  y2={`${endStar.y}%`} // 끝 별 y 좌표
+                  stroke="rgba(255, 255, 255, 0.25)" // 선 색상
+                  strokeWidth="1" // 선 두께
+                  className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
+                  style={{ pointerEvents: isEdit && editMode === "connect" ? "auto" : "none" }} // 편집 모드에서만 클릭 가능
+                  onClick={() => {
+                    // 편집 상태이거나 connect 모드일 경우 -> 선 삭제 함수
+                    if (isEdit && editMode === "connect") {
+                      handleConnectionClick(connection);
+                    }
+                  }}
+                />
+              );
+            })}
         </svg>
 
         {/* 별 */}
@@ -237,10 +241,17 @@ function DiaryStars() {
       {/* ========== 편집 버튼 영역 ========== */}
       <div className="h-8 mt-1 ml-auto">
         {!isEdit ? (
-          // 편집 시작 버튼
-          <button onClick={handleEdit} className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center">
-            <EditIcon fontSize="small" />
-          </button>
+          <div className="flex gap-1.5">
+            {/* 선 표시 버튼 */}
+            <button onClick={() => setShowConnections((prev) => !prev)} className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center">
+              {showConnections ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
+            </button>
+
+            {/* 편집 시작 버튼 */}
+            <button onClick={handleEdit} className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center">
+              <EditIcon fontSize="small" />
+            </button>
+          </div>
         ) : (
           <div className="flex gap-1.5">
             {/* move 버튼 */}
