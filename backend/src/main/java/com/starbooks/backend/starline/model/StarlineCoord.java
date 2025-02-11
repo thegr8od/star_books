@@ -35,11 +35,20 @@ public class StarlineCoord {
 
     /** 생성 일시 (수정 불가) */
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     /** 업데이트 일시 (수정 시 변경) */
     @Column(nullable = false)
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
+
+    /**
+     * 엔티티가 DB에 저장되기 전 실행되는 메서드
+     */
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
     /**
      * 엔티티가 업데이트될 때 자동으로 updatedAt 변경
