@@ -1,5 +1,4 @@
 import { useState } from "react";
-import defaultImage from "../.././assets/default-profile.png";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
