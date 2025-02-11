@@ -1,79 +1,195 @@
-import { useState } from "react";
-import Layout from "../../components/Layout";
-import DiaryStars from "./DiaryStars";
-import DiaryCalendarStyle from "./DiaryCalendarStyle";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { DIARY_ENTRIES } from "../../data/diaryData";
 
-import Header from "../.././components/Header";
-import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
-
-import Button from "../../components/Button";
-import MoodSurvey from "./MoodSurvey";
-import { Add } from "@mui/icons-material";
-
-function DiaryCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState(2);
-  const [showModal, setShowModal] = useState(false);
+const CalendarTile = ({ children, marker }) => {
+  return (
+    <div className="rounded-lg text-xs md:text-sm h-16 text-white relative">
+      {children}
+      {marker && (
+        <div
+          className={`w-2 h-2 rounded-full absolute bottom-2 left-1/2 transform -translate-x-1/2 ${marker.color}`}
+        />
+      )}
+    </div>
+  );
+};
+//상위폴더에 헤더를 넣었기 때문에, props를 주고 받는 로직을 추가해야 할 듯!
+const DiaryCalendarStyle = ({ currentMonth }) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  // const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [diaryEntries, setDiaryEntries] = useState(() => {
+    // localStorage에서 데이터 불러오기
+    const savedEntries = localStorage.getItem("diaryEntries");
+    return savedEntries ? JSON.parse(savedEntries) : DIARY_ENTRIES;
+  });
   const today = new Date();
 
-  // 날짜 변경 핸들러 (이전 달)
-  const handlePrevMonth = () => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev.getFullYear(), prev.getMonth() - 1, prev.getDate());
-      // axios 요청
-      return newDate;
-    });
+  // URL 파라미터 처리
+  useEffect(() => {
+    const date = searchParams.get("date");
+    const month = searchParams.get("month");
+    const color = searchParams.get("color");
+
+    if (date && month && color) {
+      const currentDate = new Date();
+      const newEntry = {
+        id: Date.now(),
+        date: `${currentDate.getFullYear()}-${String(month).padStart(
+          2,
+          "0"
+        )}-${String(date).padStart(2, "0")}`,
+        color: color,
+      };
+
+      setDiaryEntries((prev) => {
+        const updatedEntries = [...prev, newEntry];
+        localStorage.setItem("diaryEntries", JSON.stringify(updatedEntries));
+        return updatedEntries;
+      });
+
+      // URL 파라미터 제거
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [searchParams]);
+
+  const daysInMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth() + 1,
+    0
+  ).getDate();
+
+  const firstDayOfMonth = new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth(),
+    1
+  ).getDay();
+
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+
+  const isToday = (day) => {
+    return (
+      today.getDate() === day &&
+      today.getMonth() === currentMonth.getMonth() &&
+      today.getFullYear() === currentMonth.getFullYear()
+    );
   };
 
-  // 날짜 변경 핸들러 (다음 달)
-  const handleNextMonth = () => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev.getFullYear(), prev.getMonth() + 1, prev.getDate());
-      // axios 요청
-      return newDate;
+  const getMarkerForDay = (day) => {
+    const entry = diaryEntries.find((entry) => {
+      const entryDate = new Date(entry.date);
+      return (
+        entryDate.getDate() === day &&
+        entryDate.getMonth() === currentMonth.getMonth() &&
+        entryDate.getFullYear() === currentMonth.getFullYear()
+      );
     });
+
+    return entry ? { color: entry.color } : null;
   };
 
-  // 날짜 포맷 함수
-  const formatDate = {
-    toDisplay: (date) => `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, "0")}월`,
-    toAPI: (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
+  const formatMonthParam = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${year}${month}`;
+  };
+
+  const handleDateClick = (day) => {
+    const selectedDate = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      day
+    );
+    setSelectedDate(selectedDate);
+    const monthParam = formatMonthParam(selectedDate);
+    navigate(`/diary/monthly/${monthParam}`, {
+      state: {
+        selectedDate: selectedDate.getTime(),
+        day: day,
+      },
+    });
   };
 
   return (
-    <Layout>
-      <div className="h-[calc(100vh-2rem)] flex flex-col">
-        {/* 날짜 */}
-        <Header
-          className="mb-6"
-          title={formatDate.toDisplay(currentDate)}
+    <div className="flex flex-col items-center w-full h-full">
+      <div className="w-full max-w-xs md:max-w-lg lg:max-w-xl">
+        {/* <Header className='mb-6'
+          title={formatMonthDisplay()}
           titleClassName="text-base md:text-lg font-semibold"
           leftChild={
-            <button onClick={handlePrevMonth}>
-              <KeyboardArrowLeft />
-            </button>
+            <Button
+              type="DEFAULT"
+              className="px-2 py-2 bg-transparent text-white"
+              onClick={prevMonth}
+              imgSrc="../../../icons/left.png"
+              imgClassName="w-4 h-4 md:w-5 md:h-5"
+            />
           }
           rightChild={
-            <button onClick={handleNextMonth} disabled={new Date(currentDate.getFullYear(), currentDate.getMonth() + 1) > today}>
-              <KeyboardArrowRight />
-            </button>
+            <Button
+              type="DEFAULT"
+              className="px-2 py-2 bg-transparent text-white"
+              onClick={nextMonth}
+              disabled={new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1) > today}
+              imgSrc="../../../icons/right.png"
+              imgClassName="w-4 h-4 md:w-5 md:h-5"
+            />
           }
-        />
+        /> */}
 
-        {/* 메인 */}
-        <div className="flex-1"> {activeTab === 1 ? <DiaryStars /> : <DiaryCalendarStyle currentMonth={currentDate} />}</div>
+        <div className="grid grid-cols-7 gap-1 md:gap-2">
+          {weekdays.map((day) => (
+            <div
+              key={day}
+              className="text-center p-1 text-xs md:text-sm text-white font-medium mb-2"
+            >
+              {day}
+            </div>
+          ))}
 
-        {/* 버튼 */}
-        <div className="flex justify-center items-center mt-3 space-x-8">
-          <Button text="나의 별" type={`${activeTab === 1 ? "NEXT" : "PREV"}`} onClick={() => setActiveTab(1)} className="w-24 h-9 text-sm" />
-          <Button text={<Add />} type="DEFAULT" className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent" onClick={() => setShowModal(!showModal)} />
-          <Button text="캘린더" type={`${activeTab === 2 ? "NEXT" : "PREV"}`} onClick={() => setActiveTab(2)} className="w-24 h-9 text-sm" />
+          {Array(firstDayOfMonth)
+            .fill(null)
+            .map((_, index) => (
+              <div key={`empty-${index}`} />
+            ))}
+
+          {days.map((day) => (
+            <CalendarTile key={day} marker={getMarkerForDay(day)}>
+              <button
+                onClick={() => handleDateClick(day)}
+                className={`
+                  w-full 
+                  h-full 
+                  flex
+                  justify-center
+                  items-start
+                  p-1
+                  rounded-lg
+                  ${
+                    selectedDate.getDate() === day &&
+                    selectedDate.getMonth() === currentMonth.getMonth() &&
+                    selectedDate.getFullYear() === currentMonth.getFullYear()
+                      ? "bg-blue-100 bg-opacity-20"
+                      : ""
+                  } 
+                  ${
+                    isToday(day)
+                      ? "bg-blue-100 bg-opacity-20 border border-white/55 hover:bg-blue-50/50"
+                      : ""
+                  }
+                `}
+              >
+                {day}
+              </button>
+            </CalendarTile>
+          ))}
         </div>
       </div>
-
-      <MoodSurvey isOpen={showModal} onClose={() => setShowModal(false)} />
-    </Layout>
+    </div>
   );
-}
+};
 
-export default DiaryCalendar;
+export default DiaryCalendarStyle;
