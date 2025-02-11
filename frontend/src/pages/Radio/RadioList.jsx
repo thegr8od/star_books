@@ -3,14 +3,17 @@ import Button from "../../components/Button";
 import ArrowBackIosNewOutlinedIcon from "@mui/icons-material/ArrowBackIosNewOutlined";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
-import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
-import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
+import KeyboardVoiceOutlinedIcon from "@mui/icons-material/KeyboardVoiceOutlined";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import TurnedInNotOutlinedIcon from "@mui/icons-material/TurnedInNotOutlined";
+import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
 import { useRef, useState } from "react";
 
 function RadioList() {
   const categories = ["전체", "일상", "연애", "음악", "취미", "건강", "기타"];
   const scrollContainerRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState("전체");
+  const [sortType, setSortType] = useState("latest");
   const categoryColors = {
     일상: { bg: "from-amber-100 to-amber-300", border: "border-amber-500" },
     연애: { bg: "from-rose-100 to-rose-300", border: "border-rose-500" },
@@ -22,6 +25,7 @@ function RadioList() {
     건강: { bg: "from-sky-100 to-sky-300", border: "border-sky-500" },
     기타: { bg: "from-gray-50 to-gray-300", border: "border-gray-500" },
   };
+  // 닉네임 길이 제한 두기(7자)
   const tracks = [
     {
       id: 1,
@@ -30,54 +34,68 @@ function RadioList() {
       comments: 5,
       nickname: "닉네임1",
       category: "음악",
+      createdAt: "2024-02-11",
     },
     {
       id: 2,
       title: "라디오? 레이디오!",
       likes: 15,
-      comments: 3,
       nickname: "닉네임2",
       category: "일상",
+      createdAt: "2024-02-10",
     },
     {
       id: 3,
       title: "라디오? 레이디오!",
       likes: 8,
-      comments: 4,
-      nickname: "닉네임3",
+      nickname: "푸릇푸릇한햄버거",
       category: "취미",
+      createdAt: "2025-01-11",
     },
     {
       id: 4,
       title: "라디오? 레이디오!",
       likes: 20,
-      comments: 7,
       nickname: "닉네임4",
       category: "건강",
+      createdAt: "2025-02-11",
     },
     {
       id: 5,
       title: "라디오? 레이디오!",
       likes: 10,
-      comments: 2,
       nickname: "닉네임5",
       category: "연애",
+      createdAt: "2025-01-01",
     },
     {
       id: 6,
       title: "라디오? 레이디오!",
       likes: 16,
-      comments: 6,
       nickname: "닉네임6",
       category: "기타",
+      createdAt: "2024-12-25",
     },
   ];
 
+  // 트랙 정렬
+  const getSortedTracks = (tracks) => {
+    // 최신순
+    if (sortType === "latest") {
+      // 양수 : b가 더 최신, 음수 : a가 더 최신
+      return [...tracks].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+      // 인기순 -> 실시간 시청자 수에 따라(데이터 어떻게 받는건지 아직 잘 모름)
+    }
+  };
+
   // 선택된 카테고리에 따라 트랙 필터링
-  const filteredTracks =
+  const filteredTracks = getSortedTracks(
     selectedCategory === "전체"
       ? tracks
-      : tracks.filter((track) => track.category === selectedCategory);
+      : tracks.filter((track) => track.category === selectedCategory)
+  );
 
   const scroll = (direction) => {
     const container = scrollContainerRef.current;
@@ -97,14 +115,41 @@ function RadioList() {
 
   return (
     <Layout>
-      <div className=" text-white p-4">
+      <div className=" text-white">
         <div className="mb-8">
-          <h1 className="text-xl font-bold mb-4 text-center">별들의 속삭임</h1>
+          <h1 className="text-xl font-bold mb-6 text-center">별들의 속삭임</h1>
           <Button
             text="🔴 Live 시작"
             type="DEFAULT"
-            className="w-full rounded-full py-2 mb-4 text-center"
+            className="w-full rounded-full py-2 mb-8 text-center"
           />
+          {/* 인기순, 최신순 정렬 버튼 */}
+          <div className="flex mb-6 space-x-2">
+            <button
+              onClick={() => setSortType("popular")}
+              className={`w-1/2 py-1 rounded-full text-[20px] transition-colors
+               ${
+                 sortType === "popular"
+                   ? "bg-white text-black"
+                   : "border border-white hover:bg-gray-600"
+               }   
+                `}
+            >
+              인기순
+            </button>
+            <button
+              onClick={() => setSortType("latest")}
+              className={`w-1/2 py-1 rounded-full text-[20px] transition-colors
+               ${
+                 sortType === "latest"
+                   ? "bg-white text-black"
+                   : "border border-white hover:bg-gray-600"
+               }   
+                `}
+            >
+              최신순
+            </button>
+          </div>
           {/* 카테고리 */}
           <div className="relative mb-6">
             <button
@@ -116,7 +161,7 @@ function RadioList() {
 
             <div
               ref={scrollContainerRef}
-              className="flex gap-4 overflow-x-auto px-12 scrollbar-hide scroll-smooth"
+              className="flex gap-4 overflow-x-auto px-10 scrollbar-hide scroll-smooth"
               style={{
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
@@ -127,11 +172,11 @@ function RadioList() {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-1 rounded-full whitespace-nowrap flex-shrink-0 transition-colors
+                  className={`px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 transition-colors
                   ${
                     selectedCategory === category
                       ? "bg-gray-200 text-black"
-                      : "border border-white hover:bg-gray-800"
+                      : "border border-white hover:bg-gray-600"
                   }`}
                 >
                   # {category}
@@ -149,41 +194,49 @@ function RadioList() {
         </div>
 
         {/* 트랙 */}
-        <div className="mx-[-0.5rem] sm:mx-[-1.5rem]">
-          <div className="grid grid-cols-2">
+        <div className="mx-[-8px] sm:mx-[-24px]">
+          <div className="grid grid-cols-2 gap-4">
             {filteredTracks.map((track) => (
               <div key={track.id} className="p-4 sm:p-2">
-                {/* 패딩으로 간격 조정 */}
                 <div className="flex flex-col items-center">
                   <div
                     className={`relative w-full aspect-square rounded-full 
                     bg-gradient-to-tl ${categoryColors[track.category].bg}
                     border-2 ${categoryColors[track.category].border}
-                    flex items-center justify-center mb-2 transition-colors opacity-90`}
+                    flex items-center justify-center mb-2 transition-colors opacity-90 hover:opacity-100`}
                   >
                     <PlayArrowOutlinedIcon className="w-8 h-8" />
                   </div>
-                  <p className="text-sm text-center">{track.title}</p>
-                  <div className="flex space-x-2 text-xs text-gray-300">
-                    <div>
-                      <span>카테고리 : {track.category}</span>
-                      <div className="flex space-x-2">
-                        <span>
-                          <FavoriteOutlinedIcon
-                            sx={{ fontSize: 15 }}
-                            className="m-[3px]"
-                          />
-                          {track.likes}
+                  <p className="text-sm text-center mb-1">{track.title}</p>
+                  <div className="flex flex-col items-center text-xs text-gray-300 space-y-1">
+                    <span className="flex items-start">
+                      <WidgetsOutlinedIcon
+                        sx={{ fontSize: 15 }}
+                        className="mr-1"
+                      />
+                      {track.category}
+                    </span>
+                    <span className="flex items-start group relative">
+                      <KeyboardVoiceOutlinedIcon
+                        sx={{ fontSize: 15 }}
+                        className="mr-1"
+                      />
+                      {track.nickname.length > 7
+                        ? `${track.nickname.slice(0, 7)}...`
+                        : track.nickname}
+                      {track.nickname.length > 7 && (
+                        <span className="invisible group-hover:visible absolute left-0 top-5 bg-gray-700 text-white px-2 py-1 opacity-80 rounded text-xs whitespace-nowrap">
+                          {track.nickname}
                         </span>
-                        <span>
-                          <ChatBubbleOutlinedIcon
-                            sx={{ fontSize: 15 }}
-                            className="m-[3px]"
-                          />
-                          {track.comments}
-                        </span>
-                      </div>
-                    </div>
+                      )}
+                    </span>
+                    <span className="flex items-start">
+                      <PersonOutlinedIcon
+                        sx={{ fontSize: 15 }}
+                        className="mr-1"
+                      />
+                      {track.likes}
+                    </span>
                   </div>
                 </div>
               </div>
