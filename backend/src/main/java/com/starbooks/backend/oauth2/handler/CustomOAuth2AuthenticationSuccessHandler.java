@@ -72,7 +72,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
                     .password(null) // OAuth2 로그인이므로 비밀번호는 null 처리
                     .nickname(name != null ? name : "Unknown User")
                     .gender(Gender.OTHER) // 기본값 (필요 시 수정)
-                    .kakaoId(null)
+                    .snsAccount(true) // 변경된 필드 (OAuth2 로그인 사용자는 snsAccount = true)
                     .role(Role.member)
                     .isActive(true)
                     .build();
