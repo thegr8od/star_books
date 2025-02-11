@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { Camera } from "lucide-react";
 import Button from "../../components/Button";
@@ -8,20 +8,26 @@ const DiaryWrite = () => {
   const location = useLocation();
   const { emotions } = location.state;
   const [text, setText] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
+  const { diaryData } = location.state || {}; // 일기 목록에서 데이터 넘겨줌
+  const isEditMode = !!diaryData; // 데이터 있으면 true 데이터 없으면 false
+  const [imagePreview, setImagePreview] = useState(null);
+  const [existingImage, setExistingImage] = useState(null);
+  const [content, setContent] = useState("");
 
   const getDayInfo = () => {
     const days = ["일", "월", "화", "수", "목", "금", "토", "일"];
-    const today = new Date();
-    const month = today.getMonth() + 1;
-    const dayNum = today.getDate();
-    const dayName = days[today.getDay()];
+    const date = isEditMode ? new Date(diaryData.created_at) : new Date();
+    const month = date.getMonth() + 1;
+    const dayNum = date.getDate();
+    const dayName = days[date.getDay()];
     return { dayNum, dayName, month };
   };
 
   const { dayNum, dayName, month } = getDayInfo();
 
+  // 이미지 업로드
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
 
@@ -37,6 +43,35 @@ const DiaryWrite = () => {
   const handleCameraClick = () => {
     fileInputRef.current.click();
   };
+
+  // 저장, 수정 버튼 클릭 시
+  const handleSave = () => {
+    const updatedDiaryData = {
+      content,
+      image: imagePreview || existingImage,
+      created_at: isEditMode ? diaryData.created_at : new Date().toISOString(),
+      // 수정모드일 때 기존 id 유지
+      ...(isEditMode && { id: diaryData.id }),
+    };
+    navigate("/diary/calendar");
+  };
+
+  // 취소 버튼
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
+  // 수정 모드 -> 기존 데이터 로드
+  useEffect(() => {
+    if (isEditMode && diaryData) {
+      setContent(diaryData.content || "");
+      // 이미지 있을 때
+      if (diaryData.image) {
+        setExistingImage(diaryData.image);
+        setImagePreview(diaryData.image);
+      }
+    }
+  }, [isEditMode, diaryData]);
 
   return (
     <Layout>
@@ -73,7 +108,7 @@ const DiaryWrite = () => {
               className="w-full h-[280px] bg-gray-300 rounded-lg flex items-center justify-center cursor-pointer"
               onClick={handleCameraClick}
             >
-              {imagePreview ? (
+              {imagePreview || existingImage ? (
                 <img
                   src={imagePreview}
                   alt="preview"
@@ -107,10 +142,20 @@ const DiaryWrite = () => {
         {/* 버튼 */}
         <div className="flex justify-center gap-10 pt-1">
           <div className="w-[120px]">
-            <Button text="취소" type="PREV" className="w-full py-2" />
+            <Button
+              text="취소"
+              type="PREV"
+              className="w-full py-2"
+              onClick={handleCancel}
+            />
           </div>
           <div className="w-[120px]">
-            <Button text="게시" type="NEXT" className="w-full py-2" />
+            <Button
+              text={isEditMode ? "수정" : "게시"}
+              type="NEXT"
+              className="w-full py-2"
+              onClick={handleSave}
+            />
           </div>
         </div>
       </div>
