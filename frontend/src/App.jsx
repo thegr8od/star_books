@@ -5,7 +5,7 @@ import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Home/Home";
 import ConstellationCreate from "./pages/Constellation/ConstellationCreate";
 import Constellation from "./pages/Constellation/Constellation";
-import DiaryCalendar from "./pages/Diary/DiaryCalendar";
+import Diary from "./pages/Diary/Diary";
 import DiaryEdit from "./pages/Diary/DiaryEdit";
 import DiaryStars from "./pages/Diary/DiaryStars";
 import DiaryWrite from "./pages/Diary/DiaryWrite";
@@ -50,7 +50,7 @@ function App() {
           {/* Diary 관련 */}
           <Route path="diary/write" element={<DiaryWrite />} />
           <Route path="diary/edit/:id" element={<DiaryEdit />} />
-          <Route path="diary/calendar" element={<DiaryCalendar />} />
+          <Route path="diary/calendar" element={<Diary />} />
           <Route path="diary/monthly/:month" element={<MonthlyDiary />} />\
           <Route path="diary/stars" element={<DiaryStars />} />{" "}
           {/* 별 보기 추가 */}
