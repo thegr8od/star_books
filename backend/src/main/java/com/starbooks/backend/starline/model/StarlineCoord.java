@@ -21,6 +21,7 @@ public class StarlineCoord {
     /** 선 ID (기본 키, 자동 증가) */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "starline_coord_id")
     private Long starlineCoordId;
 
     /** 시작 감정 좌표 (외래키) */
@@ -34,11 +35,11 @@ public class StarlineCoord {
     private DiaryEmotion diaryEmotionEnd;
 
     /** 생성 일시 (수정 불가) */
-    @Column(nullable = false, updatable = false)
+    @Column(name ="created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     /** 업데이트 일시 (수정 시 변경) */
-    @Column(nullable = false)
+    @Column(name ="updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     /**
