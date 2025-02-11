@@ -42,9 +42,9 @@ const Login = () => {
         });
 
         if (response.data.statusCode === 200) {
-          sessionStorage.setItem("accessToken", response.data.data.accessToken);
-          sessionStorage.setItem("email", response.data.data.user.email);
-          sessionStorage.setItem("nickname", response.data.data.user.nickname);
+          localStorage.setItem("accessToken", response.data.data.accessToken);
+          localStorage.setItem("email", response.data.data.user.email);
+          localStorage.setItem("nickname", response.data.data.user.nickname);
 
           setAlertMessage("로그인에 성공했습니다!");
           setShowAlert(true);
@@ -66,8 +66,9 @@ const Login = () => {
   };
 
   // 소셜 로그인 함수 추가
+  const baseUrl = "http://localhost:8080";
   const handleSocialLogin = (provider) => {
-    window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
+    window.location.href = `${baseUrl}/oauth2/authorization/${provider}`;
   };
 
   return (
