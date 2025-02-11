@@ -3,8 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Home/Home";
-import ConstellationCreate from "./pages/Constellation/ConstellationCreate";
-import Constellation from "./pages/Constellation/Constellation";
+import ConstellationDetail from "./pages/Constellation/ConstellationDetail";
 import Diary from "./pages/Diary/Diary";
 import DiaryEdit from "./pages/Diary/DiaryEdit";
 import DiaryStars from "./pages/Diary/DiaryStars";
@@ -56,12 +55,8 @@ function App() {
           {/* 별 보기 추가 */}
           {/* Constellation 관련 */}
           <Route
-            path="constellation/create"
-            element={<ConstellationCreate />}
-          />
-          <Route
-            path="constellation/constellation"
-            element={<Constellation />}
+            path="constellation/detail/:year"
+            element={<ConstellationDetail />}
           />
           {/* TEST용 */}
           <Route path="color" element={<ColorTest />} />
