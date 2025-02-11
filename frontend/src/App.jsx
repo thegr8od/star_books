@@ -19,6 +19,7 @@ import ColorTest from "./components/ColorTest";
 import Cursor from "./components/Cursor";
 import BackgroundStar from "./components/BackgroundStar";
 import ErrorPage from "./pages/ErrorPage";
+import CreateTest from "./pages/Test/CreateTest";
 
 function App() {
   const isHome = location.pathname === "/"; // 홈 페이지 여부 확인
@@ -60,6 +61,7 @@ function App() {
           />
           {/* TEST용 */}
           <Route path="color" element={<ColorTest />} />
+          <Route path="test" element={<CreateTest />} />
           {/* 에러페이지 */}
           <Route path="*" element={<ErrorPage />} />
         </Routes>
