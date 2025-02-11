@@ -31,4 +31,8 @@ public interface UserService {
     void updateUserProfileText(RequestUpdateDTO dto);
 
     Authentication authenticateUser(String email, String password);
+
+    boolean existsByEmail(String email);
+
+
 }

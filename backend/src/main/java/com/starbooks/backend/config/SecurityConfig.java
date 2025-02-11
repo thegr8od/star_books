@@ -63,8 +63,16 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs",
+                                "/webjars/**",
+                                "/swagger-resources/**"
+                        ).permitAll()
                         // ✅ 회원가입 및 로그인은 인증 없이 접근 가능
-                        .requestMatchers("/api/member", "/api/member/login", "/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/api/member", "/api/member/login", "/oauth2/**", "/login/oauth2/**", "/oauth_test.html", "/index.html").permitAll()
                         // ✅ API 엔드포인트 보호 (JWT 인증 필요)
                         .requestMatchers(HttpMethod.POST, "/api/chat/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
