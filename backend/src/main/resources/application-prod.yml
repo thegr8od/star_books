@@ -1,6 +1,6 @@
 server:
   port: 9090
-  forward-headers-strategy: framework
+#  forward-headers-strategy: framework
 
 spring:
   config:
@@ -64,13 +64,13 @@ spring:
       port: 6379
       password: ${REDIS_PASSWORD}
 
-springdoc:
-  swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-  api-docs:
-    enabled: true
-    path: /v3/api-doc
+#springdoc:
+#  swagger-ui:
+#    enabled: true
+#    path: /swagger-ui.html
+#  api-docs:
+#    enabled: true
+#    path: /v3/api-doc
 
 openai:
   api:

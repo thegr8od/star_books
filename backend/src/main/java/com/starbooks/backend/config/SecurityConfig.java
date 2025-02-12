@@ -1,20 +1,19 @@
 package com.starbooks.backend.config;
 
-import com.starbooks.backend.config.JwtAuthenticationFilter;
 import com.starbooks.backend.common.JwtTokenProvider;
 import com.starbooks.backend.oauth2.handler.CustomOAuth2AuthenticationSuccessHandler;
 import com.starbooks.backend.oauth2.service.CustomOAuth2UserService;
-import com.starbooks.backend.config.CustomUserDetailsService;
 import com.starbooks.backend.user.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,15 +22,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.io.IOException;
-import java.util.List;
 
+/**
+ * Spring Security 전체 설정
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -44,46 +43,64 @@ public class SecurityConfig {
     private final CustomOAuth2AuthenticationSuccessHandler customOAuth2AuthenticationSuccessHandler;
     private final CustomUserDetailsService customUserDetailsService;
 
+    /**
+     * 비밀번호 암호화
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * AuthenticationManager 설정
+     */
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration
+    ) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    /**
+     * Spring Security 필터 체인
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // 1) CSRF, CORS, 세션 사용 안 함
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 🔥 인증 실패 시 HTML이 아닌 JSON 응답 반환
+                // 2) 인증 실패 시 HTML이 아닌 JSON을 반환
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                        .authenticationEntryPoint(customAuthenticationEntryPoint())
                 )
 
+                // 3) 권한 설정
                 .authorizeHttpRequests(auth -> auth
+                        // 3-1) 회원가입, 로그인, OAuth2 콜백 등은 토큰 없어도 접근 가능
                         .requestMatchers(
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**",
-                                "/v3/api-docs",
-                                "/webjars/**",
-                                "/swagger-resources/**"
+                                "/api/member",
+                                "/api/member/login",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
+                                "/oauth_test.html",
+                                "/index.html",
+                                "/api/starline/**"
                         ).permitAll()
-                        // ✅ 회원가입 및 로그인은 인증 없이 접근 가능
-                        .requestMatchers("/api/member", "/api/member/login", "/oauth2/**", "/login/oauth2/**", "/oauth_test.html", "/index.html", "/api/starline/**").permitAll()
-                        // ✅ API 엔드포인트 보호 (JWT 인증 필요)
+
+                        // 3-2) 예: POST /api/chat/** 는 인증 필요
                         .requestMatchers(HttpMethod.POST, "/api/chat/**").authenticated()
+
+                        // 3-3) 관리자 페이지
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // 3-4) 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
 
-                // ✅ OAuth2 로그인 설정 (웹 애플리케이션 로그인)
+                // 4) OAuth2 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
@@ -91,39 +108,48 @@ public class SecurityConfig {
                         .successHandler(customOAuth2AuthenticationSuccessHandler)
                 )
 
-                // ✅ JWT 필터 추가 (OAuth2와 별개로 처리)
+                // 5) JWT 필터 등록 (인증 처리)
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    /**
+     * Swagger 경로 등 특정 요청은 Security 필터 체인 자체에서 제외
+     * → JWT 필터도 안 타므로 401 발생 X
+     */
+    @Bean
+    public WebSecurityCustomizer securityCustomizer() {
+        return web -> web.ignoring().requestMatchers(
+                "/v3/api-docs/**",
+                "/swagger-resources/**",
+                "/swagger-ui/**",
+                "/webjars/**",
+                // 필요하다면 "/swagger-ui.html" 등 추가
+                "/swagger/**"
+        );
+    }
+
+    /**
+     * JWT 인증 필터
+     */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService);
     }
 
-    // ✅ CORS 설정 추가
+    /**
+     * 인증이 필요한 엔드포인트에 토큰이 없거나, 잘못된 토큰을 보냈을 때
+     * HTML이 아닌 JSON 포맷으로 401 응답
+     */
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://i12d206.p.ssafy.io"));  // 🔥 HTTPS 요청 허용
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 모든 HTTP 메서드 허용
-        configuration.setAllowedHeaders(List.of("*")); // 모든 헤더 허용
-        configuration.setAllowCredentials(true); // ✅ 쿠키 및 인증 정보 포함 허용
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
-    // ✅ 인증 실패 시 HTML 반환이 아닌 JSON 응답으로 처리
-    public static class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
-        @Override
-        public void commence(HttpServletRequest request, HttpServletResponse response,
-                             org.springframework.security.core.AuthenticationException authException) throws IOException {
+    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
+        return (request, response, authException) -> {
             response.setContentType("application/json");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"인증이 필요합니다.\"}");
-        }
+            response.getWriter().write(
+                    "{\"error\": \"Unauthorized\", \"message\": \"인증이 필요합니다.\"}"
+            );
+        };
     }
 }
