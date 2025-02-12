@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import com.starbooks.backend.config.CustomUserDetailsService;
 import com.starbooks.backend.exception.TokenExpiredException;
+import com.starbooks.backend.user.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -46,28 +47,32 @@ public class JwtTokenProvider {
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateAccessToken(String userEmail) {
-        return generateToken(userEmail, accessTokenExpiration);
+    // 일반 액세스 토큰 생성 (user_id 추가)
+    public String generateAccessToken(User user) {
+        return generateToken(user.getUserId(), user.getEmail(), accessTokenExpiration);
     }
 
-    public String generateRefreshToken(String userEmail) {
-        return generateToken(userEmail, refreshTokenExpiration);
+    // 리프레시 토큰 생성 (user_id 추가)
+    public String generateRefreshToken(User user) {
+        return generateToken(user.getUserId(), user.getEmail(), refreshTokenExpiration);
     }
 
-    // OAuth 가입용 토큰 생성 시 "userEmail" 클레임 추가(인증 시 getUserEmail 사용)
-    public String generateOAuthSignUpToken(String userEmail, String userName) {
+    // OAuth 가입용 토큰 생성 (user_id 추가)
+    public String generateOAuthSignUpToken(User user) {
         return Jwts.builder()
                 .issuer("StarBooks")
                 .subject("JWT Token")
-                .claim("userEmail", userEmail)    // 추가
-                .claim("email", userEmail)
-                .claim("name", userName)
+                .claim("user_id", user.getUserId())  // user_id 수정
+                .claim("userEmail", user.getEmail())
+                .claim("email", user.getEmail())
+                .claim("nickname", user.getNickname())  // name → nickname 수정
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + oauthTokenExpiration))
                 .signWith(secretKey)
                 .compact();
     }
 
+    // JWT 유효성 검사
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -82,6 +87,7 @@ public class JwtTokenProvider {
         }
     }
 
+    // JWT에서 클레임 추출
     public Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
@@ -90,13 +96,14 @@ public class JwtTokenProvider {
                 .getPayload();
     }
 
+    // JWT에서 인증 정보 추출
     public Authentication getAuthentication(String token) {
         String userEmail = getUserEmail(token);
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-    // "userEmail" 클레임을 우선 조회하고, 없으면 "email" 클레임으로 대체하여 반환
+    // "userEmail" 또는 "email" 클레임에서 이메일 정보 가져오기
     public String getUserEmail(String token) {
         Claims claims = getClaims(token);
         String email = claims.get("userEmail", String.class);
@@ -106,10 +113,18 @@ public class JwtTokenProvider {
         return email;
     }
 
-    private String generateToken(String userEmail, long expiration) {
+    // "user_id" 클레임에서 user_id 가져오기
+    public Long getUserId(String token) {
+        Claims claims = getClaims(token);
+        return claims.get("user_id", Long.class);
+    }
+
+    // JWT 생성 (user_id 포함)
+    private String generateToken(Long userId, String userEmail, long expiration) {
         return Jwts.builder()
                 .issuer("StarBooks")
                 .subject("JWT Token")
+                .claim("user_id", userId)   // user_id 추가
                 .claim("userEmail", userEmail)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))

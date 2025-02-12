@@ -2,9 +2,10 @@ package com.starbooks.backend.user.service;
 
 import com.starbooks.backend.common.JwtTokenProvider;
 import com.starbooks.backend.user.dto.response.ResponseRefreshTokenDTO;
+import com.starbooks.backend.user.model.User;
+import com.starbooks.backend.user.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import java.time.Duration;
 
@@ -13,29 +14,35 @@ import java.time.Duration;
 public class TokenServiceImpl implements TokenService {
     private final StringRedisTemplate redisTemplate;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     private static final String REFRESH_TOKEN_PREFIX = "refreshToken:";
     private static final String BLACKLIST_PREFIX = "blacklist:";
 
     @Override
-    public String generateAccessToken(String email) {
-        return jwtTokenProvider.generateAccessToken(email);
+    public String generateAccessToken(User user) {
+        return jwtTokenProvider.generateAccessToken(user);
     }
 
     @Override
-    public String generateRefreshToken(String email) {
-        String refreshToken = jwtTokenProvider.generateRefreshToken(email);
+    public String generateRefreshToken(User user) {
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user);
         long expirationMillis = jwtTokenProvider.getRefreshTokenExpiration();
-        saveRefreshToken(email, refreshToken, expirationMillis);
+        saveRefreshToken(user.getEmail(), refreshToken, expirationMillis);
         return refreshToken;
     }
 
     @Override
     public ResponseRefreshTokenDTO refreshToken(String refreshToken) {
         String email = jwtTokenProvider.getUserEmail(refreshToken);
+
+        // 이메일로 사용자 정보 조회
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
         if (validateRefreshToken(email, refreshToken) && !isRefreshTokenBlacklisted(refreshToken)) {
-            String newAccessToken = generateAccessToken(email);
-            return new ResponseRefreshTokenDTO(newAccessToken, generateRefreshToken(email));
+            String newAccessToken = generateAccessToken(user);
+            return new ResponseRefreshTokenDTO(newAccessToken, generateRefreshToken(user));
         }
         throw new RuntimeException("Invalid or blacklisted refresh token");
     }

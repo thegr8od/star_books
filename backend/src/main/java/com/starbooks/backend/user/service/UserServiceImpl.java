@@ -39,12 +39,17 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void registerUser(RequestRegisterDTO dto) {
 
-        //이메일 중복 체크
-        if (userRepository.existsByEmail(dto.getEmail())){
+        // 이메일 중복 체크
+        if (userRepository.existsByEmail(dto.getEmail())) {
             throw new ResponseStatusException(
                     ErrorCode.EMAIL_ALREADY_EXIST.getHttpStatus(),
                     ErrorCode.EMAIL_ALREADY_EXIST.getMessage()
             );
+        }
+
+        // snsAccount 기본값 설정
+        if (dto.getSnsAccount() == null) {
+            dto.setSnsAccount(false);
         }
 
         // 비밀번호 암호화
@@ -55,8 +60,9 @@ public class UserServiceImpl implements UserService {
         User user = dto.toEntity();
         userRepository.save(user);
 
-        log.info("신규 회원 가입: email={}", user.getEmail());
+        log.info("신규 회원 가입: email={}, snsAccount={}", user.getEmail(), user.getSnsAccount());
     }
+
 
     // == 이메일로 회원 검색 ==
     @Override
@@ -114,7 +120,7 @@ public class UserServiceImpl implements UserService {
         // 3) 텍스트 정보 업데이트 (RequestUpdateDTO)
         if (dto.getNickname() != null)  user.setNickname(dto.getNickname());
         if (dto.getGender() != null)    user.setGender(dto.getGender());
-        if (dto.getKakaoId() != null)   user.setKakaoId(dto.getKakaoId());
+        if (dto.getSnsAccount() != null) user.setSnsAccount(dto.getSnsAccount()); // 변경된 부분
         if (dto.getRole() != null)      user.setRole(dto.getRole());
         if (dto.getIsActive() != null)  user.setIsActive(dto.getIsActive());
 
@@ -125,7 +131,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void updateUserProfileText(RequestUpdateDTO dto) {
-        // RequestUpdateDTO 내부에 email(또는 userId)이 있다고 가정
         if (dto.getEmail() == null) {
             throw new IllegalArgumentException("이메일이 없습니다. 프로필 수정 불가");
         }
@@ -133,15 +138,15 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
-        // 이미지 제외, 텍스트 정보만 업데이트
-        if (dto.getNickname() != null)  user.setNickname(dto.getNickname());
-        if (dto.getGender() != null)    user.setGender(dto.getGender());
-        if (dto.getKakaoId() != null)   user.setKakaoId(dto.getKakaoId());
-        if (dto.getRole() != null)      user.setRole(dto.getRole());
-        if (dto.getIsActive() != null)  user.setIsActive(dto.getIsActive());
+        if (dto.getNickname() != null) user.setNickname(dto.getNickname());
+        if (dto.getGender() != null) user.setGender(dto.getGender());
+        if (dto.getSnsAccount() != null) user.setSnsAccount(dto.getSnsAccount()); // boolean 체크 가능
+        if (dto.getRole() != null) user.setRole(dto.getRole());
+        if (dto.getIsActive() != null) user.setIsActive(dto.getIsActive());
 
         userRepository.save(user);
     }
+
 
     // == 로그인용 인증 ==
     @Override
@@ -149,5 +154,10 @@ public class UserServiceImpl implements UserService {
         return authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
         );
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 }
