@@ -1,4 +1,5 @@
 import Button from "./Button";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
@@ -11,12 +12,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
         {/* 헤더 */}
         <div className="flex mx-4 items-center justify-between  mt-6">
           <h2 className="text-[20px] font-semibold  w-[80%]">{title}</h2>
-          <Button
-            onClick={onClose}
-            type="DEFAULT"
-            imgSrc="/public/icons/close2.png"
-            imgClassName="w-3 h-3"
-          />
+          <CloseOutlinedIcon onClick={onClose} />
         </div>
         <hr className="mx-4 mt-4" />
         {/* body */}
