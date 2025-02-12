@@ -2,13 +2,14 @@ import { useState } from "react";
 import axios from "axios";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
+import useMemberApi from "../../api/useMemberApi";
 
 const Signup = () => {
   const navigate = useNavigate();
   
   // 입력 필드 상태
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [gender, setGender] = useState("");
   const [password, setPassword] = useState("");
@@ -16,7 +17,7 @@ const Signup = () => {
 
   // 유효성 검사 메시지
   const [emailError, setEmailError] = useState("");
-  const [nameError, setNameError] = useState("");
+  const [nicknameError, setNicknameError] = useState("");
   const [birthDateError, setBirthDateError] = useState("");
   const [genderError, setGenderError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -68,8 +69,8 @@ const Signup = () => {
   const handleNameCheck = async () => {
     if (isNameChecked) return;
 
-    if (!name) {
-      setNameError("이름을 입력해주세요.");
+    if (!nickname) {
+      setNicknameError("이름을 입력해주세요.");
       return;
     }
 
@@ -92,9 +93,9 @@ const Signup = () => {
       });
 
       setIsNameChecked(!response.data);
-      setNameError(response.data ? "이미 사용 중인 이름입니다." : "사용 가능한 이름입니다.");
+      setNicknameError(response.data ? "이미 사용 중인 이름입니다." : "사용 가능한 이름입니다.");
     } catch (error) {
-      setNameError("확인 중 오류가 발생했습니다.");
+      setNicknameError("확인 중 오류가 발생했습니다.");
     }
   };
 
@@ -106,8 +107,8 @@ const Signup = () => {
       setEmailError("이메일을 입력해주세요.");
       isValid = false;
     }
-    if (!name) {
-      setNameError("이름을 입력해주세요.");
+    if (!nickname) {
+      setNicknameError("이름을 입력해주세요.");
       isValid = false;
     }
     if (!birthDate) {
@@ -131,32 +132,60 @@ const Signup = () => {
   };
 
   // 폼 제출 핸들러
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+  //   if (!validateForm()) {
+  //     return;
+  //   }
 
-    // axios
+  //   // axios
+  //   try {
+  //     const response = await axios.post("/api/member", {
+  //       email,
+  //       name,
+  //       birthDate,
+  //       gender,
+  //       password,
+  //     });
+  //     console.log("회원가입 성공:", response.data);
+  //     navigate("/login");
+  //   } catch (error) {
+  //     if (error.response?.data) {
+  //       alert("회원가입 중 오류가 발생했습니다.");
+  //     } else {
+  //       alert("서버와의 통신 중 오류가 발생했습니다.");
+  //     }
+  //     console.error("회원가입 실패:", error);
+  //   }
+  // };
+  const handleSubmit = async () => {
+    // if(!validateForm()){
+    //   return;
+    // }
+    
+    const member = {
+      email,
+      password,
+      nickname,
+      gender,
+    };
+
     try {
-      const response = await axios.post("/api/member", {
-        email,
-        name,
-        birthDate,
-        gender,
-        password,
-      });
-      console.log("회원가입 성공:", response.data);
-      navigate("/login");
-    } catch (error) {
-      if (error.response?.data) {
-        alert("회원가입 중 오류가 발생했습니다.");
+      console.log(member);
+
+      const response = await useMemberApi.registerMember(member);
+
+      if(response.status === 200) {
+        console.log(response.message);
+        alert(response.message);
       } else {
-        alert("서버와의 통신 중 오류가 발생했습니다.");
+        alert(response.message);
       }
-      console.error("회원가입 실패:", error);
+    } catch(e) {
+      alert(e.message);
     }
+    
   };
 
   return (
@@ -208,13 +237,13 @@ const Signup = () => {
               <input
                 type="text"
                 name="name"
-                value={name}
+                value={nickname}
                 onChange={(e) => {
-                  setName(e.target.value);
+                  setNickname(e.target.value);
                   setIsNameChecked(false);
                 }}
                 onBlur={(e) => {
-                  setNameError(e.target.value ? "" : "이름을 입력해주세요");
+                  setNicknameError(e.target.value ? "" : "이름을 입력해주세요");
                 }}
                 placeholder="이름을 입력해 주세요"
                 className="flex-1"
@@ -223,7 +252,7 @@ const Signup = () => {
                 확인
               </button>
             </div>
-            {nameError && <p>{nameError}</p>}
+            {nicknameError && <p>{nicknameError}</p>}
           </div>
 
           {/* 생년월일 */}
@@ -320,7 +349,7 @@ const Signup = () => {
           </div>
 
           {/* 제출 버튼 */}
-          <button type="submit" onClick={handleSubmit} className="w-full h-10 rounded-2xl text-white bg-[#8993c7] hover:bg-[#7580bb]">
+          <button type="button" onClick={handleSubmit} className="w-full h-10 rounded-2xl text-white bg-[#8993c7] hover:bg-[#7580bb]">
             확인
           </button>
         </form>
