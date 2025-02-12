@@ -1,12 +1,12 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ConstellationCreateAiEvent from "./ConstellationCreateAiEvent";
 import Button from "../../components/Button";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import { Anthropic } from "@anthropic-ai/sdk";
-import ImagePreprocessor from "../../components/ImagePreprocessor";
 
+// Anthropic API 클라이언트 초기화
 const anthropic = new Anthropic({
   apiKey: import.meta.env.VITE_CLAUDE_REMOVED,
   dangerouslyAllowBrowser: true,
@@ -14,78 +14,33 @@ const anthropic = new Anthropic({
 
 function ConstellationCreateAi({ constellationData }) {
   const navigate = useNavigate();
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [showEvent, setShowEvent] = useState(false);
-  const [lineData, setLineData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [resetKey, setResetKey] = useState(0); // 컴포넌트 리셋을 위한 key
-  const [processedImageData, setProcessedImageData] = useState(null);
-  const imagePreprocessorRef = useRef(null);
-
-  // AI 응답 더미 데이터를 주석 처리
-  // const dummyAiResponse = [
-  //     // 얼굴 윤곽
-  //     { start: { x: -5, y: 0 }, end: { x: -3, y: 3 } },
-  //     { start: { x: -3, y: 3 }, end: { x: 3, y: 3 } },
-  //     { start: { x: 3, y: 3 }, end: { x: 5, y: 0 } },
-  //     { start: { x: 5, y: 0 }, end: { x: 3, y: -3 } },
-  //     { start: { x: 3, y: -3 }, end: { x: -3, y: -3 } },
-  //     { start: { x: -3, y: -3 }, end: { x: -5, y: 0 } },
-  //
-  //     // 귀
-  //     { start: { x: -3, y: 3 }, end: { x: -4, y: 5 } },
-  //     { start: { x: 3, y: 3 }, end: { x: 4, y: 5 } },
-  //
-  //     // 눈
-  //     { start: { x: -2, y: 1 }, end: { x: -1, y: 1 } },
-  //     { start: { x: 1, y: 1 }, end: { x: 2, y: 1 } },
-  // ];
+  // 상태 관리
+  const [selectedImage, setSelectedImage] = useState(null);  // 선택된 이미지
+  const [showEvent, setShowEvent] = useState(false);        // 별자리 표시 여부
+  const [lineData, setLineData] = useState(null);          // AI가 생성한 선 데이터
+  const [isLoading, setIsLoading] = useState(false);       // 로딩 상태
+  const [resetKey, setResetKey] = useState(0);             // 컴포넌트 리셋용 키
 
   // 상태 초기화 함수
   const resetState = () => {
     setShowEvent(false);
     setLineData(null);
     setIsLoading(false);
-    setResetKey((prev) => prev + 1); // ConstellationCreateAiEvent 컴포넌트 리셋
+    setResetKey(prev => prev + 1);
   };
 
+  // 이미지 선택 핸들러
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.substring(0, 5) === "image") {
       console.log("선택된 파일:", file.name, file.type, file.size);
       resetState();
 
+      // 이미지 파일을 base64로 변환
       try {
         const reader = new FileReader();
-        reader.onloadend = async () => {
+        reader.onloadend = () => {
           setSelectedImage(reader.result);
-          try {
-            console.log("이미지 전처리 시도");
-            if (!imagePreprocessorRef.current) {
-              console.error("imagePreprocessorRef.current가 없습니다");
-              throw new Error("전처리기를 찾을 수 없습니다");
-            }
-
-            setIsLoading(true);
-            const result = await imagePreprocessorRef.current.processImage(
-              file
-            );
-            console.log("전처리 결과:", result);
-
-            if (result && result.lines) {
-              setProcessedImageData({ lines: result.lines });
-              setLineData(result.lines);
-              setShowEvent(true);
-            } else {
-              throw new Error("전처리 결과가 유효하지 않습니다");
-            }
-          } catch (error) {
-            console.error("이미지 처리 실패:", error);
-            // 전처리 실패시 AI 처리로 폴백
-            handleCreateConstellation();
-          } finally {
-            setIsLoading(false);
-          }
         };
         reader.readAsDataURL(file);
       } catch (error) {
@@ -95,58 +50,76 @@ function ConstellationCreateAi({ constellationData }) {
     }
   };
 
+  // AI를 통한 선 데이터 생성 함수
   const generateLinesFromAI = async (imageData) => {
-    // 이미 전처리된 데이터가 있다면 사용
-    if (processedImageData && processedImageData.lines) {
-      console.log("전처리된 데이터 사용");
-      return processedImageData.lines;
-    }
-
     console.log("API 호출 시작");
 
-    // 이미지 데이터와 타입 추출
-    const [header, base64Data] = imageData.split(",");
-    const mediaType = header.match(/data:(.*?);/)?.[1] || "image/jpeg";
-
-    console.log("이미지 타입:", mediaType);
-
-    if (!base64Data) {
-      throw new Error("이미지 데이터 형식이 잘못되었습니다.");
-    }
-
-    const message = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 1024,
-      temperature: 0,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: "제공된 이미지를 단순한 선들로 이루어진 픽토그램으로 변환해주세요. (-10,10) 좌표계 안에서 각 선의 시작점과 끝점 좌표를 배열로 반환해주세요. 원형 부분은 8개의 선분을 사용해서 더 부드럽게 표현해주세요. 눈,코,입은 점으로 간단하게 표현해도 됩니다. 입은 표정에 따라서 선으로 표현해도 됩니다. 사람 머리카락은 얼굴 선 옆에에 간단히 선으로 표현합니다. 설명없이 JSON 배열만 반환해주세요. '//'과 같은 주석 부분 없이  JSON 배열만 반환해주세요. 예시: [{start: {x: -5, y: 0}, end: {x: -3, y: 3}}, ...]",
-            },
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: mediaType, // 동적으로 이미지 타입 설정
-                data: base64Data,
-              },
-            },
-          ],
-        },
-      ],
-    });
-
-    console.log("API 응답:", message);
-
     try {
-      // 코드 블록에서 JSON 추출
+      // 이미지를 PNG로 변환하는 함수
+      const convertToPng = async (imgData) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'white';  // 배경을 흰색으로 설정
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            
+            // base64 문자열에서 실제 데이터 부분만 추출
+            const pngBase64 = canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
+            resolve(pngBase64);
+          };
+          img.onerror = reject;
+          img.src = imgData;
+        });
+      };
+
+      // 이미지를 PNG로 변환
+      const pngBase64 = await convertToPng(imageData);
+
+      // Claude API 호출
+      const message = await anthropic.messages.create({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 1024,
+        temperature: 0,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: "제공된 이미지를 단순한 선들로 이루어진 픽토그램으로 변환해주세요. (-10,10) 좌표계 안에서 각 선의 시작점과 끝점 좌표를 배열로 반환해주세요. 원형 부분은 8개의 선분을 사용해서 더 부드럽게 표현해주세요. 눈,코,입은 점으로 간단하게 표현해도 됩니다. 입은 표정에 따라서 선으로 표현해도 됩니다. 사람 머리카락은 얼굴 선 옆에에 간단히 선으로 표현합니다. 설명없이 JSON 배열만 반환해주세요. '//'과 같은 주석 부분 없이  JSON 배열만 반환해주세요. 예시: [{start: {x: -5, y: 0}, end: {x: -3, y: 3}}, ...]",
+              },
+              {
+                type: "image",
+                source: {
+                  type: "base64",
+                  media_type: "image/png",
+                  data: pngBase64,
+                },
+              },
+            ],
+          },
+        ],
+      });
+
+      return parseAIResponse(message);
+    } catch (error) {
+      console.error("API 호출 실패:", error);
+      throw error;
+    }
+  };
+
+  // AI 응답 파싱 함수 분리
+  const parseAIResponse = (message) => {
+    try {
       const responseText = message.content[0].text;
-      const jsonMatch = responseText.match(
-        /```(?:javascript)?\s*(\[[\s\S]*?\])\s*```/
-      );
+      // 코드 블록에서 JSON 추출 시도
+      const jsonMatch = responseText.match(/```(?:javascript)?\s*(\[[\s\S]*?\])\s*```/);
 
       if (jsonMatch) {
         const jsonStr = jsonMatch[1];
@@ -166,6 +139,7 @@ function ConstellationCreateAi({ constellationData }) {
     }
   };
 
+  // 별자리 생성 핸들러
   const handleCreateConstellation = async () => {
     if (!selectedImage) return;
     try {
@@ -181,6 +155,7 @@ function ConstellationCreateAi({ constellationData }) {
     }
   };
 
+  // 별자리 저장 핸들러
   const handleSave = async (visualizationData) => {
     try {
       const dataToSave = {
@@ -201,25 +176,8 @@ function ConstellationCreateAi({ constellationData }) {
 
   return (
     <div>
-      <ImagePreprocessor
-        ref={imagePreprocessorRef}
-        onImageProcessed={({ lines }) => {
-          console.log("이미지 전처리 완료:", lines);
-          if (lines && lines.length > 0) {
-            setProcessedImageData({ lines });
-            setLineData(lines);
-            setShowEvent(true);
-          } else {
-            // 전처리 결과가 없으면 AI 처리로 폴백
-            handleCreateConstellation();
-          }
-        }}
-        onProcessingStateChange={(loading) => {
-          setIsLoading(loading);
-        }}
-      />
       <div className="flex flex-col items-center space-y-4">
-        {/* 상단 이미지 박스 */}
+        {/* 이미지 업로드 영역 */}
         <div className="relative w-full max-w-[200px] md:max-w-[250px] aspect-[4/3]">
           <input
             type="file"
@@ -248,7 +206,6 @@ function ConstellationCreateAi({ constellationData }) {
                     마음에 남은 한 장면은 무엇인가요?
                   </p>
                 </span>
-
                 <AddPhotoAlternateIcon
                   className="text-white/80 mt-2 animate-pulse"
                   style={{ fontSize: "3rem" }}
@@ -258,7 +215,7 @@ function ConstellationCreateAi({ constellationData }) {
           </label>
         </div>
 
-        {/* 하단 별자리 박스 */}
+        {/* 별자리 표시 영역 */}
         <div className="relative w-full max-w-[200px] md:max-w-[250px] aspect-[4/3] border-2 border-white/80 rounded-3xl p-4 bg-white/30">
           {isLoading ? (
             <div className="absolute inset-0 flex items-center justify-center">
