@@ -273,7 +273,7 @@ const Signup = () => {
             />
             {birthDateError && <p>{birthDateError}</p>}
           </div>
-
+          
           {/* 성별 */}
           <div className="space-y-2">
             <label>성별</label>
@@ -282,8 +282,8 @@ const Signup = () => {
                 <input
                   type="radio"
                   name="gender"
-                  value="male"
-                  checked={gender === "male"}
+                  value="MALE"
+                  checked={gender === "MALE"}
                   onChange={(e) => {
                     setGender(e.target.value);
                     setGenderError("");
@@ -296,8 +296,8 @@ const Signup = () => {
                 <input
                   type="radio"
                   name="gender"
-                  value="female"
-                  checked={gender === "female"}
+                  value="FEMALE"
+                  checked={gender === "FEMALE"}
                   onChange={(e) => {
                     setGender(e.target.value);
                     setGenderError("");

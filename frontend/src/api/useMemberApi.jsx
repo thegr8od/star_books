@@ -29,6 +29,7 @@ const loginMember = async (member) => {
 //회원가입
 const registerMember = async (member) => {
     try{
+        console.log("api " + member);
         const response = await useAxiosInstance.apiClient.post(
             "/member",
             member,
