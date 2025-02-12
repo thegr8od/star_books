@@ -86,7 +86,6 @@ function Diary() {
 
         {/* 메인 */}
         <div className="flex-1">
-          {" "}
           {activeTab === 1 ? (
             <DiaryStars />
           ) : (
@@ -106,7 +105,7 @@ function Diary() {
             text={<Add />}
             type="DEFAULT"
             className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent"
-            onClick={() => setShowModal(!showModal)}
+            onClick={() => setShowModal(true)}
           />
           <Button
             text="캘린더"
