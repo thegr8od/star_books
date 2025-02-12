@@ -21,10 +21,13 @@ const Header = ({ title = "", setShowMenu }) => {
 
   return (
     <div className="flex justify-between items-center h-10 text-white/70">
+      {/* 뒤로가기 버튼 */}
       <button onClick={() => navigate(-1)}>
         <ArrowBackIos fontSize="small" />
       </button>
+      {/* 제목(선택) */}
       <p className="text-lg">{title}</p>
+      {/* 메뉴 버튼 */}
       <button onClick={() => setShowMenu(true)}>
         <MenuIcon />
       </button>
@@ -34,10 +37,12 @@ const Header = ({ title = "", setShowMenu }) => {
 
 // 프로필 이미지 컴포넌트
 const ProfileImage = ({ profileImage }) => {
+  // 프로필 이미지가 있을 경우
   if (profileImage) {
     return <img src={profileImage} alt="Profile" className="w-12 h-12 rounded-full object-cover" />;
   }
 
+  // 프로필 이미지가 없을 경우 기본 아이콘
   return (
     <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#8993c7] text-white">
       <AccountCircle fontSize="large" />
@@ -45,14 +50,16 @@ const ProfileImage = ({ profileImage }) => {
   );
 };
 
-// 프로필 섹션 컴포넌트
+// 프로필 컴포넌트
 const ProfileSection = ({ profileImage, nickname }) => {
   // const { profileImage, nickname } = useSelector((state) => state.user);
 
   return (
     <div className="pt-8 pb-6 px-6 bg-[#f5f5f5]">
       <div className="flex items-center gap-4">
+        {/* 프로필이미지 */}
         <ProfileImage profileImage={profileImage} />
+        {/* 닉네임 */}
         <p className="font-medium text-black">{nickname}</p>
       </div>
     </div>
@@ -62,6 +69,7 @@ const ProfileSection = ({ profileImage, nickname }) => {
 // 메뉴 아이템 컴포넌트
 const MenuItem = ({ item, onClick }) => {
   return (
+    // 네비게이션 아이템 상수로 관리 (링크주소, 아이콘, 라벨명)
     <Link to={item.path} className="flex items-center gap-3 p-3 text-gray-700 rounded-full hover:bg-[#8993c7] hover:text-white transition-colors" onClick={onClick}>
       <span className="flex items-center justify-center">{item.icon}</span>
       <span>{item.label}</span>
@@ -75,17 +83,22 @@ const Nav = ({ title = "", profileImage = null }) => {
 
   return (
     <nav>
+      {/* MenuBar */}
       <Header title={title} setShowMenu={setShowMenu} />
 
+      {/* Menu panel */}
       {showMenu && (
         <div className="fixed inset-0 bg-black/40 z-20" onClick={() => setShowMenu(false)}>
-          <div className="absolute top-0 right-0 z-30 w-64 lg:w-1/3 h-full flex flex-col bg-white" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute top-0 right-0 z-30 w-64 lg:w-96 h-full flex flex-col bg-white" onClick={(e) => e.stopPropagation()}>
+            {/* 닫기 버튼 */}
             <button onClick={() => setShowMenu(false)} className="absolute top-4 right-4 rounded-full text-gray-600">
               <Close />
             </button>
 
+            {/* 프로필 */}
             <ProfileSection profileImage={profileImage} nickname="Sophie Rose" />
 
+            {/* 메뉴 아이템 */}
             <ul className="p-2 flex-1">
               {NAV_ITEMS.map((item, index) => (
                 <li key={index}>
@@ -94,6 +107,7 @@ const Nav = ({ title = "", profileImage = null }) => {
               ))}
             </ul>
 
+            {/* 로그아웃 버튼 */}
             <div className="p-2 border-t">
               <MenuItem
                 item={{
