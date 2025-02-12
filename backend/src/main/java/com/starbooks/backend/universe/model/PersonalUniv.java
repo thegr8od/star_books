@@ -25,8 +25,6 @@ public class PersonalUniv {
     @JoinColumn(name = "diary_emotion_id", nullable = false, unique = true)  // ✅ Unique Key 역할
     private DiaryEmotion diaryEmotion;
 
-    @Column(name = "log_month", nullable = false)
-    private LocalDate logMonth;  // ✅ LocalDate 적용
 
     @Column(name = "x_coord")
     private Float xCoord;

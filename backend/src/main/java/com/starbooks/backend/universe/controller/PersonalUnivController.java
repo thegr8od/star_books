@@ -18,6 +18,8 @@ public class PersonalUnivController {
 
     private final PersonalUnivService personalUnivService;
 
+
+
     // CREATE
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createPersonalUniv(@RequestBody RequestPersonalUnivDTO requestDTO) {

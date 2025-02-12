@@ -33,7 +33,6 @@ public class PersonalUnivService {
         // ✅ PersonalUniv 엔티티 생성
         PersonalUniv personalUniv = PersonalUniv.builder()
                 .diaryEmotion(diaryEmotion) // ✅ diary_emotion_id 참조
-                .logMonth(dto.getLogMonth())
                 .xCoord(dto.getXCoord())
                 .yCoord(dto.getYCoord())
                 .updatedAt(LocalDateTime.now())  // ✅ NULL 방지
@@ -67,7 +66,6 @@ public class PersonalUnivService {
                 personalUniv.setDiaryEmotion(diaryEmotion);
             }
 
-            personalUniv.setLogMonth(dto.getLogMonth());
             personalUniv.setXCoord(dto.getXCoord());
             personalUniv.setYCoord(dto.getYCoord());
             personalUniv.setUpdatedAt(LocalDateTime.now()); // ✅ updated_at 최신화
