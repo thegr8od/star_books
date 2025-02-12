@@ -44,7 +44,7 @@ const DiaryWrite = () => {
     fileInputRef.current.click();
   };
 
-  // 저장, 수정 버튼 클릭 시
+  // 저장, 수정 버튼 클릭 시 데이터 넘기기
   const handleSave = () => {
     const updatedDiaryData = {
       content,
@@ -56,7 +56,7 @@ const DiaryWrite = () => {
     navigate("/diary/calendar");
   };
 
-  // 취소 버튼
+  // 취소 버튼 클릭
   const handleCancel = () => {
     navigate(-1);
   };
