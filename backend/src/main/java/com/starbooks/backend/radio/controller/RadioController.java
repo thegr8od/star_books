@@ -3,12 +3,12 @@ package com.starbooks.backend.radio.controller;
 import io.livekit.server.AccessToken;
 import io.livekit.server.RoomJoin;
 import io.livekit.server.RoomName;
-import io.livekit.server.WebhookReceiver;
-import livekit.LivekitWebhook;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.Map;
 
 @CrossOrigin(origins = "*")
@@ -22,10 +22,12 @@ public class RadioController {
     @Value("${livekit.api.secret}")
     private String LIVEKIT_API_SECRET;
 
-    /**
-     * @param params JSON object with roomName and participantName
-     * @return JSON object with the JWT token
-     */
+    private final StringRedisTemplate redisTemplate;
+
+    public RadioController(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
     @PostMapping(value = "/token")
     public ResponseEntity<Map<String, String>> createToken(@RequestBody Map<String, String> params) {
         String roomName = params.get("roomName");
@@ -35,24 +37,31 @@ public class RadioController {
             return ResponseEntity.badRequest().body(Map.of("errorMessage", "roomName and participantName are required"));
         }
 
+        // Redis에서 해당 방의 호스트 여부 확인
+        String existingHost = redisTemplate.opsForValue().get("room:" + roomName + ":host");
+
+        boolean isHost = (existingHost == null);
+
+        if (isHost) {
+            // 방의 첫 번째 참가자가 호스트가 됨
+            redisTemplate.opsForValue().set("room:" + roomName + ":host", participantName, Duration.ofHours(6));
+        }
+
         AccessToken token = new AccessToken(LIVEKIT_REMOVED, LIVEKIT_API_SECRET);
         token.setName(participantName);
         token.setIdentity(participantName);
-        token.addGrants(new RoomJoin(true), new RoomName(roomName));
 
-        return ResponseEntity.ok(Map.of("token", token.toJwt()));
-    }
-
-    @PostMapping(value = "/livekit/webhook", consumes = "application/webhook+json")
-    public ResponseEntity<String> receiveWebhook(@RequestHeader("Authorization") String authHeader, @RequestBody String body) {
-        WebhookReceiver webhookReceiver = new WebhookReceiver(LIVEKIT_REMOVED, LIVEKIT_API_SECRET);
-        try {
-            LivekitWebhook.WebhookEvent event = webhookReceiver.receive(body, authHeader);
-            System.out.println("LiveKit Webhook: " + event.toString());
-        } catch (Exception e) {
-            System.err.println("Error validating webhook event: " + e.getMessage());
+        if (isHost) {
+            //호스트(방송자) → 오디오 송출 가능
+            token.addGrants(new RoomJoin(true), new RoomName(roomName));
+        } else {
+            //게스트(청취자) → 오디오 송출 불가 (오디오만 수신 가능)
+            token.addGrants(new RoomJoin(true), new RoomName(roomName));
         }
-        return ResponseEntity.ok("ok");
-    }
 
+        return ResponseEntity.ok(Map.of(
+                "token", token.toJwt(),
+                "role", isHost ? "host" : "guest"
+        ));
+    }
 }
