@@ -17,10 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * JWT를 검사하는 커스텀 필터.
- * Swagger 경로 등 화이트리스트는 여기서 검사 제외 처리.
- */
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -34,34 +30,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // ─────────────────────────────────────────────
-        // 1) Swagger 등 화이트리스트 경로는 바로 통과
-        // ─────────────────────────────────────────────
-        String uri = request.getRequestURI();
-        if (isSwaggerRequest(uri)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // ─────────────────────────────────────────────
-        // 2) 나머지 경로는 JWT 검사
-        // ─────────────────────────────────────────────
         try {
             String token = getJwtFromRequest(request);
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
                 String userEmail = jwtTokenProvider.getUserEmail(token);
 
-                UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
+                // ✅ CustomUserDetails 로드
+                CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(userEmail);
+
+                log.info("✅ JWT 인증 완료: userId={}, email={}", userDetails.getUserId(), userEmail);
 
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // 인증 정보 세팅
+                // ✅ SecurityContext에 CustomUserDetails 저장
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
@@ -71,28 +54,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("JWT 인증 필터에서 에러 발생: {}", e.getMessage());
         }
 
-        // 필터 체인의 다음 필터로 진행
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * "Authorization: Bearer ~~" 헤더에서 JWT 부분만 파싱
-     */
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7); // "Bearer " 이후
+            return bearerToken.substring(7);
         }
         return null;
-    }
-
-    /**
-     * Swagger 문서 관련 경로인지 판별
-     */
-    private boolean isSwaggerRequest(String uri) {
-        return uri.startsWith("/swagger-ui")
-                || uri.startsWith("/v3/api-docs")
-                || uri.startsWith("/swagger-resources")
-                || uri.startsWith("/webjars");
     }
 }

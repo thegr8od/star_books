@@ -13,7 +13,6 @@ public class ResponsePersonalUnivDTO {
     private Long universeId;
     private Long diaryEmotionId;  // ✅ Key 역할
     private Long diaryId;  // ✅ diaryEmotion이 참조하는 diary_id
-    private LocalDate logMonth;  // ✅ LocalDate로 변경
     private Float xCoord;
     private Float yCoord;
     private LocalDateTime updatedAt;
