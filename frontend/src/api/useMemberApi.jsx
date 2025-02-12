@@ -33,7 +33,7 @@ const registerMember = async (member) => {
             "/member",
             member,
         );
-        return response.data;
+        return response;
     } catch(e) {
         //오류 체크
         if(e.respose.data.stauts == 404){

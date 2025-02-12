@@ -176,7 +176,7 @@ const Signup = () => {
 
       const response = await useMemberApi.registerMember(member);
 
-      if(response.status === 200) {
+      if(response.status === "C000") {
         console.log(response.message);
         alert(response.message);
       } else {
