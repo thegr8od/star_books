@@ -5,7 +5,6 @@ import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Home/Home";
 import ConstellationDetail from "./pages/Constellation/ConstellationDetail";
 import Diary from "./pages/Diary/Diary";
-import DiaryEdit from "./pages/Diary/DiaryEdit";
 import DiaryStars from "./pages/Diary/DiaryStars";
 import DiaryWrite from "./pages/Diary/DiaryWrite";
 import MonthlyDiary from "./pages/Diary/MonthlyDiary";
@@ -25,13 +24,7 @@ function App() {
   const isHome = location.pathname === "/"; // 홈 페이지 여부 확인
   return (
     <>
-      <div
-        className={
-          isHome
-            ? ""
-            : "min-h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121] p-4"
-        }
-      >
+      <div className={isHome ? "" : "min-h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121] p-4"}>
         {!isHome && <BackgroundStar />}
         <Routes>
           {/* Auth 관련 */}
@@ -49,16 +42,12 @@ function App() {
           <Route path="radio/list" element={<RadioList />} />
           {/* Diary 관련 */}
           <Route path="diary/write" element={<DiaryWrite />} />
-          <Route path="diary/edit/:id" element={<DiaryEdit />} />
+          <Route path="diary/edit/:id" element={<DiaryWrite />} />
           <Route path="diary/calendar" element={<Diary />} />
           <Route path="diary/monthly/:month" element={<MonthlyDiary />} />\
-          <Route path="diary/stars" element={<DiaryStars />} />{" "}
-          {/* 별 보기 추가 */}
+          <Route path="diary/stars" element={<DiaryStars />} /> {/* 별 보기 추가 */}
           {/* Constellation 관련 */}
-          <Route
-            path="constellation/detail/:year"
-            element={<ConstellationDetail />}
-          />
+          <Route path="constellation/detail/:year" element={<ConstellationDetail />} />
           {/* TEST용 */}
           <Route path="color" element={<ColorTest />} />
           <Route path="test" element={<CreateTest />} />
