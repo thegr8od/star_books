@@ -50,6 +50,8 @@ const logoutMember = async () => {
         const response = await useAxiosInstance
             .authApiClient(jwt)
             .post("/member/logout");
+        localStorage.removeItem("accessToken");
+
         return response.data;
     } catch(e) {
         //오류 체크
