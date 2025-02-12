@@ -31,6 +31,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/api/member") || uri.startsWith("/api/member/login")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             String token = getJwtFromRequest(request);
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
