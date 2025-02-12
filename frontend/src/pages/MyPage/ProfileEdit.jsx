@@ -51,10 +51,10 @@ const ProfileEdit = () => {
                   <img
                     src={imagePreview}
                     alt="프로필 이미지"
-                    className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20"
+                    className="w-20 h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full"
                   />
                 ) : (
-                  <div className="w-16 h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full bg-[#8993c7] flex justify-center items-center">
+                  <div className="w-20 h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 rounded-full bg-[#8993c7] flex justify-center items-center">
                     <PersonOutlineOutlinedIcon
                       sx={{
                         fontSize: {
@@ -69,14 +69,10 @@ const ProfileEdit = () => {
                 )}
                 {/* 이미지 업로드 버튼 */}
                 <label className="absolute bottom-0 right-0 cursor-pointer">
-                  <div className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full bg-gray-100 flex justify-center items-center">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex justify-center items-center">
                     <CameraAltOutlinedIcon
                       sx={{
-                        fontSize: {
-                          xs: 16, // 모바일: 16px
-                          md: 20, // 태블릿: 20px
-                          lg: 24, // 데스크탑: 24px
-                        },
+                        fontSize: 16, // 모바일: 16px
                       }}
                       className="text-gray-700"
                     />

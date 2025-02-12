@@ -36,15 +36,15 @@ function Mypage() {
                   <img
                     src={imagePreview}
                     alt="프로필"
-                    className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full object-cover"
+                    className="w-20 h-20 md:w-24 md:h-24 lg:w-30 lg:h-30 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 rounded-full bg-[#8993c7] flex justify-center items-center">
+                  <div className="w-20 h-20 md:w-24 md:h-24 lg:w-30 lg:h-30 rounded-full bg-[#8993c7] flex justify-center items-center">
                     <PersonOutlineOutlinedIcon
                       sx={{
                         fontSize: {
-                          xs: 40, // 모바일
-                          md: 50, // 태블릿
+                          xs: 55, // 모바일
+                          md: 60, // 태블릿
                           lg: 65, // 데스크탑
                         },
                       }}
@@ -84,7 +84,7 @@ function Mypage() {
           {/* 나의 글 */}
           <div className="mt-12">
             <h1 className="text-xl font-bold mb-6">나의 글</h1>
-            <div className="bg-white bg-opacity-90 rounded-xl shadow-lg px-6 py-12">
+            <div className="bg-white bg-opacity-70 hover:bg-opacity-90 rounded-xl shadow-lg px-6 py-12 border border-white/70">
               <div className="flex justify-between items-center">
                 <div
                   className="text-center flex-1"
