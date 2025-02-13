@@ -60,7 +60,7 @@ const MonthlyDiary = () => {
 
   return (
     <Layout>
-      <div className="bg-white rounded-t-3xl">
+      <div className="h-full bg-white rounded-t-3xl">
         {diaries.map((diary) => {
           const { date, weekday } = formatDate(diary.date);
 

@@ -22,19 +22,10 @@ import CreateTest from "./pages/Test/CreateTest";
 import SocialRedirect from "./pages/Auth/SocialRedirect";
 
 function App() {
-  const noLayout =
-    location.pathname === "/" ||
-    location.pathname === "/universe" ||
-    location.pathname.startsWith("/constellation/detail/"); // 홈 페이지 여부 확인
+  const noLayout = location.pathname === "/" || location.pathname === "/universe" || location.pathname.startsWith("/constellation/detail/"); // 홈 페이지 여부 확인
   return (
     <>
-      <div
-        className={
-          noLayout
-            ? ""
-            : "min-h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121] p-4"
-        }
-      >
+      <div className={noLayout ? "" : "flex min-h-screen bg-gradient-to-b from-[#000054] to-[#010121]"}>
         {!noLayout && <BackgroundStar />}
         <Routes>
           {/* Auth 관련 */}
@@ -56,13 +47,9 @@ function App() {
           <Route path="diary/edit/:id" element={<DiaryWrite />} />
           <Route path="diary/calendar" element={<Diary />} />
           <Route path="diary/monthly/:month" element={<MonthlyDiary />} />\
-          <Route path="diary/stars" element={<DiaryStars />} />{" "}
-          {/* 별 보기 추가 */}
+          <Route path="diary/stars" element={<DiaryStars />} /> {/* 별 보기 추가 */}
           {/* Constellation 관련 */}
-          <Route
-            path="constellation/detail/:year"
-            element={<ConstellationDetail />}
-          />
+          <Route path="constellation/detail/:year" element={<ConstellationDetail />} />
           {/* TEST용 */}
           <Route path="color" element={<ColorTest />} />
           <Route path="test" element={<CreateTest />} />
