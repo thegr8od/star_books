@@ -43,8 +43,8 @@ function App() {
           <Route path="/oauth/redirect" element={<SocialRedirect />} />
           <Route path="signup" element={<SignUp />} />
           {/* MyPage 관련 */}
-          <Route path="mypage/:id" element={<MyPage />} />
-          <Route path="mypage/:id/edit" element={<ProfileEdit />} />
+          <Route path="mypage/" element={<MyPage />} />
+          <Route path="mypage/edit" element={<ProfileEdit />} />
           {/* Universe 관련 */}
           <Route path="universe" element={<Universe />} />
           <Route path="universe/analysis" element={<UniverseAnalysis />} />
