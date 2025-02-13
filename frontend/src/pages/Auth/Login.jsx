@@ -65,8 +65,8 @@ const Login = () => {
     }
   };
 
-  // 소셜 로그인 함수 추가
-  const baseUrl = "https://i12d206.p.ssafy.io";
+  // 소셜 로그인 함수
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const handleSocialLogin = (provider) => {
     window.location.href = `${baseUrl}/oauth2/authorization/${provider}`;
   };

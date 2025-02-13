@@ -19,6 +19,7 @@ import Cursor from "./components/Cursor";
 import BackgroundStar from "./components/BackgroundStar";
 import ErrorPage from "./pages/ErrorPage";
 import CreateTest from "./pages/Test/CreateTest";
+import SocialRedirect from "./pages/Auth/SocialRedirect";
 
 function App() {
   const noLayout =
@@ -39,6 +40,7 @@ function App() {
           {/* Auth 관련 */}
           <Route path="" element={<Home />} />
           <Route path="login" element={<Login />} />
+          <Route path="/oauth/redirect" element={<SocialRedirect />} />
           <Route path="signup" element={<SignUp />} />
           {/* MyPage 관련 */}
           <Route path="mypage/:id" element={<MyPage />} />

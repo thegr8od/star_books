@@ -15,9 +15,12 @@ const LoginModal = ({ isOpen, onClose }) => {
       const response = await axios.post("/api/member/password/reset-request", {
         email,
       });
-      setMessage("인증번호가 이메일로 전송되었습니다.");
-      setStep(2);
+      if (response.data.statusCode === 200) {
+        setMessage("인증번호가 이메일로 전송되었습니다.");
+        setStep(2);
+      }
     } catch (error) {
+      console.error("이메일 전송 에러:", error);
       setError("이메일 전송에 실패했습니다.");
     }
   };
@@ -28,9 +31,12 @@ const LoginModal = ({ isOpen, onClose }) => {
         email,
         verificationCode,
       });
-      setMessage("인증이 완료되었습니다.");
-      setStep(3);
+      if (response.data.statusCode === 200) {
+        setMessage("인증이 완료되었습니다.");
+        setStep(3);
+      }
     } catch (error) {
+      console.error("인증번호 확인 에러:", error);
       setError("잘못된 인증번호입니다.");
     }
   };
@@ -47,11 +53,14 @@ const LoginModal = ({ isOpen, onClose }) => {
         verificationCode,
         newPassword,
       });
-      setMessage("비밀번호가 성공적으로 변경되었습니다.");
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      if (response.data.statusCode === 200) {
+        setMessage("비밀번호가 성공적으로 변경되었습니다.");
+        setTimeout(() => {
+          onClose();
+        }, 2000);
+      }
     } catch (error) {
+      console.error("비밀번호 변경 에러:", error);
       setError("비밀번호 변경에 실패했습니다.");
     }
   };
