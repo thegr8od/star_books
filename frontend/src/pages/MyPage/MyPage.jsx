@@ -9,6 +9,7 @@ function Mypage() {
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState(null);
   const userId = 1;
+  const [selectedPeriod, setSelectedPeriod] = useState("월");
 
   // 수정 페이지로 이동
   const handleEditClick = () => {
@@ -23,6 +24,10 @@ function Mypage() {
     navigate("/constellation/gallery");
   };
 
+  // 통계 그래프 기간 선택
+  const handlePeriodClick = (period) => {
+    setSelectedPeriod(period);
+  };
   return (
     <>
       <Layout>
@@ -109,6 +114,21 @@ function Mypage() {
           <hr className="mt-12 border-gray-500" />
           <div className="mt-12">
             <h1 className="text-xl font-bold mb-6">내 감정 통계</h1>
+            <div className="flex gap-2 justify-end mb-3">
+              {["월", "년", "전체"].map((period) => (
+                <button
+                  key={period}
+                  onClick={() => handlePeriodClick(period)}
+                  className={`px-1 py-1 transition-colors ${
+                    selectedPeriod === period
+                      ? "text-white font-semibold"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {period}
+                </button>
+              ))}
+            </div>
             <MypageBarChart />
           </div>
         </div>

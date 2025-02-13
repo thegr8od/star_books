@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import Layout from "../../components/Layout";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
+import axios from "axios";
 
 const ProfileEdit = () => {
   const [imagePreview, setImagePreview] = useState(null);
@@ -13,9 +14,6 @@ const ProfileEdit = () => {
     name: "",
     email: "",
     emailDomain: "",
-    birthYear: "",
-    birthMonth: "",
-    birthDay: "",
     gender: "",
   });
 
@@ -131,33 +129,6 @@ const ProfileEdit = () => {
                       nate.com
                     </option>
                   </select>
-                </div>
-              </div>
-
-              {/* 생년월일 */}
-              <div className="flex flex-col space-y-[10px]">
-                <span>생년월일</span>
-                <div className="flex space-x-[5px]">
-                  <input
-                    name="birthYear"
-                    value={formData.birthYear}
-                    onChange={handleInputChange}
-                    className="w-1/3 bg-transparent border-b border-gray-400 pb-1 text-center"
-                  />
-                  <p>.</p>
-                  <input
-                    name="birthMonth"
-                    value={formData.birthMonth}
-                    onChange={handleInputChange}
-                    className="w-1/3 bg-transparent border-b border-gray-400 pb-1 text-center"
-                  />
-                  <p>.</p>
-                  <input
-                    name="birthDay"
-                    value={formData.birthDay}
-                    onChange={handleInputChange}
-                    className="w-1/3 bg-transparent border-b border-gray-400 pb-1 text-center"
-                  />
                 </div>
               </div>
 
