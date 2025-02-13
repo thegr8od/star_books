@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { Camera } from "lucide-react";
 import Button from "../../components/Button";
+import GetColor from "../../components/GetColor";
 
 const DiaryWrite = () => {
   const location = useLocation();
@@ -89,7 +90,7 @@ const DiaryWrite = () => {
         <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
           {/* 감정 아이콘 */}
           <div className="flex justify-center">
-            <span className="rounded-full bg-[#7cb3cb] w-6 h-6" />
+            <span className="rounded-full w-6 h-6" {...GetColor(x=1, y=2)} />
           </div>
 
           {/* 텍스트 입력 칸*/}
