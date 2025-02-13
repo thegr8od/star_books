@@ -12,12 +12,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -58,7 +58,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
 
         if (email == null || email.isEmpty()) {
             log.error("🚨 로그인 성공했지만 이메일 정보를 가져올 수 없습니다.");
-            response.sendRedirect("http://localhost:3000/error");
+            response.sendRedirect("https://i12d206.p.ssafy.io/error");
             return;
         }
 
@@ -83,22 +83,30 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
             log.info("🎉 신규 사용자 등록 성공: {}", email);
         }
 
-        // JWT 토큰 생성 (user_id 포함)
+        // ✅ JWT 토큰 생성 (user_id 포함)
         String accessToken = tokenService.generateAccessToken(user);
         String refreshToken = tokenService.generateRefreshToken(user);
 
-        // Refresh Token을 쿠키에 저장
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+        // ✅ Refresh Token을 HttpOnly Secure 쿠키에 저장
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false) // 개발 환경에서는 false, 운영 시에는 true
-                .maxAge(60 * 60 * 24 * 14) // 14일
+                .secure(true)  // 운영 환경에서는 true, 개발 환경에서는 false 가능
+                .sameSite("None")
+                .maxAge(60 * 60 * 24 * 14) // 14일 유지
                 .path("/")
-                .sameSite("Lax")
+                .domain("i11d208.p.ssafy.io")
                 .build();
 
-        response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-        response.setHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+        response.setHeader("Set-Cookie", refreshTokenCookie.toString());
 
-        response.sendRedirect("http://localhost:3000/");
+        // ✅ Access Token을 URL 파라미터로 전달
+        String targetUrl = UriComponentsBuilder.fromUriString("https://i12d206.p.ssafy.io/")
+                .queryParam("token", accessToken)
+                .build().toUriString();
+
+        log.info("✅ OAuth 로그인 완료, 리다이렉트 URL: {}", targetUrl);
+
+        // ✅ 백엔드에서 프론트엔드로 리다이렉트
+        response.sendRedirect(targetUrl);
     }
 }
