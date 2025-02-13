@@ -30,51 +30,50 @@ function RadioList() {
     {
       id: 1,
       title: "라디오? 레이디오!",
-      likes: 12,
-      comments: 5,
       nickname: "닉네임1",
       category: "음악",
       createdAt: "2024-02-11",
+      participantCount: 25,
     },
     {
       id: 2,
       title: "라디오? 레이디오!",
-      likes: 15,
       nickname: "닉네임2",
       category: "일상",
       createdAt: "2024-02-10",
+      participantCount: 20,
     },
     {
       id: 3,
       title: "라디오? 레이디오!",
-      likes: 8,
       nickname: "푸릇푸릇한햄버거",
       category: "취미",
       createdAt: "2025-01-11",
+      participantCount: 18,
     },
     {
       id: 4,
       title: "라디오? 레이디오!",
-      likes: 20,
       nickname: "닉네임4",
       category: "건강",
       createdAt: "2025-02-11",
+      participantCount: 10,
     },
     {
       id: 5,
       title: "라디오? 레이디오!",
-      likes: 10,
       nickname: "닉네임5",
       category: "연애",
       createdAt: "2025-01-01",
+      participantCount: 30,
     },
     {
       id: 6,
       title: "라디오? 레이디오!",
-      likes: 16,
       nickname: "닉네임6",
       category: "기타",
       createdAt: "2024-12-25",
+      participantCount: 28,
     },
   ];
 
@@ -84,10 +83,15 @@ function RadioList() {
     if (sortType === "latest") {
       // 양수 : b가 더 최신, 음수 : a가 더 최신
       return [...tracks].sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
-      // 인기순 -> 실시간 시청자 수에 따라(데이터 어떻게 받는건지 아직 잘 모름)
+      // 인기순 -> 시청자 수에 따라
+    } else if (sortType === "popular") {
+      return [...tracks].sort(
+        (a, b) => b.participantCount - a.participantCount
+      );
     }
+    return tracks;
   };
 
   // 선택된 카테고리에 따라 트랙 필터링
@@ -236,7 +240,7 @@ function RadioList() {
                         sx={{ fontSize: 15 }}
                         className="mr-1"
                       />
-                      {track.likes}
+                      {track.participantCount}
                     </span>
                   </div>
                 </div>
