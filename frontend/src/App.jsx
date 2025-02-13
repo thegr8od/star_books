@@ -1,10 +1,8 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
-import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Home/Home";
 import ConstellationDetail from "./pages/Constellation/ConstellationDetail";
-import Diary from "./pages/Diary/Diary";
 import DiaryStars from "./pages/Diary/DiaryStars";
 import DiaryWrite from "./pages/Diary/DiaryWrite";
 import MonthlyDiary from "./pages/Diary/MonthlyDiary";
@@ -18,7 +16,9 @@ import ColorTest from "./components/ColorTest";
 import Cursor from "./components/Cursor";
 import BackgroundStar from "./components/BackgroundStar";
 import ErrorPage from "./pages/ErrorPage";
-import CreateTest from "./pages/Test/CreateTest";
+import SocialRedirect from "./pages/Auth/SocialRedirect";
+import AiChat from "./pages/AiChat/AiChat";
+import DiaryCalendar from "./pages/Diary/DiaryCalendar"
 
 function App() {
   const noLayout =
@@ -31,38 +31,40 @@ function App() {
         className={
           noLayout
             ? ""
-            : "min-h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121] p-4"
+            : "flex min-h-screen bg-gradient-to-b from-[#000054] to-[#010121]"
         }
       >
         {!noLayout && <BackgroundStar />}
         <Routes>
           {/* Auth 관련 */}
           <Route path="" element={<Home />} />
-          <Route path="login" element={<Login />} />
+          <Route path="/oauth/redirect" element={<SocialRedirect />} />
           <Route path="signup" element={<SignUp />} />
           {/* MyPage 관련 */}
-          <Route path="mypage/:id" element={<MyPage />} />
-          <Route path="mypage/:id/edit" element={<ProfileEdit />} />
+          <Route path="mypage/" element={<MyPage />} />
+          <Route path="mypage/edit" element={<ProfileEdit />} />
           {/* Universe 관련 */}
           <Route path="universe" element={<Universe />} />
           <Route path="universe/analysis" element={<UniverseAnalysis />} />
           {/* Radio 관련 */}
-          <Route path="radio/:id" element={<RadioShow />} />          <Route path="radio/list" element={<RadioList />} />
+          <Route path="radio/list" element={<RadioList />} />
+          <Route path="radio/:id" element={<RadioShow />} />
           {/* Diary 관련 */}
-          <Route path="diary/write" element={<DiaryWrite />} />
-          <Route path="diary/edit/:id" element={<DiaryWrite />} />
-          <Route path="diary/calendar" element={<Diary />} />
-          <Route path="diary/monthly/:month" element={<MonthlyDiary />} />\
+          <Route path="diary/calendar" element={<DiaryCalendar />} />
           <Route path="diary/stars" element={<DiaryStars />} />{" "}
           {/* 별 보기 추가 */}
+          <Route path="diary/monthly/:year/:month" element={<MonthlyDiary />} />
+          <Route path="diary/write" element={<DiaryWrite />} />
+          <Route path="diary/edit/:id" element={<DiaryWrite />} />
           {/* Constellation 관련 */}
           <Route
             path="constellation/detail/:year"
             element={<ConstellationDetail />}
           />
+          {/* AI 채팅 관련 */}
+          <Route path="chat" element={<AiChat />} />
           {/* TEST용 */}
           <Route path="color" element={<ColorTest />} />
-          <Route path="test" element={<CreateTest />} />
           {/* 에러페이지 */}
           <Route path="*" element={<ErrorPage />} />
         </Routes>
