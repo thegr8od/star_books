@@ -12,31 +12,23 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class StarlineCoordResponse {
-    /** 선 ID */
     private Long starlineCoordId;
-
-    /** 시작 감정 좌표 ID */
     private Long startEmotionId;
-
-    /** 끝 감정 좌표 ID */
     private Long endEmotionId;
-
-    /** 생성 일시 */
-    private LocalDateTime createdAt;
-
-    /** 업데이트 일시 */
-    private LocalDateTime updatedAt;
+    private int year;
+    private int month;
+    private int day;
 
     /**
      * StarlineCoord 엔티티를 DTO로 변환하는 메서드
      */
     public static StarlineCoordResponse fromEntity(StarlineCoord starlineCoord) {
         return StarlineCoordResponse.builder()
-                .starlineCoordId(starlineCoord.getStarlineCoordId())
-                .startEmotionId(starlineCoord.getDiaryEmotionStart().getDiaryEmotionId())
-                .endEmotionId(starlineCoord.getDiaryEmotionEnd().getDiaryEmotionId())
-                .createdAt(starlineCoord.getCreatedAt())
-                .updatedAt(starlineCoord.getUpdatedAt())
+                .starlineCoordId(starlineCoord.getStarlineCoordId())  // ✅ getId()로 변경
+                .startEmotionId(starlineCoord.getStartEmotionId())  // ✅ 필드명 맞춤
+                .endEmotionId(starlineCoord.getEndEmotionId())  // ✅ 필드명 맞춤
+                .year(starlineCoord.getYear())
+                .month(starlineCoord.getMonth())
                 .build();
     }
 }
