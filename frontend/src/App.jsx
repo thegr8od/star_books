@@ -30,7 +30,6 @@ function App() {
         <Routes>
           {/* Auth 관련 */}
           <Route path="" element={<Home />} />
-          <Route path="login" element={<Login />} />
           <Route path="/oauth/redirect" element={<SocialRedirect />} />
           <Route path="signup" element={<SignUp />} />
           {/* MyPage 관련 */}
@@ -38,21 +37,20 @@ function App() {
           <Route path="mypage/edit" element={<ProfileEdit />} />
           {/* Universe 관련 */}
           <Route path="universe" element={<Universe />} />
-          <Route path="universe/analysis" element={<UniverseAnalysis />} />
+          <Route path="universe/analysis" element={<UniverseAnalysis />} /> 
           {/* Radio 관련 */}
-          <Route path="radio/:id" element={<RadioShow />} />
           <Route path="radio/list" element={<RadioList />} />
+          <Route path="radio/:id" element={<RadioShow />} />
           {/* Diary 관련 */}
+          <Route path="diary/calendar" element={<Diary />} />
+          <Route path="diary/stars" element={<DiaryStars />} /> {/* 별 보기 추가 */}
+          <Route path="diary/monthly/:year/:month" element={<MonthlyDiary />} />
           <Route path="diary/write" element={<DiaryWrite />} />
           <Route path="diary/edit/:id" element={<DiaryWrite />} />
-          <Route path="diary/calendar" element={<Diary />} />
-          <Route path="diary/monthly/:month" element={<MonthlyDiary />} />\
-          <Route path="diary/stars" element={<DiaryStars />} /> {/* 별 보기 추가 */}
           {/* Constellation 관련 */}
           <Route path="constellation/detail/:year" element={<ConstellationDetail />} />
           {/* TEST용 */}
           <Route path="color" element={<ColorTest />} />
-          <Route path="test" element={<CreateTest />} />
           {/* 에러페이지 */}
           <Route path="*" element={<ErrorPage />} />
         </Routes>
