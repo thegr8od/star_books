@@ -4,6 +4,7 @@ import Modal from "../../components/Modal";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
 import MoodSurveyToast from "./MoodSurveyToast";
+import MoodSurveyLoading from "./MoodSurveyLoading";
 
 const MoodSurvey = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
   const [showToast, setShowToast] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const moods = ["매우 좋음", "좋음", "보통", "좋지 않음", "매우 좋지 않음"];
   const emotions = {
@@ -102,17 +104,26 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   const modalTitle = step === 1 ? "기분을 선택해주세요" : text;
 
   // step2 완료 버튼 클릭 시 다이어리 작성 페이지로 이동
-  const handleComplete = () => {
-    handleClose();
-    navigate("../diary/write", {
-      state: {
-        emotions: selectedEmotions,
-      },
-    });
+  // 로딩 화면 추가
+  const handleComplete = async () => {
+    setIsLoading(true);
+    try {
+      handleClose();
+      navigate("../diary/write", {
+        state: {
+          emotions: selectedEmotions,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <>
+      {isLoading && <MoodSurveyLoading />}
       <MoodSurveyToast
         message={"감정은 5개까지만 선택 가능해요!"}
         isVisible={showToast}
