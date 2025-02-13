@@ -94,7 +94,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
                 .sameSite("None")
                 .maxAge(60 * 60 * 24 * 14) // 14일 유지
                 .path("/")
-                .domain("i11d208.p.ssafy.io")
+                .domain("i11d206.p.ssafy.io")
                 .build();
 
         response.setHeader("Set-Cookie", refreshTokenCookie.toString());
