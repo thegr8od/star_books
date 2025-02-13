@@ -3,6 +3,7 @@ package com.starbooks.backend.diary.dto.response;
 import com.starbooks.backend.diary.model.Diary;
 import com.starbooks.backend.diary.model.DiaryImage;
 import com.starbooks.backend.diary.model.DiaryHashtag;
+import com.starbooks.backend.diary.model.Diary.HashtagType;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ public record DiaryResponse(
         String title,
         String content,
         List<EmotionResponse> emotions,
-        List<String> HashtagType, // String → HashtagType으로 변경 가능
+        List<HashtagType> hashtags, // ✅ String → Enum 타입 유지
         List<String> imageUrls,
         LocalDateTime createdAt
 ) {
@@ -26,8 +27,7 @@ public record DiaryResponse(
                         .map(e -> new EmotionResponse(e.getXValue(), e.getYValue()))
                         .toList(),
                 diary.getHashtags().stream()
-                        .map(DiaryHashtag::getHashtag) // Enum 값으로 변경
-                        .map(Enum::name) // Enum을 문자열로 변환
+                        .map(DiaryHashtag::getHashtag) // ✅ Enum 값 유지
                         .toList(),
                 diary.getImages().stream()
                         .map(DiaryImage::getSaveFilePath)

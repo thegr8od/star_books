@@ -1,6 +1,7 @@
 package com.starbooks.backend.diary.service;
 
-import com.starbooks.backend.diary.dto.request.DiaryCreateRequest;
+//import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
+import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
 import com.starbooks.backend.diary.exception.NotFoundException;
 import com.starbooks.backend.diary.model.*;
@@ -9,8 +10,8 @@ import com.starbooks.backend.diary.repository.DiaryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -19,73 +20,75 @@ import java.util.List;
 public class DiaryService {
 
     private final DiaryRepository diaryRepository;
-    private final FileStorageService fileStorageService;
 
+    /**
+     * 1️⃣ 빈 다이어리 생성
+     */
     @Transactional
-    public DiaryResponse createDiary(DiaryCreateRequest request, User user) {
-        // 1. 다이어리 기본 정보 저장
+    public DiaryResponse createEmptyDiary(User user) {
         Diary diary = Diary.builder()
                 .user(user)
                 .createdAt(LocalDateTime.now())
                 .build();
-
-        // 2. 내용 저장
-        DiaryContent content = DiaryContent.builder()
-                .title(request.title())
-                .content(request.content())
-                .diary(diary) // DiaryContent에 Diary 설정
-                .build();
-        diary.setContent(content); // Diary에 DiaryContent 설정
-
-        // 3. 감정 저장
-        request.emotions().forEach(emotion -> {
-            DiaryEmotion diaryEmotion = DiaryEmotion.builder()
-                    .xValue(emotion.xValue())
-                    .yValue(emotion.yValue())
-                    .diary(diary) // DiaryEmotion에 Diary 설정
-                    .build();
-            diary.addEmotion(diaryEmotion);
-        });
-
-        // 4. 해시태그 저장 (Hashtag 엔티티 사용)
-        request.hashtags().forEach(tag -> {
-            DiaryHashtag diaryHashtag = DiaryHashtag.builder()
-                    .diary(diary)
-                    .hashtag(tag) // Enum 값 그대로 저장
-                    .build();
-            diary.addHashtag(diaryHashtag);
-        });
-
-        // 5. 이미지 업로드 및 경로 저장
-        List<DiaryImage> images = request.images().stream()
-                .map(file -> {
-                    String filePath = fileStorageService.upload(file);
-                    return DiaryImage.builder()
-                            .diary(diary)  // DiaryImage 빌더에 diary 설정
-                            .saveFilePath(filePath)
-                            .build();
-                })
-                .toList();
-
-        diary.setImages(images);  //
-
-        // 6. 다이어리 저장
         diaryRepository.save(diary);
-
-        // 7. 응답 DTO 변환
         return DiaryResponse.from(diary);
     }
 
+    /**
+     * 2️⃣ 해시태그 추가
+     */
+    @Transactional
+    public void addHashtags(Long diaryId, List<Diary.HashtagType> hashtags) {
+        Diary diary = getDiaryEntity(diaryId);
+        hashtags.forEach(tag -> {
+            DiaryHashtag diaryHashtag = DiaryHashtag.builder()
+                    .diary(diary)
+                    .hashtag(tag)
+                    .build();
+            diary.addHashtag(diaryHashtag);
+        });
+    }
+
+    /**
+     * 4️⃣ 다이어리 내용 입력
+     */
+    @Transactional
+    public void addContentAndImages(Long diaryId, DiaryContentRequest contentRequest, List<String> imageUrls) {
+        Diary diary = getDiaryEntity(diaryId);
+
+        // 내용 저장
+        DiaryContent content = DiaryContent.builder()
+                .diary(diary)
+                .title(contentRequest.getTitle())
+                .content(contentRequest.getContent())
+                .build();
+        diary.setContent(content);
+
+        // 이미지 저장
+        List<DiaryImage> images = new ArrayList<>();
+        for (String url : imageUrls) {
+            DiaryImage diaryImage = DiaryImage.builder()
+                    .diary(diary)
+                    .imageUrl(url)
+                    .build();
+            images.add(diaryImage);
+        }
+        diary.setImages(images);
+    }
+
     public DiaryResponse getDiary(Long diaryId) {
-        Diary diary = diaryRepository.findByDiaryId(diaryId) // 또는 findByDiaryId()
-                .orElseThrow(() -> new NotFoundException("Diary not found"));
+        Diary diary = getDiaryEntity(diaryId);
         return DiaryResponse.from(diary);
     }
 
     @Transactional
     public void deleteDiary(Long diaryId) {
-        Diary diary = diaryRepository.findById(diaryId)
-                .orElseThrow(() -> new NotFoundException("Diary not found"));
+        Diary diary = getDiaryEntity(diaryId);
         diaryRepository.delete(diary);
+    }
+
+    public Diary getDiaryEntity(Long diaryId) {
+        return diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new NotFoundException("Diary not found"));
     }
 }
