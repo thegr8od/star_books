@@ -1,10 +1,8 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
-import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Home/Home";
 import ConstellationDetail from "./pages/Constellation/ConstellationDetail";
-import Diary from "./pages/Diary/Diary";
 import DiaryStars from "./pages/Diary/DiaryStars";
 import DiaryWrite from "./pages/Diary/DiaryWrite";
 import MonthlyDiary from "./pages/Diary/MonthlyDiary";
