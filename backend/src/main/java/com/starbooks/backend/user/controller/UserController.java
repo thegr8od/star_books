@@ -37,6 +37,35 @@ public class UserController {
     private final TokenService tokenService;
     private final JwtTokenProvider jwtTokenProvider;
 
+    // == 회원가입 ==
+    @Operation(summary = "회원가입", description = "회원 정보를 입력하여 가입합니다.")
+    @PostMapping
+    public ApiResponse<?> registerUser(@RequestBody RequestRegisterDTO requestDTO) {
+        try {
+            log.info("RegisterUser Request DTO: {}", requestDTO);
+            if (requestDTO.getSnsAccount() == null) {
+                requestDTO.setSnsAccount(false);
+            }
+
+            userService.registerUser(requestDTO);
+            return ApiResponse.createSuccessWithNoContent("회원가입이 완료되었습니다.");
+        } catch (Exception e) {
+            log.error("회원가입 실패: {}", e.getMessage());
+            return ApiResponse.createError(ErrorCode.USER_REGISTER_FAILED);
+        }
+    }
+
+    // == 이메일 중복 검사 API ==
+    @Operation(summary = "이메일 중복 검사", description = "이메일이 이미 존재하는지 확인합니다.")
+    @GetMapping("/check-email")
+    public ApiResponse<?> checkEmailDuplicate(@RequestParam String email) {
+        boolean isDuplicate = userService.existsByEmail(email);
+        if (isDuplicate) {
+            return ApiResponse.createError(ErrorCode.EMAIL_ALREADY_EXIST);
+        }
+        return ApiResponse.createSuccessWithNoContent("사용 가능한 이메일입니다.");
+    }
+
     // == 로그인 ==
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
     @PostMapping("/login")
@@ -77,6 +106,28 @@ public class UserController {
         return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
     }
 
+    // == 로그아웃 ==
+    @Operation(summary = "로그아웃", description = "Refresh Token을 사용하여 로그아웃합니다.")
+    @PostMapping("/logout")
+    public ApiResponse<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = extractRefreshToken(request);
+        if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
+            tokenService.blacklistRefreshToken(refreshToken);
+
+            // 쿠키 제거
+            ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                    .maxAge(0)
+                    .path("/")
+                    .secure(true)
+                    .httpOnly(true)
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
+
+            return ApiResponse.createSuccessWithNoContent("로그아웃이 완료되었습니다.");
+        }
+        return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
+    }
+
     // == 토큰 재발급 ==
     @Operation(summary = "토큰 재발급", description = "Refresh Token을 이용하여 새로운 Access Token을 발급합니다.")
     @PostMapping("/refresh")
@@ -110,5 +161,29 @@ public class UserController {
         } catch (Exception e) {
             return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
         }
+    }
+
+    // == 사용자 정보 조회 ==
+    @Operation(summary = "사용자 정보 조회", description = "회원 ID를 기반으로 사용자 정보를 조회합니다.")
+    @GetMapping("/detail")
+    public ApiResponse<?> getUserInfo(@RequestParam Long userId) {
+        try {
+            ResponseUserDTO userInfo = userService.getUserInfo(userId);
+            return ApiResponse.createSuccess(userInfo, "유저 정보 조회 성공");
+        } catch (Exception e) {
+            return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    // == Refresh Token 쿠키 추출 ==
+    private String extractRefreshToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (Cookie cookie : cookies) {
+            if ("refreshToken".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 }
