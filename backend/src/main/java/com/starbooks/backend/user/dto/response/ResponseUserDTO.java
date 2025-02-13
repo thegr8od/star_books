@@ -16,7 +16,7 @@ public class ResponseUserDTO {
     private String email;
     private String nickname;
     private Gender gender;
-    private String kakaoId;
+    private Boolean snsAccount;  // 변경된 필드
     private Role role;
     private Boolean isActive;
     private String profileImagePath;
@@ -27,7 +27,7 @@ public class ResponseUserDTO {
                 .email(user.getEmail())
                 .nickname(user.getNickname())
                 .gender(user.getGender())
-                .kakaoId(user.getKakaoId())
+                .snsAccount(user.getSnsAccount())
                 .role(user.getRole())
                 .isActive(user.getIsActive())
                 .profileImagePath(

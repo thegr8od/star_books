@@ -30,8 +30,6 @@ public class QUser extends EntityPathBase<User> {
 
     public final BooleanPath isActive = createBoolean("isActive");
 
-    public final StringPath kakaoId = createString("kakaoId");
-
     public final StringPath nickname = createString("nickname");
 
     public final StringPath password = createString("password");
@@ -40,7 +38,7 @@ public class QUser extends EntityPathBase<User> {
 
     public final EnumPath<Role> role = createEnum("role", Role.class);
 
-    public final StringPath token = createString("token");
+    public final BooleanPath snsAccount = createBoolean("snsAccount");
 
     public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);
 

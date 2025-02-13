@@ -63,27 +63,29 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         }
 
         // 회원가입 또는 로그인 처리
+        User user;
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isPresent()) {
+            user = optionalUser.get();
             log.info("✅ 기존 사용자 로그인: {}", email);
         } else {
-            User newUser = User.builder()
+            user = User.builder()
                     .email(email)
                     .password(null) // OAuth2 로그인이므로 비밀번호는 null 처리
                     .nickname(name != null ? name : "Unknown User")
                     .gender(Gender.OTHER) // 기본값 (필요 시 수정)
-                    .kakaoId(null)
+                    .snsAccount(true) // OAuth2 로그인 사용자는 snsAccount = true
                     .role(Role.member)
                     .isActive(true)
                     .build();
 
-            userRepository.save(newUser);
+            userRepository.save(user);
             log.info("🎉 신규 사용자 등록 성공: {}", email);
         }
 
-        // JWT 토큰 생성
-        String accessToken = tokenService.generateAccessToken(email);
-        String refreshToken = tokenService.generateRefreshToken(email);
+        // JWT 토큰 생성 (user_id 포함)
+        String accessToken = tokenService.generateAccessToken(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
 
         // Refresh Token을 쿠키에 저장
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)

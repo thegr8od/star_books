@@ -24,9 +24,9 @@ public class QDiaryHashtag extends EntityPathBase<DiaryHashtag> {
 
     public final QDiary diary;
 
-    public final NumberPath<Long> hashtagId = createNumber("hashtagId", Long.class);
+    public final EnumPath<Diary.HashtagType> hashtag = createEnum("hashtag", Diary.HashtagType.class);
 
-    public final QHashtag tag;
+    public final NumberPath<Long> hashtagId = createNumber("hashtagId", Long.class);
 
     public QDiaryHashtag(String variable) {
         this(DiaryHashtag.class, forVariable(variable), INITS);
@@ -47,7 +47,6 @@ public class QDiaryHashtag extends EntityPathBase<DiaryHashtag> {
     public QDiaryHashtag(Class<? extends DiaryHashtag> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.diary = inits.isInitialized("diary") ? new QDiary(forProperty("diary"), inits.get("diary")) : null;
-        this.tag = inits.isInitialized("tag") ? new QHashtag(forProperty("tag")) : null;
     }
 
 }
