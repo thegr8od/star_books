@@ -17,7 +17,6 @@ public class StarlineCoordResponse {
     private Long endEmotionId;
     private int year;
     private int month;
-    private int day;
 
     /**
      * StarlineCoord 엔티티를 DTO로 변환하는 메서드
