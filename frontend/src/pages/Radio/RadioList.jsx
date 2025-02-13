@@ -150,6 +150,7 @@ function RadioList() {
               최신순
             </button>
           </div>
+
           {/* 카테고리 */}
           <div className="relative mb-6">
             <button
@@ -161,7 +162,7 @@ function RadioList() {
 
             <div
               ref={scrollContainerRef}
-              className="flex gap-4 overflow-x-auto px-10 scrollbar-hide scroll-smooth"
+              className="flex gap-2 md:gap-4 overflow-x-auto px-4 md:px-8 scrollbar-hide scroll-smooth"
               style={{
                 scrollbarWidth: "none",
                 msOverflowStyle: "none",
@@ -172,7 +173,7 @@ function RadioList() {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 transition-colors
+                  className={`px-4 md:px-4 py-2 md:py-2 rounded-full whitespace-nowrap flex-shrink-0 transition-colors w-[calc(100%/3-0.5rem)] md:w-[calc(100%/4-1rem)]
                   ${
                     selectedCategory === category
                       ? "bg-gray-200 text-black"
@@ -195,7 +196,7 @@ function RadioList() {
 
         {/* 트랙 */}
         <div className="mx-[-8px] sm:mx-[-24px]">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
             {filteredTracks.map((track) => (
               <div key={track.id} className="p-4 sm:p-2">
                 <div className="flex flex-col items-center">

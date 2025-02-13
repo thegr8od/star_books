@@ -47,8 +47,7 @@ function App() {
           <Route path="universe" element={<Universe />} />
           <Route path="universe/analysis" element={<UniverseAnalysis />} />
           {/* Radio 관련 */}
-          <Route path="radio/:id" element={<RadioShow />} />
-          <Route path="radio/list" element={<RadioList />} />
+          <Route path="radio/:id" element={<RadioShow />} />          <Route path="radio/list" element={<RadioList />} />
           {/* Diary 관련 */}
           <Route path="diary/write" element={<DiaryWrite />} />
           <Route path="diary/edit/:id" element={<DiaryWrite />} />
