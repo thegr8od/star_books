@@ -5,7 +5,6 @@ import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Home/Home";
 import ConstellationDetail from "./pages/Constellation/ConstellationDetail";
 import Diary from "./pages/Diary/Diary";
-import DiaryEdit from "./pages/Diary/DiaryEdit";
 import DiaryStars from "./pages/Diary/DiaryStars";
 import DiaryWrite from "./pages/Diary/DiaryWrite";
 import MonthlyDiary from "./pages/Diary/MonthlyDiary";
@@ -23,17 +22,20 @@ import CreateTest from "./pages/Test/CreateTest";
 import SocialRedirect from "./pages/Auth/SocialRedirect";
 
 function App() {
-  const isHome = location.pathname === "/"; // 홈 페이지 여부 확인
+  const noLayout =
+    location.pathname === "/" ||
+    location.pathname === "/universe" ||
+    location.pathname.startsWith("/constellation/detail/"); // 홈 페이지 여부 확인
   return (
     <>
       <div
         className={
-          isHome
+          noLayout
             ? ""
             : "min-h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121] p-4"
         }
       >
-        {!isHome && <BackgroundStar />}
+        {!noLayout && <BackgroundStar />}
         <Routes>
           {/* Auth 관련 */}
           <Route path="" element={<Home />} />
@@ -51,7 +53,7 @@ function App() {
           <Route path="radio/list" element={<RadioList />} />
           {/* Diary 관련 */}
           <Route path="diary/write" element={<DiaryWrite />} />
-          <Route path="diary/edit/:id" element={<DiaryEdit />} />
+          <Route path="diary/edit/:id" element={<DiaryWrite />} />
           <Route path="diary/calendar" element={<Diary />} />
           <Route path="diary/monthly/:month" element={<MonthlyDiary />} />\
           <Route path="diary/stars" element={<DiaryStars />} />{" "}

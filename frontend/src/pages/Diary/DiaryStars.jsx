@@ -6,6 +6,8 @@ import TimelineIcon from "@mui/icons-material/Timeline";
 import OpenWithIcon from "@mui/icons-material/OpenWith";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
+import ConstellationCreateModal from "../../components/Modal/ConstellationCreateModal";
 
 // 샘플 데이터
 const sampleWorryStars = [
@@ -29,6 +31,11 @@ const sampleWorryStars = [
   },
 ];
 
+const dummyConstellationData = {
+  color: ["#FFD700", "#FF69B4", "#4169E1", "#32CD32", "#FF4500"],
+  count: 5,
+};
+
 function DiaryStars() {
   // ==================================================== 상태 관리 ====================================================
   const [stars, setStars] = useState(sampleWorryStars); // 별(초기 axios 응답 데이터)
@@ -42,7 +49,13 @@ function DiaryStars() {
   const [selectedStar, setSelectedStar] = useState(null); // 편집시 선택된 별
   const [modifiedStars, setModifiedStars] = useState({}); // 편집시 이동된 별(axios 요청 데이터)
 
+  const [showCreateAiModal, setShowCreateAiModal] = useState(false); // AI 별자리 생성 모달 표시
   const [showConnections, setShowConnections] = useState(true); // 선 표시
+  const BUTTON_STYLES = {
+    base: "bg-white/25 text-white size-6 rounded-full flex items-center justify-center",
+    active: "ring-2 ring-white",
+  };
+
   // ==================================================== move 모드 ====================================================
   // 드래그 앤 드롭 (별 위치 업데이트)
   const handleStarDrag = (e) => {
@@ -272,43 +285,56 @@ function DiaryStars() {
         ))}
       </div>
 
+      {/* ========== AI 별자리 생성 모달 ========== */}
+      <ConstellationCreateModal
+        isOpen={showCreateAiModal}
+        onClose={() => setShowCreateAiModal(false)}
+        constellationData={dummyConstellationData}
+      />
+
       {/* ========== 편집 버튼 영역 ========== */}
-      <div className="h-8 mt-1 ml-auto">
+      <div className="flex justify-end mt-1.5">
         {!isEdit ? (
-          <div className="flex gap-1.5">
+          <div className="flex space-x-1.5">
+            {/* AI 생성 버튼 */}
+            <button
+              onClick={() => setShowCreateAiModal(true)}
+              className={`${BUTTON_STYLES.base} w-auto p-1.5 text-xs`}
+            >
+              <ImageOutlinedIcon fontSize="small" />
+              <p>AI 만들기</p>
+            </button>
+
             {/* 선 표시 버튼 */}
             <button
               onClick={() => setShowConnections((prev) => !prev)}
-              className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center"
+              className={BUTTON_STYLES.base}
             >
               {showConnections ? (
-                <VisibilityIcon fontSize="small" />
+                <VisibilityIcon fontSize="inherit" />
               ) : (
-                <VisibilityOffIcon fontSize="small" />
+                <VisibilityOffIcon fontSize="inherit" />
               )}
             </button>
 
             {/* 편집 시작 버튼 */}
-            <button
-              onClick={handleEdit}
-              className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center"
-            >
-              <EditIcon fontSize="small" />
+            <button onClick={handleEdit} className={BUTTON_STYLES.base}>
+              <EditIcon fontSize="inherit" />
             </button>
           </div>
         ) : (
-          <div className="flex gap-1.5">
+          <div className="flex space-x-1.5">
             {/* move 버튼 */}
             <button
               onClick={() => {
                 setEditMode("move"); // 편집 모드 move 전환
                 setSelectedStar(null); // 선택된 별 초기화
               }}
-              className={`bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center ${
-                editMode === "move" ? "ring-2 ring-white" : ""
+              className={`${BUTTON_STYLES.base} ${
+                editMode === "move" ? BUTTON_STYLES.active : ""
               }`}
             >
-              <OpenWithIcon fontSize="small" />
+              <OpenWithIcon fontSize="inherit" />
             </button>
 
             {/* connect 버튼 */}
@@ -317,27 +343,21 @@ function DiaryStars() {
                 setEditMode("connect"); // 편집 모드 connect 전환
                 setSelectedStar(null); // 선택된 별 초기화
               }}
-              className={`bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center ${
-                editMode === "connect" ? "ring-2 ring-white" : ""
+              className={`${BUTTON_STYLES.base} ${
+                editMode === "connect" ? BUTTON_STYLES.active : ""
               }`}
             >
-              <TimelineIcon fontSize="small" />
+              <TimelineIcon fontSize="inherit" />
             </button>
 
             {/* 편집 취소 버튼 */}
-            <button
-              onClick={handleCancel}
-              className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center"
-            >
-              <CloseIcon fontSize="small" />
+            <button onClick={handleCancel} className={BUTTON_STYLES.base}>
+              <CloseIcon fontSize="inherit" />
             </button>
 
             {/* 편집 저장 버튼 */}
-            <button
-              onClick={handleSave}
-              className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center"
-            >
-              <CheckIcon fontSize="small" />
+            <button onClick={handleSave} className={BUTTON_STYLES.base}>
+              <CheckIcon fontSize="inherit" />
             </button>
           </div>
         )}
