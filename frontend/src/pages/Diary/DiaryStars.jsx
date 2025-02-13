@@ -62,7 +62,11 @@ function DiaryStars() {
     const newY = Math.max(0, Math.min(100, y));
 
     // 선택된 별 위치 업데이트
-    setStars((prev) => prev.map((star) => (star.id === selectedStar ? { ...star, x: newX, y: newY } : star)));
+    setStars((prev) =>
+      prev.map((star) =>
+        star.id === selectedStar ? { ...star, x: newX, y: newY } : star
+      )
+    );
 
     // 수정된 별 위치 저장
     setModifiedStars((prev) => ({
@@ -109,7 +113,11 @@ function DiaryStars() {
     } else if (selectedStar !== starId) {
       // 두 번째 다른 별 선택
       // 존재하는 연결인지 확인
-      const connectionExists = connections.some((data) => (data.start === selectedStar && data.end === starId) || (data.start === starId && data.end === selectedStar));
+      const connectionExists = connections.some(
+        (data) =>
+          (data.start === selectedStar && data.end === starId) ||
+          (data.start === starId && data.end === selectedStar)
+      );
       // 존재하지 않으면 연결 생성
       if (!connectionExists) {
         setConnections((prev) => [
@@ -127,7 +135,12 @@ function DiaryStars() {
 
   // 선 클릭 시 삭제하는 함수
   const handleConnectionClick = (connection) => {
-    setConnections((prev) => prev.filter((data) => !(data.start === connection.start && data.end === connection.end)));
+    setConnections((prev) =>
+      prev.filter(
+        (data) =>
+          !(data.start === connection.start && data.end === connection.end)
+      )
+    );
   };
 
   // ==================================================== 편집 함수 ====================================================
@@ -167,8 +180,12 @@ function DiaryStars() {
       {/* ========== 별 영역 ========== */}
       <div className="flex-1 relative star-container border border-gray-700">
         <div className="absolute left-1/2 -translate-x-1/2 text-center mt-3">
-          <div className="text-white/60 text-xs">별들의 이야기가 시작되는 곳.</div>
-          <div className="text-white/60 text-xs">당신의 별은 어떤 빛을 띄나요?</div>
+          <div className="text-white/60 text-xs">
+            별들의 이야기가 시작되는 곳.
+          </div>
+          <div className="text-white/60 text-xs">
+            당신의 별은 어떤 빛을 띄나요?
+          </div>
         </div>
 
         {/* 선 (svg) */}
@@ -176,7 +193,9 @@ function DiaryStars() {
           {(isEdit || showConnections) &&
             connections.map((connection) => {
               // 연결된 시작과 끝 별 찾기
-              const startStar = stars.find((star) => star.id === connection.start);
+              const startStar = stars.find(
+                (star) => star.id === connection.start
+              );
               const endStar = stars.find((star) => star.id === connection.end);
               // 연결된 별이 없으면 선 그리지 않음 (별이 삭제된 경우)
               if (!startStar || !endStar) return null;
@@ -190,8 +209,13 @@ function DiaryStars() {
                   y2={`${endStar.y}%`} // 끝 별 y 좌표
                   stroke="rgba(255, 255, 255, 0.25)" // 선 색상
                   strokeWidth="1" // 선 두께
-                  className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
-                  style={{ pointerEvents: isEdit && editMode === "connect" ? "auto" : "none" }} // 편집 모드에서만 클릭 가능
+                  className={`${
+                    isEdit && editMode === "connect" ? "cursor-pointer" : ""
+                  }`} // 커서 스타일
+                  style={{
+                    pointerEvents:
+                      isEdit && editMode === "connect" ? "auto" : "none",
+                  }} // 편집 모드에서만 클릭 가능
                   onClick={() => {
                     // 편집 상태이거나 connect 모드일 경우 -> 선 삭제 함수
                     if (isEdit && editMode === "connect") {
@@ -215,7 +239,17 @@ function DiaryStars() {
             }}
           >
             <div
-              className={`size-2 rounded-full animate-pulse ${selectedStar === star.id ? "outline outline-2 outline-white" : ""}  ${isEdit ? (editMode === "move" ? "cursor-move" : "cursor-pointer") : ""}`}
+              className={`size-2 rounded-full animate-pulse ${
+                selectedStar === star.id
+                  ? "outline outline-2 outline-white"
+                  : ""
+              }  ${
+                isEdit
+                  ? editMode === "move"
+                    ? "cursor-move"
+                    : "cursor-pointer"
+                  : ""
+              }`}
               style={{
                 background: `radial-gradient(circle at center, white 0%, ${star.color} 50%, transparent 100%)`,
                 boxShadow: `0 0 5px ${star.color}, 0 0 10px white`,
@@ -243,12 +277,22 @@ function DiaryStars() {
         {!isEdit ? (
           <div className="flex gap-1.5">
             {/* 선 표시 버튼 */}
-            <button onClick={() => setShowConnections((prev) => !prev)} className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center">
-              {showConnections ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
+            <button
+              onClick={() => setShowConnections((prev) => !prev)}
+              className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center"
+            >
+              {showConnections ? (
+                <VisibilityIcon fontSize="small" />
+              ) : (
+                <VisibilityOffIcon fontSize="small" />
+              )}
             </button>
 
             {/* 편집 시작 버튼 */}
-            <button onClick={handleEdit} className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center">
+            <button
+              onClick={handleEdit}
+              className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center"
+            >
               <EditIcon fontSize="small" />
             </button>
           </div>
@@ -260,7 +304,9 @@ function DiaryStars() {
                 setEditMode("move"); // 편집 모드 move 전환
                 setSelectedStar(null); // 선택된 별 초기화
               }}
-              className={`bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center ${editMode === "move" ? "ring-2 ring-white" : ""}`}
+              className={`bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center ${
+                editMode === "move" ? "ring-2 ring-white" : ""
+              }`}
             >
               <OpenWithIcon fontSize="small" />
             </button>
@@ -271,18 +317,26 @@ function DiaryStars() {
                 setEditMode("connect"); // 편집 모드 connect 전환
                 setSelectedStar(null); // 선택된 별 초기화
               }}
-              className={`bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center ${editMode === "connect" ? "ring-2 ring-white" : ""}`}
+              className={`bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center ${
+                editMode === "connect" ? "ring-2 ring-white" : ""
+              }`}
             >
               <TimelineIcon fontSize="small" />
             </button>
 
             {/* 편집 취소 버튼 */}
-            <button onClick={handleCancel} className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center">
+            <button
+              onClick={handleCancel}
+              className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center"
+            >
               <CloseIcon fontSize="small" />
             </button>
 
             {/* 편집 저장 버튼 */}
-            <button onClick={handleSave} className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center">
+            <button
+              onClick={handleSave}
+              className="bg-[#1F1F59] text-white w-6 h-6 rounded-full flex items-center justify-center"
+            >
               <CheckIcon fontSize="small" />
             </button>
           </div>
