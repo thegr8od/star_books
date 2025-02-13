@@ -45,7 +45,7 @@ spring:
               - openid
               - profile
               - email
-            redirect-uri: "{baseUrl}/login/oauth2/code/google"
+            redirect-uri: "https://i12d206.p.ssafy.io/login/oauth2/code/google"
             authorization-grant-type: authorization_code
           naver:
             client-id: ${NAVER_CLIENT_ID}
@@ -53,7 +53,7 @@ spring:
             scope:
               - name
               - email
-            redirect-uri: "{baseUrl}/login/oauth2/code/naver"
+            redirect-uri: "https://i12d206.p.ssafy.io/login/oauth2/code/naver"
             authorization-grant-type: authorization_code
         provider:
           naver:
