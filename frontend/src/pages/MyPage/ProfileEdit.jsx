@@ -14,9 +14,6 @@ const ProfileEdit = () => {
     name: "",
     email: "",
     emailDomain: "",
-    birthYear: "",
-    birthMonth: "",
-    birthDay: "",
     gender: "",
   });
 
