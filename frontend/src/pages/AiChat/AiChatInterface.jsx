@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SendIcon from "@mui/icons-material/Send";
-import AddBoxIcon from "@mui/icons-material/AddBox";
+import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
 import ChatMessage from "./ChatMessage";
 
 function AiChatInterface() {
@@ -9,15 +9,27 @@ function AiChatInterface() {
     { isBot: true, message: "이제 당신이 선택한 AI와 대화를 나눠보세요!" },
   ]);
   const [inputMessage, setInputMessage] = useState(""); // 입력 메시지
+  const messageRef = useRef(null);
+
+  // 스크롤 최하단으로 내려가도록
+  const scrollToBottom = () => {
+    messageRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // 메세지 올 때마다 스크롤 실행
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = (e) => {
     e.preventDefault(); // 전송 버튼 눌러도 새로고침 X
 
-    if (inputMessage.trim() === false) return; // 공백 메시지 보내는 거 방지
+    if (inputMessage.trim() === "") return; // 공백 메시지 보내는 거 방지
 
     setMessages((prev) => [...prev, { isBot: false, message: inputMessage }]); // 유저가 메시지 보낼 때
     setInputMessage(""); // 초기화
 
+    // 답장 오는 속도
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
@@ -30,7 +42,7 @@ function AiChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-max-screen">
+    <div className="flex flex-col h-[calc(100vh-6rem)]">
       {/* 헤더 */}
       <div className="pb-3 border-b-[1px] border-white/80">
         <h1 className="text-center text-white font-semibold text-xl">
@@ -39,16 +51,21 @@ function AiChatInterface() {
       </div>
 
       {/* 채팅 메시지 표시 영역(스크롤) */}
-      <div className="flex-1 overflow-y-auto mt-4">
+      <div
+        className="flex-1 overflow-y-auto mt-4 min-h-0"
+        style={{ scrollbarWidth: "none" }}
+      >
         {messages.map((msg, idx) => (
           <ChatMessage key={idx} isBot={msg.isBot} message={msg.message} />
         ))}
+        {/* 스크롤 위치 잡기 */}
+        <div ref={messageRef} />
       </div>
 
       {/* 메시지 입력 */}
       <form onSubmit={handleSendMessage}>
-        <div className="flex items-center gap-2">
-          <AddBoxIcon className="text-white" />
+        <div className="flex items-center gap-2 mt-1">
+          <WidgetsOutlinedIcon className="text-white" />
           <input
             type="text"
             value={inputMessage}

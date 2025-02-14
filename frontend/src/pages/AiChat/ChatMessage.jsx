@@ -14,8 +14,8 @@ function ChatMessage({ isBot, message }) {
 
       {/* 말풍선 */}
       <div
-        className={`max-w-[70%] rounded-lg px-4 py-2 ${
-          isBot ? "bg-[#9da7d9]/80" : "bg-white/80"
+        className={`max-w-[70%] rounded-lg px-4 py-2 text-white ${
+          isBot ? "bg-[#9da7d9]/50" : "bg-white/50"
         }`}
       >
         <p className="text-md break-words">{message}</p>
