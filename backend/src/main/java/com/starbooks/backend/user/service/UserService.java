@@ -34,5 +34,6 @@ public interface UserService {
 
     boolean existsByEmail(String email);
 
+    boolean existsByNickname(String nickname);
 
 }

@@ -21,11 +21,19 @@ public class PersonalUnivService {
 
     @Transactional(readOnly = true)
     public List<ResponsePersonalUnivDTO> getMonthlyPersonalUniv(Long userId, int year, int month) {
+        // 월의 시작 날짜: 해당 연도, 월의 1일 00:00:00
         LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
-        LocalDateTime end = start.plusMonths(1).minusSeconds(1);
+
+        // 월의 마지막 날짜: 해당 연도, 월의 마지막 날 23:59:59.999999999
+        LocalDateTime end = start.withDayOfMonth(start.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+
+        log.info("🔍 Fetching monthly data for userId={} from {} to {}", userId, start, end);
+
         List<PersonalUniv> personalUnivs = personalUnivRepository.findByUserIdAndUpdatedAtBetween(userId, start, end);
+
         return personalUnivs.stream().map(ResponsePersonalUnivDTO::new).collect(Collectors.toList());
     }
+
 
     @Transactional(readOnly = true)
     public List<ResponsePersonalUnivDTO> getYearlyPersonalUniv(Long userId, int year) {
