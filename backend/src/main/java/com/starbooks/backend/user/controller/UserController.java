@@ -145,6 +145,7 @@ public class UserController {
     @PostMapping("/refresh")
     public ApiResponse<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken,
                                        HttpServletResponse response) {
+        log.info("Received refreshToken: {}", refreshToken); // 로그 추가
         try {
             if (refreshToken == null || refreshToken.isEmpty()) {
                 return ApiResponse.createError(ErrorCode.REFRESH_TOKEN_BLACKLISTED);
