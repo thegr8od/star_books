@@ -24,9 +24,9 @@ public class QDiaryHashtag extends EntityPathBase<DiaryHashtag> {
 
     public final QDiary diary;
 
-    public final EnumPath<Diary.HashtagType> hashtag = createEnum("hashtag", Diary.HashtagType.class);
+    public final NumberPath<Long> diaryHashtagId = createNumber("diaryHashtagId", Long.class);
 
-    public final NumberPath<Long> hashtagId = createNumber("hashtagId", Long.class);
+    public final EnumPath<Diary.HashtagType> hashtag = createEnum("hashtag", Diary.HashtagType.class);
 
     public QDiaryHashtag(String variable) {
         this(DiaryHashtag.class, forVariable(variable), INITS);

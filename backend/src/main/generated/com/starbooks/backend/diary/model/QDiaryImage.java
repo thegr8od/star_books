@@ -28,7 +28,7 @@ public class QDiaryImage extends EntityPathBase<DiaryImage> {
 
     public final NumberPath<Long> imageId = createNumber("imageId", Long.class);
 
-    public final StringPath saveFilePath = createString("saveFilePath");
+    public final StringPath Imgurl = createString("Imgurl");
 
     public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);
 
