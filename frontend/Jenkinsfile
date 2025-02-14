@@ -42,7 +42,6 @@ pipeline {
             steps {
                 script {
                     sh '''#!/bin/bash
-                    docker rm -f frontend-container || true
                     docker create --name frontend-container "$FRONTEND_IMAGE_NAME"
                     docker start frontend-container
                     docker exec "$NGINX_CONTAINER_NAME" rm -rf "$DIST_PATH"/*
@@ -51,6 +50,7 @@ pipeline {
                     docker cp frontend-container:/dist/. "$HOST_DIST_PATH"/
                     docker cp "$HOST_DIST_PATH"/. "$NGINX_CONTAINER_NAME":"$DIST_PATH"/
                     docker restart "$NGINX_CONTAINER_NAME"
+                    docker rm -f frontend-container || true
                     '''
                 }
             }
