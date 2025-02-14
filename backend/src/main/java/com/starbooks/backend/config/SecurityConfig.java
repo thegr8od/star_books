@@ -88,11 +88,14 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/member",
                                 "/api/member/login",
+                                "/api/member/check-nickname",
+                                "api/member/check-email",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/oauth_test.html",
                                 "/index.html",
-                                "/api/starline/**"
+                                "/api/starline/**",
+                                "/api/member/refresh"
                         ).permitAll()
 
                         // 3-2) 예: POST /api/chat/** 는 인증 필요

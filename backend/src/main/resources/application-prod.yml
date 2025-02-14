@@ -1,6 +1,11 @@
 server:
-  port: 9090
+  port: 9097
 #  forward-headers-strategy: framework
+
+livekit:
+  api:
+    key: ${LIVEKIT_REMOVED}
+    secret: ${LIVEKIT_API_SECRET}
 
 spring:
   config:
@@ -41,7 +46,7 @@ spring:
               - openid
               - profile
               - email
-            redirect-uri: "{baseUrl}/login/oauth2/code/google"
+            redirect-uri: "https://i12d206.p.ssafy.io/login/oauth2/code/google"
             authorization-grant-type: authorization_code
           naver:
             client-id: ${NAVER_CLIENT_ID}
@@ -49,7 +54,7 @@ spring:
             scope:
               - name
               - email
-            redirect-uri: "{baseUrl}/login/oauth2/code/naver"
+            redirect-uri: "https://i12d206.p.ssafy.io/login/oauth2/code/naver"
             authorization-grant-type: authorization_code
         provider:
           naver:
@@ -61,7 +66,7 @@ spring:
   data:
     redis:
       host: ${REDIS_HOST}
-      port: 6379
+      port: 7000
       password: ${REDIS_PASSWORD}
 
 #springdoc:

@@ -23,17 +23,17 @@ public class PersonalUnivController {
 
     // 유저의 월별 Personal Univ 조회
     @GetMapping("/monthly/{year}/{month}")
-    public ResponseEntity<ApiResponse<?>> getMonthlyPersonalUniv(@AuthenticationPrincipal Long userId,
+    public ResponseEntity<ApiResponse<?>> getMonthlyPersonalUniv(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                  @PathVariable int year,
                                                                  @PathVariable int month) {
-        try {
-            List<ResponsePersonalUnivDTO> responseList = personalUnivService.getMonthlyPersonalUniv(userId, year, month);
-            return ResponseEntity.ok(ApiResponse.createSuccess(responseList, "월별 개인 유니버스 데이터 조회 성공"));
-        } catch (Exception e) {
-            log.error("월별 개인 유니버스 데이터 조회 실패: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(ApiResponse.createError(ErrorCode.UNIVERSE_NOT_FOUND));
-        }
+        Long userId = userDetails.getUserId();  // ✅ userId 가져오기
+
+        log.info("📅 Fetching monthly personal universe data for userId={} in {}/{}", userId, year, month);
+
+        List<ResponsePersonalUnivDTO> responseList = personalUnivService.getMonthlyPersonalUniv(userId, year, month);
+        return ResponseEntity.ok(ApiResponse.createSuccess(responseList, "월별 개인 유니버스 데이터 조회 성공"));
     }
+
 
     // 유저의 연도별 Personal Univ 조회
     @GetMapping("/yearly/{year}")

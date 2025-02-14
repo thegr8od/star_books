@@ -66,6 +66,18 @@ public class UserController {
         return ApiResponse.createSuccessWithNoContent("사용 가능한 이메일입니다.");
     }
 
+    // == 닉네임 중복 검사 API ==
+    @Operation(summary = "닉네임 중복 검사", description = "닉네임이 이미 존재하는지 확인합니다.")
+    @GetMapping("/check-nickname")
+    public ApiResponse<?> checkNicknameDuplicate(@RequestParam String nickname) {
+        boolean isDuplicate = userService.existsByNickname(nickname);
+        if (isDuplicate) {
+            return ApiResponse.createError(ErrorCode.NICKNAME_ALREADY_EXIST);
+        }
+        return ApiResponse.createSuccessWithNoContent("사용 가능한 닉네임입니다.");
+    }
+
+
     // == 로그인 ==
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
     @PostMapping("/login")
@@ -133,6 +145,7 @@ public class UserController {
     @PostMapping("/refresh")
     public ApiResponse<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken,
                                        HttpServletResponse response) {
+        log.info("Received refreshToken: {}", refreshToken); // 로그 추가
         try {
             if (refreshToken == null || refreshToken.isEmpty()) {
                 return ApiResponse.createError(ErrorCode.REFRESH_TOKEN_BLACKLISTED);
@@ -174,6 +187,8 @@ public class UserController {
             return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
         }
     }
+
+
 
     // == Refresh Token 쿠키 추출 ==
     private String extractRefreshToken(HttpServletRequest request) {
