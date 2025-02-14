@@ -1,7 +1,14 @@
-function AiChat(){
-    return(
-        <div>AiChat</div>
-    )
+import Layout from "../../components/Layout";
+import AiChatInterface from "./AiChatInterface";
+
+function AiChat() {
+  return (
+    <>
+      <Layout>
+        <AiChatInterface />
+      </Layout>
+    </>
+  );
 }
 
-export default AiChat
+export default AiChat;
