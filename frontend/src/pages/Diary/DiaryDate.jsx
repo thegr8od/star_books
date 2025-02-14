@@ -24,7 +24,7 @@ const DiaryDate = ({ currentDate, setCurrentDate }) => {
 
   return (
     <Header
-      className="mb-6"
+      className="mb-5 pt-2"
       title={formatDate.toDisplay(currentDate)}
       titleClassName="text-base md:text-lg font-semibold"
       leftChild={
