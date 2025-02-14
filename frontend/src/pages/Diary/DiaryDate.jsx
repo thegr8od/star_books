@@ -1,32 +1,21 @@
-// components/DiaryDate.jsx
-import { useState } from "react";
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import Header from "../../components/Header";
 
 // 컴포넌트 사용시 이전달, 다음달 버틀 실행할 경우 동작시킬 함수(axios 요청) props로 onChangeMonth 전달
 // <DiaryDate onChangeMonth={onChangeMonth} />
-const DiaryDate = ({ onChangeMonth }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+const DiaryDate = ({ currentDate, setCurrentDate }) => {
   const today = new Date();
 
   // 날짜 변경 핸들러 (이전 달)
   const handlePrevMonth = () => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev.getFullYear(), prev.getMonth() - 1, prev.getDate());
-      // 부모 컴포넌트에서 전달받은 함수 실행 (axios 요청)
-      onChangeMonth?.(newDate); 
-      return newDate;
-    });
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, currentDate.getDate());
+    setCurrentDate(newDate);
   };
 
   // 날짜 변경 핸들러 (다음 달)
   const handleNextMonth = () => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev.getFullYear(), prev.getMonth() + 1, prev.getDate());
-      // 부모 컴포넌트에서 전달받은 함수 실행 (axios 요청)
-      onChangeMonth?.(newDate);
-      return newDate;
-    });
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
+    setCurrentDate(newDate);
   };
 
   // 날짜 포맷 함수

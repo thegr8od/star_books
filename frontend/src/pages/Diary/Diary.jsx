@@ -19,7 +19,7 @@ function Diary() {
   return (
     <Layout>
       <div className="h-[calc(100vh-2rem)] flex flex-col">
-        <DiaryDate />
+        {/* <DiaryDate /> */}
 
         {/* 메인 */}
         <div className="flex-1">{activeTab === 1 ? <DiaryStars /> : <DiaryCalendar currentMonth={currentDate} />}</div>

@@ -62,6 +62,7 @@ const MonthlyDiary = () => {
   const diaryRefs = useRef({});
 
   useEffect(() => {
+    console.log(selectedDate);
     if (selectedDate && diaryRefs.current[selectedDate]) {
       diaryRefs.current[selectedDate].scrollIntoView({
         behavior: "smooth",
@@ -85,7 +86,7 @@ const MonthlyDiary = () => {
   return (
     <Layout>
       <div className="flex flex-col h-screen">
-        <DiaryDate />
+        {/* <DiaryDate /> */}
         <div className="flex-1 flex-col space-y-4 overflow-y-auto bg-neutral-100 rounded-3xl p-4" style={{ scrollbarWidth: "none" }}>
           {diaries?.length ? (
             diaries.map((diary, index) => {
