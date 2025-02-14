@@ -13,10 +13,7 @@ function AiChatInterface() {
       </div>
 
       {/* 채팅 메시지 표시 영역(스크롤) */}
-      <div className="flex-1 overflow-y-auto pt-5 space-y-4">
-        <p className="bg-[#9da7d9]/80 ">메세지 표시 영역1</p>
-        <p className="bg-white/80 flex">메세지 표시 영역2</p>
-      </div>
+      <div className="flex-1 overflow-y-auto"></div>
 
       {/* 메시지 입력 */}
       <div className="flex justify-start gap-2 py-4">
