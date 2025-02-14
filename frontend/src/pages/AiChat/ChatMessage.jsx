@@ -1,4 +1,5 @@
-import aiImage from "images/ai_chat_test.png";
+import aiImage from "/images/ai_chat_test.png";
+
 function ChatMessage({ isBot, message }) {
   return (
     <div
@@ -6,8 +7,8 @@ function ChatMessage({ isBot, message }) {
     >
       {/* AI */}
       {isBot && (
-        <div className="w-8 h-8 rounded-full bg-white items-center justify-center mr-2">
-          <img src="{aiImage}" alt="ai 프로필" />
+        <div className="w-12 h-12 rounded-full bg-white items-center justify-center mr-2">
+          <img src={aiImage} alt="ai 프로필" />
         </div>
       )}
 
