@@ -4,6 +4,7 @@ import Layout from "../../components/Layout";
 import { Camera } from "lucide-react";
 import Button from "../../components/Button";
 import GetColor from "../../components/GetColor";
+import ErrorPage from "../ErrorPage";
 
 const DiaryWrite = () => {
   const location = useLocation();
@@ -13,10 +14,22 @@ const DiaryWrite = () => {
   const navigate = useNavigate();
   const { diaryData } = location.state || {}; // 일기 목록에서 데이터 넘겨줌
   const isEditMode = !!diaryData; // 데이터 있으면 true 데이터 없으면 false
-  const [imagePreview, setImagePreview] = useState(null);
-  const [existingImage, setExistingImage] = useState(null);
-  const [content, setContent] = useState("");
+  const [imagePreview, setImagePreview] = useState(null); // 프리뷰 이미지
+  const [existingImage, setExistingImage] = useState(null); // 기존에 저장되어있는 이미지가 있을 때
+  const [content, setContent] = useState(""); // 일기 내용
 
+  // URL로 접근해서 해당 일기에 대한 데이터가 없을 때 에러페이지로 이동
+  if (!location.state?.emotion) {
+    return (
+      <ErrorPage
+        title="잘못된 접근입니다."
+        message="올바른 경로로 접근해주세요."
+        customStyle="text-l"
+      />
+    );
+  }
+
+  // 일기 작성 날짜, 요일
   const getDayInfo = () => {
     const days = ["일", "월", "화", "수", "목", "금", "토", "일"];
     const date = isEditMode ? new Date(diaryData.created_at) : new Date();
@@ -90,7 +103,10 @@ const DiaryWrite = () => {
         <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
           {/* 감정 아이콘 */}
           <div className="flex justify-center">
-            <span className="rounded-full w-6 h-6" {...GetColor(x=1, y=2)} />
+            <span
+              className="rounded-full w-6 h-6"
+              {...GetColor((x = 1), (y = 2))}
+            />
           </div>
 
           {/* 텍스트 입력 칸*/}
