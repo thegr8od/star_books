@@ -1,66 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Add } from "@mui/icons-material";
 import Layout from "../../components/Layout";
 import DiaryStars from "./DiaryStars";
 import DiaryCalendar from "./DiaryCalendar";
-import Header from "../../components/Header";
 import Button from "../../components/Button";
 import MoodSurvey from "./MoodSurvey";
-import { Add, KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
+import DiaryDate from "./DiaryDate";
 
 function Diary() {
   const navigate = useNavigate();
-
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState(2);
   const [showModal, setShowModal] = useState(false);
-  const today = new Date();
 
-  // 날짜 변경 핸들러 (이전 달)
-  const handlePrevMonth = () => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev.getFullYear(), prev.getMonth() - 1, prev.getDate());
-      // axios 요청
-      return newDate;
-    });
-  };
-
-  // 날짜 변경 핸들러 (다음 달)
-  const handleNextMonth = () => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev.getFullYear(), prev.getMonth() + 1, prev.getDate());
-      // axios 요청
-      return newDate;
-    });
-  };
-
-  // 날짜 포맷 함수
-  const formatDate = {
-    toDisplay: (date) => `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, "0")}월`,
-    toAPI: (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
-  };
-  //console.log(currentDate);
-  //Tue Feb 11 2025 00:00:00
+  // 에러 방지를 위한 임시 데이터
+  const currentDate = new Date();
 
   return (
     <Layout>
       <div className="h-[calc(100vh-2rem)] flex flex-col">
-        {/* 날짜 */}
-        <Header
-          className="mb-6"
-          title={formatDate.toDisplay(currentDate)}
-          titleClassName="text-base md:text-lg font-semibold"
-          leftChild={
-            <button onClick={handlePrevMonth}>
-              <KeyboardArrowLeft />
-            </button>
-          }
-          rightChild={
-            <button onClick={handleNextMonth} disabled={new Date(currentDate.getFullYear(), currentDate.getMonth() + 1) > today}>
-              <KeyboardArrowRight />
-            </button>
-          }
-        />
+        {/* <DiaryDate /> */}
 
         {/* 메인 */}
         <div className="flex-1">{activeTab === 1 ? <DiaryStars /> : <DiaryCalendar currentMonth={currentDate} />}</div>

@@ -5,14 +5,14 @@ import { HomeOutlined, PersonOutlined, EditCalendarOutlined, PublicOutlined, Aut
 
 // 네비게이션 아이템 상수
 const NAV_ITEMS = [
-  { label: "홈", path: "", icon: <HomeOutlined /> },
-  { label: "마이페이지", path: "", icon: <PersonOutlined /> },
-  { label: "일기", path: "", icon: <EditCalendarOutlined /> },
-  { label: "나의 우주", path: "", icon: <AutoAwesomeOutlined /> },
-  { label: "우리의 우주", path: "", icon: <PublicOutlined /> },
-  { label: "감정 통계", path: "", icon: <LeaderboardOutlined /> },
-  { label: "라디오", path: "", icon: <PodcastsOutlined /> },
-  { label: "AI대화", path: "", icon: <ForumOutlined /> },
+  { label: "홈", path: "/", icon: <HomeOutlined /> },
+  { label: "마이페이지", path: "/mypage", icon: <PersonOutlined /> },
+  { label: "일기", path: "/diary/calendar", icon: <EditCalendarOutlined /> },
+  { label: "나의 우주", path: "/diary/stars", icon: <AutoAwesomeOutlined /> },
+  { label: "우리의 우주", path: "/universe", icon: <PublicOutlined /> },
+  { label: "감정 통계", path: "/universe/analysis", icon: <LeaderboardOutlined /> },
+  { label: "라디오", path: "/radio/list", icon: <PodcastsOutlined /> },
+  { label: "AI대화", path: "/chat", icon: <ForumOutlined /> },
 ];
 
 // 헤더 컴포넌트
