@@ -1,19 +1,19 @@
 package com.starbooks.backend.emotion.model;
 
 public class EmotionPoint {
-    private double valence;
-    private double arousal;
+    private double xvalue;
+    private double yvalue;
 
-    public EmotionPoint(double valence, double arousal) {
-        this.valence = valence;
-        this.arousal = arousal;
+    public EmotionPoint(double xvalue, double yvalue) {
+        this.xvalue = xvalue;
+        this.yvalue = yvalue;
     }
 
-    public double getValence() {
-        return valence;
+    public double getxvalue() {
+        return xvalue;
     }
 
-    public double getArousal() {
-        return arousal;
+    public double getyvalue() {
+        return yvalue;
     }
 }

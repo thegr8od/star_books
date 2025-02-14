@@ -68,8 +68,8 @@ public class EmotionService {
             EmotionPoint point = tagCoordinateMap.get(tag);
             if (point != null) {
                 double weight = 1.0;
-                sumValence += (weight * point.getValence());
-                sumArousal += (weight * point.getArousal());
+                sumValence += (weight * point.getxvalue());
+                sumArousal += (weight * point.getyvalue());
                 sumWeight += weight;
             }
         }
