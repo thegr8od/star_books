@@ -84,6 +84,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/member",
                                 "/api/member/login",
+                                "/api/member/check-nickname",
+                                "api/member/check-email",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/oauth_test.html",
