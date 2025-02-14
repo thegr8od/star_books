@@ -1,8 +1,6 @@
 import { KeyboardArrowLeft, KeyboardArrowRight } from "@mui/icons-material";
 import Header from "../../components/Header";
 
-// 컴포넌트 사용시 이전달, 다음달 버틀 실행할 경우 동작시킬 함수(axios 요청) props로 onChangeMonth 전달
-// <DiaryDate onChangeMonth={onChangeMonth} />
 const DiaryDate = ({ currentDate, setCurrentDate }) => {
   const today = new Date();
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { DIARY_ENTRIES } from "../../data/diaryData";
 import DiaryDate from "./DiaryDate";
+import Layout from "../../components/Layout";
 
 const CalendarTile = ({ children, marker }) => {
   return (
@@ -87,9 +88,10 @@ const DiaryCalendarStyle = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full h-full">
-      <div className="w-full max-w-xs md:max-w-lg lg:max-w-xl">
-        {/* <Header className='mb-6'
+    <Layout>
+      <div className="flex flex-col items-center w-full h-full">
+        <div className="w-full max-w-xs md:max-w-lg lg:max-w-xl">
+          {/* <Header className='mb-6'
           title={formatMonthDisplay()}
           titleClassName="text-base md:text-lg font-semibold"
           leftChild={
@@ -112,25 +114,25 @@ const DiaryCalendarStyle = () => {
             />
           }
         /> */}
-        <DiaryDate currentDate={currentDate} setCurrentDate={setCurrentDate} />
-        <div className="grid grid-cols-7 gap-1 md:gap-2">
-          {weekdays.map((day) => (
-            <div key={day} className="text-center p-1 text-xs md:text-sm text-white font-medium mb-2">
-              {day}
-            </div>
-          ))}
-
-          {Array(firstDayOfMonth)
-            .fill(null)
-            .map((_, index) => (
-              <div key={`empty-${index}`} />
+          <DiaryDate currentDate={currentDate} setCurrentDate={setCurrentDate} />
+          <div className="grid grid-cols-7 gap-1 md:gap-2">
+            {weekdays.map((day) => (
+              <div key={day} className="text-center p-1 text-xs md:text-sm text-white font-medium mb-2">
+                {day}
+              </div>
             ))}
 
-          {days.map((day) => (
-            <CalendarTile key={day} marker={getMarkerForDay(day)}>
-              <button
-                onClick={() => handleDateClick(day)}
-                className={`
+            {Array(firstDayOfMonth)
+              .fill(null)
+              .map((_, index) => (
+                <div key={`empty-${index}`} />
+              ))}
+
+            {days.map((day) => (
+              <CalendarTile key={day} marker={getMarkerForDay(day)}>
+                <button
+                  onClick={() => handleDateClick(day)}
+                  className={`
                   w-full 
                   h-full 
                   flex
@@ -141,14 +143,15 @@ const DiaryCalendarStyle = () => {
                   ${selectedDate.getDate() === day && selectedDate.getMonth() === currentDate.getMonth() && selectedDate.getFullYear() === currentDate.getFullYear() ? "bg-blue-100 bg-opacity-20" : ""} 
                   ${isToday(day) ? "bg-blue-100 bg-opacity-20 border border-white/55 hover:bg-blue-50/50" : ""}
                 `}
-              >
-                {day}
-              </button>
-            </CalendarTile>
-          ))}
+                >
+                  {day}
+                </button>
+              </CalendarTile>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 
