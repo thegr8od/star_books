@@ -208,8 +208,8 @@ function DiaryStars() {
                       y1={`${startStar.y}%`} // 시작 별 y 좌표
                       x2={`${endStar.x}%`} // 끝 별 x 좌표
                       y2={`${endStar.y}%`} // 끝 별 y 좌표
-                      stroke="rgba(255, 255, 255, 0.25)" // 선 색상
-                      strokeWidth="1" // 선 두께
+                      stroke="rgba(255, 255, 255, 0.5)" // 선 색상
+                      strokeWidth="1.5" // 선 두께
                       className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
                       style={{
                         pointerEvents: isEdit && editMode === "connect" ? "auto" : "none",
@@ -237,7 +237,7 @@ function DiaryStars() {
                 }}
               >
                 <div
-                  className={`size-2 rounded-full animate-pulse ${selectedStar === star.id ? "outline outline-2 outline-white" : ""}  ${isEdit ? (editMode === "move" ? "cursor-move" : "cursor-pointer") : ""}`}
+                  className={`size-3 rounded-full animate-pulse ${selectedStar === star.id ? "outline outline-2 outline-white" : ""}  ${isEdit ? (editMode === "move" ? "cursor-move" : "cursor-pointer") : ""}`}
                   style={{
                     background: `radial-gradient(circle at center, white 0%, ${star.color} 50%, transparent 100%)`,
                     boxShadow: `0 0 5px ${star.color}, 0 0 10px white`,
