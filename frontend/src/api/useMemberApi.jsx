@@ -121,9 +121,8 @@ const uploadProfileImage = async () => {
 //중복 이메일 체크
 const checkEmail = async (email) => {
     try{
-        const response = await useAxiosInstance.post(
-            "/member/check-email",
-            email,
+        const response = await useAxiosInstance.get(
+            `/member/check-email?email=${email}`,
         );
         return response.data;
     } catch(e) {
@@ -137,9 +136,8 @@ const checkEmail = async (email) => {
 //중복 닉네임 체크
 const checkNickname = async (nicknmae) => {
     try{
-        const response = await useAxiosInstance.post(
-            "",
-            nicknmae,
+        const response = await useAxiosInstance.get(
+            `/member/check-nickname?nickname=${nickname}`,
         );
         return response.data;
     } catch(e) {
@@ -159,22 +157,14 @@ const updateProfile = async () => {
     }
 };
 
-//유저 탈퇴
-// const withdrawUser = async () => {
-//     try{
-
-//     } catch(e) {
-
-//     }
-// };
-
 export default {
     loginMember,
     registerMember,
     logoutMember,
     getUserInfo,
+    checkNickname,
+    checkEmail,
     // refreshToken,
     uploadProfileImage,
-    updateProfile,
-    // withdrawUser
+    // updateProfile,
 };
