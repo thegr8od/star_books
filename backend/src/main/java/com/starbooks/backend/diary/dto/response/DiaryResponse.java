@@ -1,7 +1,6 @@
 package com.starbooks.backend.diary.dto.response;
 
 import com.starbooks.backend.diary.model.Diary;
-import com.starbooks.backend.diary.model.DiaryImage;
 import com.starbooks.backend.diary.model.DiaryHashtag;
 import com.starbooks.backend.diary.model.Diary.HashtagType;
 import lombok.Getter;
@@ -15,7 +14,7 @@ public record DiaryResponse(
         String content,
         List<EmotionResponse> emotions,
         List<HashtagType> hashtags,
-        List<String> imageUrls,
+        String imageUrl,         // List<String>에서 String으로 변경
         LocalDateTime createdAt
 ) {
     public static DiaryResponse from(Diary diary) {
@@ -38,11 +37,8 @@ public record DiaryResponse(
                 .toList()
                 : List.of();
 
-        List<String> imageUrls = diary.getImages() != null
-                ? diary.getImages().stream()
-                .map(DiaryImage::getImgurl)
-                .toList()
-                : List.of();
+        // 이미지 URL을 단일 값으로 가져오기
+        String imageUrl = diary.getImage() != null ? diary.getImage().getImgurl() : null;
 
         return new DiaryResponse(
                 diary.getDiaryId(),
@@ -50,7 +46,7 @@ public record DiaryResponse(
                 content,
                 emotions,
                 hashtags,
-                imageUrls,
+                imageUrl,
                 diary.getCreatedAt()
         );
     }
