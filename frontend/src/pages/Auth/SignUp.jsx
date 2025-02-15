@@ -8,18 +8,30 @@ const Signup = () => {
   const navigate = useNavigate();
 
   // 입력 필드 상태
-  const [email, setEmail] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [gender, setGender] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    nickname: "",
+    gender: "",
+    password: "",
+    confirmPassword: "",
+  });
 
   // 유효성 검사 메시지
-  const [emailError, setEmailError] = useState("");
-  const [nicknameError, setNicknameError] = useState("");
-  const [genderError, setGenderError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [errors, setErrors] = useState({
+    email: "",
+    nickname: "",
+    gender: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   // 중복 체크 상태
   const [isEmailChecked, setIsEmailChecked] = useState(false);
@@ -198,42 +210,24 @@ const Signup = () => {
           <div className={styles.fieldWrapper}>
             <label className={styles.label}>이메일</label>
             <div className="flex items-center space-x-2">
-              <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
-                placeholder="이메일을 입력해 주세요"
-                className={`${styles.input} flex-1`}
-              />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="이메일을 입력해 주세요" className={`${styles.input} flex-1`} />
               <button type="button" onClick={handleEmailCheck} className={`${styles.button} px-2 rounded-md`}>
                 확인
               </button>
             </div>
-            {emailError && <p className={styles.errorText}>{emailError}</p>}
+            {errors.email && <p className={styles.errorText}>{errors.email}</p>}
           </div>
 
           {/* 닉네임 */}
           <div className={styles.fieldWrapper}>
             <label className={styles.label}>이름</label>
             <div className="flex items-center space-x-2">
-              <input
-                type="text"
-                name="nickname"
-                value={nickname}
-                onChange={(e) => {
-                  setNickname(e.target.value);
-                }}
-                placeholder="이름을 입력해 주세요"
-                className={`${styles.input} flex-1`}
-              />
+              <input type="text" name="nickname" value={formData.nickname} onChange={handleChange} placeholder="이름을 입력해 주세요" className={`${styles.input} flex-1`} />
               <button type="button" onClick={handleNameCheck} className={`${styles.button} px-2 rounded-md`}>
                 확인
               </button>
             </div>
-            {nicknameError && <p className={styles.errorText}>{nicknameError}</p>}
+            {errors.nickname && <p className={styles.errorText}>{errors.nickname}</p>}
           </div>
 
           {/* 성별 */}
@@ -241,65 +235,29 @@ const Signup = () => {
             <label className={styles.label}>성별</label>
             <div className="flex space-x-8">
               <label className="flex items-center text-sm">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="MALE"
-                  checked={gender === "MALE"}
-                  onChange={(e) => {
-                    setGender(e.target.value);
-                  }}
-                  className="mr-2 h-9"
-                />
+                <input type="radio" name="gender" value="MALE" checked={formData.gender === "MALE"} onChange={handleChange} className="mr-2 h-9" />
                 <span>남성</span>
               </label>
               <label className="flex items-center text-sm">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="FEMALE"
-                  checked={gender === "FEMALE"}
-                  onChange={(e) => {
-                    setGender(e.target.value);
-                  }}
-                  className="mr-2 h-9"
-                />
+                <input type="radio" name="gender" value="FEMALE" checked={formData.gender === "FEMALE"} onChange={handleChange} className="mr-2 h-9" />
                 <span>여성</span>
               </label>
             </div>
-            {genderError && <p className={styles.errorText}>{genderError}</p>}
+            {errors.gender && <p className={styles.errorText}>{errors.gender}</p>}
           </div>
 
           {/* 비밀번호 */}
           <div className={styles.fieldWrapper}>
             <label className={styles.label}>비밀번호</label>
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
-              placeholder="비밀번호를 입력해 주세요"
-              className={`${styles.input} w-full`}
-            />
-            {passwordError && <p className={styles.errorText}>{passwordError}</p>}
+            <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="비밀번호를 입력해 주세요" className={`${styles.input} w-full`} />
+            {errors.password && <p className={styles.errorText}>{errors.password}</p>}
           </div>
 
           {/* 비밀번호 확인 */}
           <div className={styles.fieldWrapper}>
             <label className={styles.label}>비밀번호 확인</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-              }}
-              placeholder="비밀번호를 입력해주세요"
-              className={`${styles.input} w-full`}
-            />
-            {confirmPasswordError && <p className={styles.errorText}>{confirmPasswordError}</p>}
+            <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="비밀번호를 입력해주세요" className={`${styles.input} w-full`} />
+            {errors.confirmPassword && <p className={styles.errorText}>{errors.confirmPassword}</p>}
           </div>
         </div>
 
