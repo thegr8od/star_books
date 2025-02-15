@@ -18,14 +18,14 @@ const DiaryDate = ({ currentDate, setCurrentDate }) => {
 
   // 날짜 포맷 함수
   const formatDate = {
-    toDisplay: (date) => `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, "0")}월`,
+    toDiary: (date) => `${date.getFullYear()}년 ${String(date.getMonth() + 1).padStart(2, "0")}월`,
     toAPI: (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`,
   };
 
   return (
     <Header
-      className="mb-5 pt-2"
-      title={formatDate.toDisplay(currentDate)}
+      className="mb-4"
+      title={formatDate.toDiary(currentDate)}
       titleClassName="text-base md:text-lg font-semibold"
       leftChild={
         <button onClick={handlePrevMonth}>

@@ -19,6 +19,7 @@ import ErrorPage from "./pages/ErrorPage";
 import SocialRedirect from "./pages/Auth/SocialRedirect";
 import AiChat from "./pages/AiChat/AiChat";
 import DiaryCalendar from "./pages/Diary/DiaryCalendar";
+import Diary from "./pages/Diary/Diary";
 
 function App() {
   const noLayout = location.pathname === "/" || location.pathname === "/universe" || location.pathname.startsWith("/constellation/detail/"); // 홈 페이지 여부 확인
@@ -41,8 +42,10 @@ function App() {
           <Route path="radio/list" element={<RadioList />} />
           <Route path="radio/:id" element={<RadioShow />} />
           {/* Diary 관련 */}
-          <Route path="diary/calendar" element={<DiaryCalendar />} />
-          <Route path="diary/stars" element={<DiaryStars />} />
+          <Route element={<Diary />}>
+            <Route path="diary/calendar" element={<DiaryCalendar />} />
+            <Route path="diary/stars" element={<DiaryStars />} />
+          </Route>
           {/* 별 보기 추가 */}
           <Route path="diary/monthly/:year/:month" element={<MonthlyDiary />} />
           <Route path="diary/write" element={<DiaryWrite />} />

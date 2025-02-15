@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
 import { DIARY_ENTRIES } from "../../data/diaryData";
-import DiaryDate from "./DiaryDate";
-import Layout from "../../components/Layout";
 
 const CalendarTile = ({ children, marker }) => {
   return (
@@ -13,11 +11,11 @@ const CalendarTile = ({ children, marker }) => {
   );
 };
 //상위폴더에 헤더를 넣었기 때문에, props를 주고 받는 로직을 추가해야 할 듯!
-const DiaryCalendarStyle = () => {
+const DiaryCalendar = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { currentDate } = useOutletContext();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [diaryEntries, setDiaryEntries] = useState(() => {
     // localStorage에서 데이터 불러오기
     const savedEntries = localStorage.getItem("diaryEntries");
@@ -88,51 +86,26 @@ const DiaryCalendarStyle = () => {
   };
 
   return (
-    <Layout>
-      <div className="flex flex-col items-center w-full h-full">
-        <div className="w-full max-w-xs md:max-w-lg lg:max-w-xl">
-          {/* <Header className='mb-6'
-          title={formatMonthDisplay()}
-          titleClassName="text-base md:text-lg font-semibold"
-          leftChild={
-            <Button
-              type="DEFAULT"
-              className="px-2 py-2 bg-transparent text-white"
-              onClick={prevMonth}
-              imgSrc="../../../icons/left.png"
-              imgClassName="w-4 h-4 md:w-5 md:h-5"
-            />
-          }
-          rightChild={
-            <Button
-              type="DEFAULT"
-              className="px-2 py-2 bg-transparent text-white"
-              onClick={nextMonth}
-              disabled={new Date(currentDate.getFullYear(), currentDate.getMonth() + 1) > today}
-              imgSrc="../../../icons/right.png"
-              imgClassName="w-4 h-4 md:w-5 md:h-5"
-            />
-          }
-        /> */}
-          <DiaryDate currentDate={currentDate} setCurrentDate={setCurrentDate} />
-          <div className="grid grid-cols-7 gap-1 md:gap-2">
-            {weekdays.map((day) => (
-              <div key={day} className="text-center p-1 text-xs md:text-sm text-white font-medium mb-2">
-                {day}
-              </div>
+    <div className="flex flex-col items-center w-full h-full">
+      <div className="w-full max-w-xs md:max-w-lg lg:max-w-xl">
+        <div className="grid grid-cols-7 gap-1 md:gap-2">
+          {weekdays.map((day) => (
+            <div key={day} className="text-center p-1 text-xs md:text-sm text-white font-medium mb-2">
+              {day}
+            </div>
+          ))}
+
+          {Array(firstDayOfMonth)
+            .fill(null)
+            .map((_, index) => (
+              <div key={`empty-${index}`} />
             ))}
 
-            {Array(firstDayOfMonth)
-              .fill(null)
-              .map((_, index) => (
-                <div key={`empty-${index}`} />
-              ))}
-
-            {days.map((day) => (
-              <CalendarTile key={day} marker={getMarkerForDay(day)}>
-                <button
-                  onClick={() => handleDateClick(day)}
-                  className={`
+          {days.map((day) => (
+            <CalendarTile key={day} marker={getMarkerForDay(day)}>
+              <button
+                onClick={() => handleDateClick(day)}
+                className={`
                   w-full 
                   h-full 
                   flex
@@ -143,16 +116,15 @@ const DiaryCalendarStyle = () => {
                   ${selectedDate.getDate() === day && selectedDate.getMonth() === currentDate.getMonth() && selectedDate.getFullYear() === currentDate.getFullYear() ? "bg-blue-100 bg-opacity-20" : ""} 
                   ${isToday(day) ? "bg-blue-100 bg-opacity-20 border border-white/55 hover:bg-blue-50/50" : ""}
                 `}
-                >
-                  {day}
-                </button>
-              </CalendarTile>
-            ))}
-          </div>
+              >
+                {day}
+              </button>
+            </CalendarTile>
+          ))}
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
-export default DiaryCalendarStyle;
+export default DiaryCalendar;

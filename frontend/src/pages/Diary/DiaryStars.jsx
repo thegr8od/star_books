@@ -8,8 +8,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import ConstellationCreateModal from "../../components/Modal/ConstellationCreateModal";
-import Layout from "../../components/Layout";
-import DiaryDate from "./DiaryDate";
+import { useOutletContext } from "react-router-dom";
 
 // 샘플 데이터
 const sampleWorryStars = [
@@ -40,7 +39,7 @@ const dummyConstellationData = {
 
 function DiaryStars() {
   // ==================================================== 상태 관리 ====================================================
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const { currentDate } = useOutletContext();
 
   const [stars, setStars] = useState(sampleWorryStars); // 별(초기 axios 응답 데이터)
   const [connections, setConnections] = useState([]); // 선(초기 axios 응답 데이터, axios 요청 데이터)
@@ -180,148 +179,145 @@ function DiaryStars() {
 
   // ==============================================================================================================
   return (
-    <Layout>
-      <div className="flex flex-col h-full">
-        <DiaryDate currentDate={currentDate} setCurrentDate={setCurrentDate} />
-        <div className="flex-1 flex flex-col ">
-          {/* ========== 별 영역 ========== */}
-          <div className="flex-1 relative star-container border border-gray-700">
-            <div className="absolute left-1/2 -translate-x-1/2 text-center mt-3">
-              <div className="text-white/60 text-xs">별들의 이야기가 시작되는 곳.</div>
-              <div className="text-white/60 text-xs">당신의 별은 어떤 빛을 띄나요?</div>
-            </div>
+    <div className="flex flex-col h-full">
+      <div className="flex-1 flex flex-col ">
+        {/* ========== 별 영역 ========== */}
+        <div className="flex-1 relative star-container border border-gray-700">
+          <div className="absolute left-1/2 -translate-x-1/2 text-center mt-3">
+            <div className="text-white/60 text-xs">별들의 이야기가 시작되는 곳.</div>
+            <div className="text-white/60 text-xs">당신의 별은 어떤 빛을 띄나요?</div>
+          </div>
 
-            {/* 선 (svg) */}
-            <svg className="absolute w-full h-full pointer-events-none">
-              {(isEdit || showConnections) &&
-                connections.map((connection) => {
-                  // 연결된 시작과 끝 별 찾기
-                  const startStar = stars.find((star) => star.id === connection.start);
-                  const endStar = stars.find((star) => star.id === connection.end);
-                  // 연결된 별이 없으면 선 그리지 않음 (별이 삭제된 경우)
-                  if (!startStar || !endStar) return null;
+          {/* 선 (svg) */}
+          <svg className="absolute w-full h-full pointer-events-none">
+            {(isEdit || showConnections) &&
+              connections.map((connection) => {
+                // 연결된 시작과 끝 별 찾기
+                const startStar = stars.find((star) => star.id === connection.start);
+                const endStar = stars.find((star) => star.id === connection.end);
+                // 연결된 별이 없으면 선 그리지 않음 (별이 삭제된 경우)
+                if (!startStar || !endStar) return null;
 
-                  return (
-                    <line
-                      key={`${connection.start}-${connection.end}`}
-                      x1={`${startStar.x}%`} // 시작 별 x 좌표
-                      y1={`${startStar.y}%`} // 시작 별 y 좌표
-                      x2={`${endStar.x}%`} // 끝 별 x 좌표
-                      y2={`${endStar.y}%`} // 끝 별 y 좌표
-                      stroke="rgba(255, 255, 255, 0.5)" // 선 색상
-                      strokeWidth="1.5" // 선 두께
-                      className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
-                      style={{
-                        pointerEvents: isEdit && editMode === "connect" ? "auto" : "none",
-                      }} // 편집 모드에서만 클릭 가능
-                      onClick={() => {
-                        // 편집 상태이거나 connect 모드일 경우 -> 선 삭제 함수
-                        if (isEdit && editMode === "connect") {
-                          handleConnectionClick(connection);
-                        }
-                      }}
-                    />
-                  );
-                })}
-            </svg>
+                return (
+                  <line
+                    key={`${connection.start}-${connection.end}`}
+                    x1={`${startStar.x}%`} // 시작 별 x 좌표
+                    y1={`${startStar.y}%`} // 시작 별 y 좌표
+                    x2={`${endStar.x}%`} // 끝 별 x 좌표
+                    y2={`${endStar.y}%`} // 끝 별 y 좌표
+                    stroke="rgba(255, 255, 255, 0.5)" // 선 색상
+                    strokeWidth="1.5" // 선 두께
+                    className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
+                    style={{
+                      pointerEvents: isEdit && editMode === "connect" ? "auto" : "none",
+                    }} // 편집 모드에서만 클릭 가능
+                    onClick={() => {
+                      // 편집 상태이거나 connect 모드일 경우 -> 선 삭제 함수
+                      if (isEdit && editMode === "connect") {
+                        handleConnectionClick(connection);
+                      }
+                    }}
+                  />
+                );
+              })}
+          </svg>
 
-            {/* 별 */}
-            {stars.map((star) => (
+          {/* 별 */}
+          {stars.map((star) => (
+            <div
+              key={star.id}
+              className="absolute"
+              style={{
+                left: `${star.x}%`,
+                top: `${star.y}%`,
+                transform: "translate(-50%, -50%)",
+              }}
+            >
               <div
-                key={star.id}
-                className="absolute"
+                className={`size-3 rounded-full animate-pulse ${selectedStar === star.id ? "outline outline-2 outline-white" : ""}  ${isEdit ? (editMode === "move" ? "cursor-move" : "cursor-pointer") : ""}`}
                 style={{
-                  left: `${star.x}%`,
-                  top: `${star.y}%`,
-                  transform: "translate(-50%, -50%)",
+                  background: `radial-gradient(circle at center, white 0%, ${star.color} 50%, transparent 100%)`,
+                  boxShadow: `0 0 5px ${star.color}, 0 0 10px white`,
                 }}
+                onMouseDown={(e) => {
+                  // 편집 상태 이면서 move 모드일 경우 -> 별 이동(드래그 앤 드롭)
+                  if (isEdit && editMode === "move") {
+                    e.preventDefault();
+                    setSelectedStar(star.id);
+                  }
+                }}
+                onClick={() => {
+                  // 편집 상태 이면서 connect 모드일 경우 -> 선 연결 함수
+                  if (isEdit && editMode === "connect") {
+                    handleStarClick(star.id);
+                  }
+                }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* ========== AI 별자리 생성 모달 ========== */}
+        <ConstellationCreateModal isOpen={showCreateAiModal} onClose={() => setShowCreateAiModal(false)} constellationData={dummyConstellationData} />
+
+        {/* ========== 편집 버튼 영역 ========== */}
+        <div className="flex justify-end mt-1.5">
+          {!isEdit ? (
+            <div className="flex space-x-1.5">
+              {/* AI 생성 버튼 */}
+              <button onClick={() => setShowCreateAiModal(true)} className={`${BUTTON_STYLES.base} w-auto p-1.5 text-xs`}>
+                <ImageOutlinedIcon fontSize="small" />
+                <p>AI 만들기</p>
+              </button>
+
+              {/* 선 표시 버튼 */}
+              <button onClick={() => setShowConnections((prev) => !prev)} className={BUTTON_STYLES.base}>
+                {showConnections ? <VisibilityIcon fontSize="inherit" /> : <VisibilityOffIcon fontSize="inherit" />}
+              </button>
+
+              {/* 편집 시작 버튼 */}
+              <button onClick={handleEdit} className={BUTTON_STYLES.base}>
+                <EditIcon fontSize="inherit" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex space-x-1.5">
+              {/* move 버튼 */}
+              <button
+                onClick={() => {
+                  setEditMode("move"); // 편집 모드 move 전환
+                  setSelectedStar(null); // 선택된 별 초기화
+                }}
+                className={`${BUTTON_STYLES.base} ${editMode === "move" ? BUTTON_STYLES.active : ""}`}
               >
-                <div
-                  className={`size-3 rounded-full animate-pulse ${selectedStar === star.id ? "outline outline-2 outline-white" : ""}  ${isEdit ? (editMode === "move" ? "cursor-move" : "cursor-pointer") : ""}`}
-                  style={{
-                    background: `radial-gradient(circle at center, white 0%, ${star.color} 50%, transparent 100%)`,
-                    boxShadow: `0 0 5px ${star.color}, 0 0 10px white`,
-                  }}
-                  onMouseDown={(e) => {
-                    // 편집 상태 이면서 move 모드일 경우 -> 별 이동(드래그 앤 드롭)
-                    if (isEdit && editMode === "move") {
-                      e.preventDefault();
-                      setSelectedStar(star.id);
-                    }
-                  }}
-                  onClick={() => {
-                    // 편집 상태 이면서 connect 모드일 경우 -> 선 연결 함수
-                    if (isEdit && editMode === "connect") {
-                      handleStarClick(star.id);
-                    }
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+                <OpenWithIcon fontSize="inherit" />
+              </button>
 
-          {/* ========== AI 별자리 생성 모달 ========== */}
-          <ConstellationCreateModal isOpen={showCreateAiModal} onClose={() => setShowCreateAiModal(false)} constellationData={dummyConstellationData} />
+              {/* connect 버튼 */}
+              <button
+                onClick={() => {
+                  setEditMode("connect"); // 편집 모드 connect 전환
+                  setSelectedStar(null); // 선택된 별 초기화
+                }}
+                className={`${BUTTON_STYLES.base} ${editMode === "connect" ? BUTTON_STYLES.active : ""}`}
+              >
+                <TimelineIcon fontSize="inherit" />
+              </button>
 
-          {/* ========== 편집 버튼 영역 ========== */}
-          <div className="flex justify-end mt-1.5">
-            {!isEdit ? (
-              <div className="flex space-x-1.5">
-                {/* AI 생성 버튼 */}
-                <button onClick={() => setShowCreateAiModal(true)} className={`${BUTTON_STYLES.base} w-auto p-1.5 text-xs`}>
-                  <ImageOutlinedIcon fontSize="small" />
-                  <p>AI 만들기</p>
-                </button>
+              {/* 편집 취소 버튼 */}
+              <button onClick={handleCancel} className={BUTTON_STYLES.base}>
+                <CloseIcon fontSize="inherit" />
+              </button>
 
-                {/* 선 표시 버튼 */}
-                <button onClick={() => setShowConnections((prev) => !prev)} className={BUTTON_STYLES.base}>
-                  {showConnections ? <VisibilityIcon fontSize="inherit" /> : <VisibilityOffIcon fontSize="inherit" />}
-                </button>
-
-                {/* 편집 시작 버튼 */}
-                <button onClick={handleEdit} className={BUTTON_STYLES.base}>
-                  <EditIcon fontSize="inherit" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex space-x-1.5">
-                {/* move 버튼 */}
-                <button
-                  onClick={() => {
-                    setEditMode("move"); // 편집 모드 move 전환
-                    setSelectedStar(null); // 선택된 별 초기화
-                  }}
-                  className={`${BUTTON_STYLES.base} ${editMode === "move" ? BUTTON_STYLES.active : ""}`}
-                >
-                  <OpenWithIcon fontSize="inherit" />
-                </button>
-
-                {/* connect 버튼 */}
-                <button
-                  onClick={() => {
-                    setEditMode("connect"); // 편집 모드 connect 전환
-                    setSelectedStar(null); // 선택된 별 초기화
-                  }}
-                  className={`${BUTTON_STYLES.base} ${editMode === "connect" ? BUTTON_STYLES.active : ""}`}
-                >
-                  <TimelineIcon fontSize="inherit" />
-                </button>
-
-                {/* 편집 취소 버튼 */}
-                <button onClick={handleCancel} className={BUTTON_STYLES.base}>
-                  <CloseIcon fontSize="inherit" />
-                </button>
-
-                {/* 편집 저장 버튼 */}
-                <button onClick={handleSave} className={BUTTON_STYLES.base}>
-                  <CheckIcon fontSize="inherit" />
-                </button>
-              </div>
-            )}
-          </div>
+              {/* 편집 저장 버튼 */}
+              <button onClick={handleSave} className={BUTTON_STYLES.base}>
+                <CheckIcon fontSize="inherit" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }
 
