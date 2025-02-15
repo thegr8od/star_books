@@ -5,6 +5,7 @@ import LoginModal from "./LoginModal";
 import CustomAlert from "../../components/CustomAlert";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import {loginMember} from "@api"
 
 const Login = () => {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ const Login = () => {
 
     if (validateForm()) {
       try {
-        const response = await axios.post("/api/member/login", {
+        const response = await loginMember ({
           email: email,
           password: password,
         });
