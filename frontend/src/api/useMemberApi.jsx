@@ -37,7 +37,7 @@ const registerMember = async (member) => {
         return response;
     } catch(e) {
         //오류 체크
-        if(e.respose.data.stauts == 404){
+        if(e.respose.data.stauts === 404){
             return e.response.data;
         }
     }
@@ -63,26 +63,26 @@ const logoutMember = async () => {
 };
 
 //refresh token 발급
-// const refreshToken = async () => {
-//     try{
-//         const response = await useAxiosInstance.apiClient.post(
-//                 "/refresh",
-//         );
-//         // 백엔드 응답 헤더에서 새로운 accessToken 가져오기
-//         const newToken = response.headers["authorization"];
+const refreshToken = async () => {
+    try{
+        const response = await useAxiosInstance.apiClient.post(
+                "/member/refresh",
+        );
+        // 백엔드 응답 헤더에서 새로운 accessToken 가져오기
+        const newToken = response.headers["authorization"];
 
-//         if (newToken) {
-//             setAuthHeader(newToken); // Axios에 Authorization 헤더 설정
-//         } else {
-//             throw new Error("Access token이 응답 헤더에 없음");
-//         }
-
-//     } catch(e) {
-//         if(e.respose.data.stauts == 404){
-//             return e.response.data;
-//         }
-//     }
-// };
+        if (newToken) {
+            locaiton.setItem(newToken); // Axios에 Authorization 헤더 설정
+            return true;
+        } else {
+            throw new Error("Access token이 응답 헤더에 없음");
+        }
+    } catch(e) {
+        if(e.respose.data.stauts == 404){
+            return e.response.data;
+        }
+    }
+};
 
 //유저 정보 가져오기
 const getUserInfo = async () => {
@@ -121,9 +121,8 @@ const uploadProfileImage = async () => {
 //중복 이메일 체크
 const checkEmail = async (email) => {
     try{
-        const response = await useAxiosInstance.post(
-            "/member/check-email",
-            email,
+        const response = await useAxiosInstance.get(
+            `/member/check-email?email=${email}`,
         );
         return response.data;
     } catch(e) {
@@ -137,9 +136,8 @@ const checkEmail = async (email) => {
 //중복 닉네임 체크
 const checkNickname = async (nicknmae) => {
     try{
-        const response = await useAxiosInstance.post(
-            "",
-            nicknmae,
+        const response = await useAxiosInstance.get(
+            `/member/check-nickname?nickname=${nickname}`,
         );
         return response.data;
     } catch(e) {
@@ -159,22 +157,14 @@ const updateProfile = async () => {
     }
 };
 
-//유저 탈퇴
-// const withdrawUser = async () => {
-//     try{
-
-//     } catch(e) {
-
-//     }
-// };
-
 export default {
     loginMember,
     registerMember,
     logoutMember,
     getUserInfo,
+    checkNickname,
+    checkEmail,
     // refreshToken,
     uploadProfileImage,
-    updateProfile,
-    // withdrawUser
+    // updateProfile,
 };
