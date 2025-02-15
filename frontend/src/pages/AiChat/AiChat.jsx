@@ -67,7 +67,7 @@ function AiChat() {
           </div>
         </Modal>
         {/* ai 선택 후 채팅페이지로 이동 */}
-        {selectedAi && <AiChatInterface persona={selectedAi} />}
+        {selectedAi && <AiChatInterface aiCharacter={selectedAi} />}
       </Layout>
     </div>
   );

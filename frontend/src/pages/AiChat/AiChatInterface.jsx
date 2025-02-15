@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import SendIcon from "@mui/icons-material/Send";
 import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
 import ChatMessage from "./ChatMessage";
+import axios from "axios";
 
 function AiChatInterface() {
   //  전체 채팅 대화 내역 담는 배열
@@ -10,6 +11,7 @@ function AiChatInterface() {
   ]);
   const [inputMessage, setInputMessage] = useState(""); // 입력 메시지
   const messageRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // 스크롤 최하단으로 내려가도록
   const scrollToBottom = () => {
@@ -24,21 +26,54 @@ function AiChatInterface() {
   const handleSendMessage = (e) => {
     e.preventDefault(); // 전송 버튼 눌러도 새로고침 X
 
-    if (inputMessage.trim() === "") return; // 공백 메시지 보내는 거 방지
+    if (inputMessage.trim() === "" || isLoading) return; // 공백 메시지 보내는 거 또는 같은 메시지를 여러 번 전송하는 것 방지
 
+    const userMessage = inputMessage.trim();
     setMessages((prev) => [...prev, { isBot: false, message: inputMessage }]); // 유저가 메시지 보낼 때
     setInputMessage(""); // 초기화
+    setIsLoading(true);
 
-    // 답장 오는 속도
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          isBot: true,
-          message: "추후 데이터 받아올 예정",
-        },
-      ]);
-    }, 1000);
+    // // 답장 오는 속도
+    // setTimeout(() => {
+    //   setMessages((prev) => [
+    //     ...prev,
+    //     {
+    //       isBot: true,
+    //       message: "추후 데이터 받아올 예정",
+    //     },
+    //   ]);
+    // }, 1000);
+
+    // API 호출
+    axios
+      .post("api/chat/message", {
+        email: "user@example.com",
+        message: userMessage,
+        persona: aiCharacter.persona,
+      })
+      .then((response) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            isBot: true,
+            message: response.data,
+          },
+        ]);
+      })
+      .catch((error) => {
+        console.error("채팅 메시지 에러 : ", error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            isBot: true,
+            message:
+              "죄송해요. 일시적인 오류가 발생했어요. 잠시 후 다시 시도해주세요.",
+          },
+        ]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (
