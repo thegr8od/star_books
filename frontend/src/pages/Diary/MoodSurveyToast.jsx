@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 
-const MoodSurveyToast = ({ message, isVisible, onClose }) => {
+const MoodSurveyToast = ({ message, isVisible, onClose, duration = 800 }) => {
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
         onClose();
-      }, 800);
+      }, duration);
       // 컴포넌트가 사라질 때 타이머 정리
       return () => clearTimeout(timer);
     }
-  }, [isVisible, onClose]);
+  }, [isVisible, onClose, duration]);
 
   if (!isVisible) return null;
 

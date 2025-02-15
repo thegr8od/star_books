@@ -11,6 +11,8 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastDuration, setToastDuration] = useState(800);
 
   const moods = ["매우 좋음", "좋음", "보통", "좋지 않음", "매우 좋지 않음"];
   const emotions = {
@@ -52,6 +54,29 @@ const MoodSurvey = ({ isOpen, onClose }) => {
     ],
   };
 
+  // API 인스턴스 생성
+  const api = axios.create({
+    baseURL: "https://i12d206.p.ssafy.io",
+    timeout: 5000,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  // 요청 인터셉터 설정
+  api.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorizaion = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
   // step1에서 선택된 기분에 따라 감정 순서 결정
   const getOrderedCategories = () => {
     if (selectedMood === 0 || selectedMood === 1) {
@@ -92,12 +117,13 @@ const MoodSurvey = ({ isOpen, onClose }) => {
     setSelectedEmotions([]);
     onClose();
   };
+
   const text = (
-    <>
+    <div>
       더 자세히 알려주세요
       <br />
       <span className="font-medium text-gray-700 text-[18px]">(최대 5개)</span>
-    </>
+    </div>
   );
   const modalTitle = step === 1 ? "기분을 선택해주세요" : text;
 
@@ -111,12 +137,28 @@ const MoodSurvey = ({ isOpen, onClose }) => {
     });
   };
 
+  // 감정 분석 토스트 띄우기
+  const showToastMessage =
+    (message,
+    (duration = 800) => {
+      setToastMessage(message);
+      setToastDuration(duration);
+      setShowToast(true);
+    });
+
+  // api 호출하여 감정 데이터 저장
+  const saveMoodData = () => {
+    // 로딩 메시지 표시 (나중에 속도 조절 필요!!)
+    showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 1000);
+  };
+
   return (
-    <>
+    <div>
       <MoodSurveyToast
-        message={"감정은 5개까지만 선택 가능해요!"}
+        message={toastMessage}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
+        duration={toastDuration}
       />
       <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle}>
         {/* 오늘의 기분 설문 */}
@@ -194,7 +236,7 @@ const MoodSurvey = ({ isOpen, onClose }) => {
           </div>
         )}
       </Modal>
-    </>
+    </div>
   );
 };
 
