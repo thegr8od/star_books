@@ -4,9 +4,15 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      "@api": "src/api",
-    }
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:9090", // 백엔드 서버 주소
+        changeOrigin: true,
+      },
+    },
+  },
+  alias: {
+    "@api": "@src/api/*"
   }
 });
