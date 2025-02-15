@@ -4,6 +4,10 @@ import Modal from "../../components/Modal";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
 import MoodSurveyToast from "./MoodSurveyToast";
+import {
+  createEmptyDiary,
+  addHashtagsAndAnalyzeEmotion,
+} from "../../api/useDiaryApi";
 
 const MoodSurvey = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -53,29 +57,6 @@ const MoodSurvey = ({ isOpen, onClose }) => {
       "졸린",
     ],
   };
-
-  // API 인스턴스 생성
-  const api = axios.create({
-    baseURL: "https://i12d206.p.ssafy.io",
-    timeout: 5000,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  // 요청 인터셉터 설정
-  api.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        config.headers.Authorizaion = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
 
   // step1에서 선택된 기분에 따라 감정 순서 결정
   const getOrderedCategories = () => {
@@ -129,27 +110,50 @@ const MoodSurvey = ({ isOpen, onClose }) => {
 
   // step2 완료 버튼 클릭 시 다이어리 작성 페이지로 이동
   const handleComplete = () => {
-    handleClose();
-    navigate("../diary/write", {
-      state: {
-        emotions: selectedEmotions,
-      },
-    });
+    saveMoodData();
   };
 
   // 감정 분석 토스트 띄우기
-  const showToastMessage =
-    (message,
-    (duration = 800) => {
-      setToastMessage(message);
-      setToastDuration(duration);
-      setShowToast(true);
-    });
+  const showToastMessage = (message, duration = 800) => {
+    setToastMessage(message);
+    setToastDuration(duration);
+    setShowToast(true);
+  };
 
   // api 호출하여 감정 데이터 저장
   const saveMoodData = () => {
     // 로딩 메시지 표시 (나중에 속도 조절 필요!!)
-    showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 1000);
+    showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 3000);
+
+    // 1. 빈 다이어리 생성
+    createEmptyDiary()
+      .then((response) => {
+        if (response.status === 200) {
+          const diaryId = response.data.id;
+
+          // 2. 해시태그 추가 및 감정 분석
+          return addHashtagsAndAnalyzeEmotion(diaryId, selectedEmotions);
+        } else {
+          throw new Error("다이어리 생성 실패");
+        }
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          setShowToast(false);
+          handleClose();
+          navigate("../diary/write", {
+            state: {
+              emotions: selectedEmotions,
+              xvalue: response.data.xvalue,
+              yvalue: response.data.yvalue,
+            },
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("에러 발생 : ", error);
+        showToastMessage("오류가 발생했습니다. 다시 시도해주세요.", 800);
+      });
   };
 
   return (
@@ -190,7 +194,9 @@ const MoodSurvey = ({ isOpen, onClose }) => {
         {/* 세부 감정 설문 */}
         {step === 2 && (
           <div className="flex flex-col h-[400px] w-[320px]">
-            <div className="flex-1 overflow-y-auto pr-2">
+            <div
+              className="flex-1 overflow-y-auto pr-2"
+            >
               {/* 감정 카테고리와 버튼들 */}
               {getOrderedCategories().map((category) => (
                 <div key={category} className="mb-8">
