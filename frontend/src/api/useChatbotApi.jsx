@@ -1,11 +1,11 @@
 import { use } from "react";
 import useAxiosInstance from "./useAxiosInstance";
 
-const chat = (email, message, persona) => {
+const chat = async (email, message, persona) => {
     const jwt = localStorage.getItem("accessToken");
 
     try {
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .post(
                 '/chat/message',
@@ -22,11 +22,11 @@ const chat = (email, message, persona) => {
     }
 }
 
-const getHistory = (email) => {
+const getHistory = async (email) => {
     const jwt = localStorage.getItem("accessToken");
 
     try {
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
                 `/chat/history?email=${email}`,

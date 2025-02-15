@@ -1,11 +1,11 @@
 import useAxiosInstance from "./useAxiosInstance";
 
 //다이러리 생성
-const createEmptyDiary = () => {
+const createEmptyDiary = async () => {
     const jwt = localStorage.getItem("accesToken");
 
     try{
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .post(
                 "/diary/create"
@@ -20,11 +20,11 @@ const createEmptyDiary = () => {
  * 해쉬태그 생성 및 강정 분석
  * diary
  */
-const addHashtagsAndAnalyzeEmotion = (diaryId, hashtag) => {
+const addHashtagsAndAnalyzeEmotion = async (diaryId, hashtag) => {
     const jwt = localStorage.getItem("accesToken");
 
     try{
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .post(
                 `/diary/${diaryId}/hashtag`,
@@ -37,11 +37,11 @@ const addHashtagsAndAnalyzeEmotion = (diaryId, hashtag) => {
 }
 
 //다이어리 내용 입력
-const addDiaryContent = (diaryId, title, content, img) => {
+const addDiaryContent = async (diaryId, title, content, img) => {
     const jwt = localStorage.getItem("accesToken");
 
     try{
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .post(
                 `/diary/${diaryId}/content`,
@@ -58,11 +58,11 @@ const addDiaryContent = (diaryId, title, content, img) => {
 }
 
 //다이어리 수정
-const updateContent = (diaryId, title, content, img) => {
+const updateContent = async (diaryId, title, content, img) => {
     const jwt = localStorage.getItem("accesToken");
 
     try{
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .put(
                 `/diary/${diaryId}/content`,
@@ -79,11 +79,11 @@ const updateContent = (diaryId, title, content, img) => {
 }
 
 //다이어리 조회
-const getDiary = (diaryId) => {
+const getDiary = async (diaryId) => {
     const jwt = localStorage.getItem("accesToken");
 
     try{
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
                 `/diary/${diaryId}`
@@ -95,11 +95,11 @@ const getDiary = (diaryId) => {
 }
 
 //다이어리 삭제
-const deleteDiary = (diaryId) => {
+const deleteDiary = async (diaryId) => {
     const jwt = localStorage.getItem("accesToken");
 
     try {
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .delete(
                 `/diary/${diaryId}`
@@ -112,11 +112,11 @@ const deleteDiary = (diaryId) => {
 }
 
 //연도별 다이어리 조회
-const getDiariesDyYear = (targetYear) => {
+const getDiariesDyYear = async (targetYear) => {
     const jwt = localStorage.getItem("accesToken");
 
     try {
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
                 `/diary/year/${targetYear}`
@@ -128,11 +128,11 @@ const getDiariesDyYear = (targetYear) => {
     }
 }
 
-const getDiariesByMonth = (targetYear, targeMonth) => {
+const getDiariesByMonth = async (targetYear, targeMonth) => {
     const jwt = localStorage.getItem("accesToken");
 
     try {
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
                 `/diary/year/${targetYear}/month/${targeMonth}`

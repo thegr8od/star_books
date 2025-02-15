@@ -1,11 +1,11 @@
 import useAxiosInstance from "./useAxiosInstance";
 
 // 특정 연도의 별자리 선 조회
-const getYearlyStarlineCoords = (year) => {
+const getYearlyStarlineCoords = async (year) => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
                 `/starline/yearly/${year}`
@@ -15,14 +15,14 @@ const getYearlyStarlineCoords = (year) => {
     } catch(e) {
         return e.response;
     }
-}
+};
 
 //특정 연도/월/의 변자리 선 좌표 조회
-const getMonthlyStarlineCoords = () => {
+const getMonthlyStarlineCoords = async () => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
                 `/starline/yearly/${year}/${month}`
@@ -32,14 +32,14 @@ const getMonthlyStarlineCoords = () => {
     } catch(e) {
         return e.response;
     }    
-}
+};
 
 //특정 월의 데이터에서 새로운 데이터 추가
-const updateStarlineCoords = (data) => {
+const updateStarlineCoords = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
-        const response = useAxiosInstance
+        const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
                 `/starline/update/${year}/${month}`,
@@ -50,7 +50,7 @@ const updateStarlineCoords = (data) => {
     } catch(e) {
         return e.response;
     }  
-}
+};
 
 export default {
     getYearlyStarlineCoords,
