@@ -13,7 +13,7 @@ function RadioList() {
   const categories = ["전체", "일상", "연애", "음악", "취미", "건강", "기타"];
   const scrollContainerRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState("전체");
-  const [sortType, setSortType] = useState("latest");
+  const [sortType, setSortType] = useState("popular");
   const categoryColors = {
     일상: { bg: "from-amber-100 to-amber-300", border: "border-amber-500" },
     연애: { bg: "from-rose-100 to-rose-300", border: "border-rose-500" },
@@ -34,6 +34,7 @@ function RadioList() {
       category: "음악",
       createdAt: "2024-02-11",
       participantCount: 25,
+      roomName
     },
     {
       id: 2,
