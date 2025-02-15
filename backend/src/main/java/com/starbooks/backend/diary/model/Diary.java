@@ -36,8 +36,8 @@ public class Diary {
     private List<DiaryHashtag> hashtags = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DiaryImage> images = new ArrayList<>();
+    @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)  // List에서 단일 관계로 변경
+    private DiaryImage image;  // List<DiaryImage>에서 DiaryImage로 변경
 
     private LocalDateTime createdAt;
 
@@ -59,10 +59,11 @@ public class Diary {
     }
 
     // Diary 클래스 내부
-    public void setImages(List<DiaryImage> images) {
-        this.images = images;
-        // 양방향 관계 설정 (선택 사항)
-        images.forEach(image -> image.setDiary(this));
+    public void setImage(DiaryImage image) {  // setImages에서 setImage로 변경
+        this.image = image;
+        if (image != null) {
+            image.setDiary(this);
+        }
     }
 
     public void addHashtag(DiaryHashtag hashtag) {

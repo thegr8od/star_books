@@ -78,7 +78,7 @@ public class DiaryService {
      * 4️⃣ 다이어리 내용 입력
      */
     @Transactional
-    public void addContentAndImages(Long diaryId, DiaryContentRequest contentRequest, List<String> imageUrls) {
+    public void addContentAndImages(Long diaryId, DiaryContentRequest contentRequest,String Imgurl) {
         Diary diary = getDiaryEntity(diaryId);
 
         // 내용 저장
@@ -89,16 +89,14 @@ public class DiaryService {
                 .build();
         diary.setContent(content);
 
-        // 이미지 저장
-        List<DiaryImage> images = new ArrayList<>();
-        for (String url : imageUrls) {
+        // 이미지 저장 (단일 이미지)
+        if (Imgurl != null) {
             DiaryImage diaryImage = DiaryImage.builder()
                     .diary(diary)
-                    .Imgurl(url)
+                    .Imgurl(Imgurl)
                     .build();
-            images.add(diaryImage);
+            diary.setImage(diaryImage);
         }
-        diary.setImages(images);
     }
 
     @Transactional

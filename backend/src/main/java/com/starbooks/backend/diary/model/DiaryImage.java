@@ -19,7 +19,7 @@ public class DiaryImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_id", nullable = false)
     private Diary diary;
 
