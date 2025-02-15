@@ -37,8 +37,8 @@ function AiChat() {
   };
 
   return (
-    <div>
-      <Layout>
+    <Layout>
+      <div className="">
         <Modal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -48,7 +48,7 @@ function AiChat() {
             {aiCharacters.map((ai) => (
               <button
                 key={ai.id}
-                onClick={() => handleAISelect(ai)}
+                onClick={() => handleAiSelect(ai)}
                 className="flex items-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="w-16 h-16 rounded-full overflow-hidden mr-4">
@@ -68,8 +68,8 @@ function AiChat() {
         </Modal>
         {/* ai 선택 후 채팅페이지로 이동 */}
         {selectedAi && <AiChatInterface aiCharacter={selectedAi} />}
-      </Layout>
-    </div>
+      </div>
+    </Layout>
   );
 }
 

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import SendIcon from "@mui/icons-material/Send";
 import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
+import ReplayIcon from "@mui/icons-material/Replay";
 import ChatMessage from "./ChatMessage";
 import axios from "axios";
 
-function AiChatInterface() {
+function AiChatInterface({ aiCharacter }) {
   //  전체 채팅 대화 내역 담는 배열
   const [messages, setMessages] = useState([
     { isBot: true, message: "이제 당신이 선택한 AI와 대화를 나눠보세요!" },
@@ -16,6 +17,22 @@ function AiChatInterface() {
   // 스크롤 최하단으로 내려가도록
   const scrollToBottom = () => {
     messageRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // 대화 초기화
+  const handleChatReset = () => {
+    // 초기화 전 확인 요청
+    const isConfirmed = window.confirm(
+      "대화 내용이 모두 삭제됩니다. 정말 초기화하시겠습니까?"
+    );
+
+    if (isConfirmed) {
+      setMessages([
+        { isBot: true, message: "이제 당신이 선택한 AI와 대화를 나눠보세요!" },
+      ]);
+      setInputMessage("");
+      setIsLoading(false);
+    }
   };
 
   // 메세지 올 때마다 스크롤 실행
@@ -33,16 +50,29 @@ function AiChatInterface() {
     setInputMessage(""); // 초기화
     setIsLoading(true);
 
-    // // 답장 오는 속도
-    // setTimeout(() => {
-    //   setMessages((prev) => [
-    //     ...prev,
-    //     {
-    //       isBot: true,
-    //       message: "추후 데이터 받아올 예정",
-    //     },
-    //   ]);
-    // }, 1000);
+    // 이전 채팅 기록 불러오기
+    const fetchChatHistory = () => {
+      axios("/api/chat/history", {
+        params: { email: "user@example.com" },
+      }).then((response) => {
+        if (response.data.status === "success") {
+          const messageHistory = response.data.data.map((msg) => ({
+            isBot: msg.role === "assistant",
+            msg: msg.content,
+          }));
+
+          // 히스토리 있으면 환영 메시지 X
+          if (messageHistory.length > 0) {
+            setMessages(messageHistory);
+          }
+        }
+      });
+    };
+
+    // 컴포넌트 마운트 시 채팅 기록 불렁괴
+    useEffect(() => {
+      fetchChatHistory();
+    }, []);
 
     // API 호출
     axios
@@ -79,10 +109,15 @@ function AiChatInterface() {
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
       {/* 헤더 */}
-      <div className="pb-3 border-b-[1px] border-white/80">
-        <h1 className="text-center text-white font-semibold text-xl">
+      <div className="pt-1 pb-3 border-b-[1px] border-white/80 flex justify-between">
+        <h1 className="flex-1 text-center text-white font-semibold text-xl">
           AI 채팅
         </h1>
+        <ReplayIcon
+          sx={{ fontSize: 26 }}
+          className="text-white cursor-pointer"
+          onClick={handleChatReset}
+        />
       </div>
 
       {/* 채팅 메시지 표시 영역(스크롤) */}
@@ -111,7 +146,7 @@ function AiChatInterface() {
             type="submit"
             className="w-10 h-10 rounded-full flex items-center justify text-white"
           >
-            <SendIcon sx={8} />
+            <SendIcon sx={{ fontSize: 25 }} />
           </button>
         </div>
       </form>
