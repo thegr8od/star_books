@@ -141,11 +141,11 @@ const checkNickname = async (data) => {
 
 //마이페이지 이미지 업데이트
 // post
-const updateProfileImage = async (data) => {
+const updateProfileImage = async (data, email) => {
   const jwt = localStorage.getItem("accessToken");
   const formData = new FormData();
   formData.append("profileImageFile", data);
-
+  formData.append("email", email);
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
