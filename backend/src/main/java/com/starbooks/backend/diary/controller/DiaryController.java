@@ -6,9 +6,11 @@ import com.starbooks.backend.common.service.S3Service;
 import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
+import com.starbooks.backend.diary.dto.response.HashtagStatsResponse;
 import com.starbooks.backend.emotion.model.EmotionPoint;
 import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.diary.service.DiaryService;
+import com.starbooks.backend.diary.model.Diary;
 import com.starbooks.backend.emotion.service.EmotionService;
 import io.jsonwebtoken.io.IOException;
 import jakarta.validation.Valid;
@@ -57,6 +59,34 @@ public class DiaryController {
             @RequestBody @Valid DiaryHashtagRequest request) {
         EmotionPoint result = diaryService.addHashtagsAndAnalyzeEmotion(diaryId, request.getHashtags());
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 해시태그 삭제
+     */
+    @DeleteMapping("/{diaryId}/hashtag/{hashtagType}")
+    public ResponseEntity<Void> removeHashtag(
+            @PathVariable Long diaryId,
+            @PathVariable Diary.HashtagType hashtagType) {
+        diaryService.removeHashtag(diaryId, hashtagType);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Top 5 해시태그 조회
+     */
+    @GetMapping("/hashtags/top5")
+    public ResponseEntity<List<HashtagStatsResponse>> getTop5Hashtags() {
+        return ResponseEntity.ok(diaryService.getTop5Hashtags());
+    }
+
+    /**
+     * 해시태그 통계 초기화 (관리자용)
+     */
+    @PostMapping("/hashtags/initialize")
+    public ResponseEntity<Void> initializeHashtagStats() {
+        diaryService.initializeHashtagStats();
+        return ResponseEntity.ok().build();
     }
 
 
