@@ -102,6 +102,8 @@ pipeline {
                         -e "REDIS_PASSWORD=${REDIS_PASSWORD}" \
                         -e "LIVEKIT_REMOVED=${LIVEKIT_REMOVED}" \
                         -e "LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}" \
+                        -e "AWS_CLOUD_ACCESS_KEY=${AWS_CLOUD_ACCESS_KEY}" \
+                        -e "AWS_CLOUD_SECRET_KEY=${AWS_CLOUD_SECRET_KEY}" \
                         ${DOCKER_IMAGE_NAME}
                     """
                 }
