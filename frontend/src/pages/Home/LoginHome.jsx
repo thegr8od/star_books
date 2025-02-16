@@ -11,9 +11,9 @@ function LoginHome() {
 
   // 네비게이션 항목 정의 - 72도 간격으로 배치
   const navItems = [
-    { name: "별자리", angle: 270, path: "/constellation/gallery", delay: 0 },
+    { name: "별자리", angle: 270, path: "constellation/detail/2024", delay: 0 },
     { name: "일기장", angle: 342, path: "/diary/write", delay: 0.2 },
-    { name: "프로필", angle: 54, path: "/mypage/:id", delay: 0.4 },
+    { name: "프로필", angle: 54, path: "/mypage", delay: 0.4 },
     { name: "나의별", angle: 126, path: "/diary/stars", delay: 0.6 },
     { name: "우리별", angle: 198, path: "/universe", delay: 0.8 },
   ];
