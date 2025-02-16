@@ -5,6 +5,7 @@ import com.starbooks.backend.common.ErrorCode;
 import com.starbooks.backend.common.JwtTokenProvider;
 import com.starbooks.backend.user.dto.request.RequestLoginDTO;
 import com.starbooks.backend.user.dto.request.RequestRegisterDTO;
+import com.starbooks.backend.user.dto.request.RequestUpdateDTO;
 import com.starbooks.backend.user.dto.response.ResponseRefreshTokenDTO;
 import com.starbooks.backend.user.dto.response.ResponseUserDTO;
 import com.starbooks.backend.user.model.User;
@@ -19,11 +20,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Slf4j
@@ -76,7 +80,6 @@ public class UserController {
         }
         return ApiResponse.createSuccessWithNoContent("사용 가능한 닉네임입니다.");
     }
-
 
     // == 로그인 ==
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
@@ -188,7 +191,38 @@ public class UserController {
         }
     }
 
+    // ===== 프로필 업데이트 API 추가 =====
 
+    // == 프로필 이미지 업데이트 ==
+    @Operation(summary = "프로필 이미지 업데이트", description = "회원의 프로필 이미지를 업데이트합니다.")
+    @PostMapping(value = "/profile/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<?> updateProfileImage(
+            @RequestParam String email,
+            @RequestPart("profileImageFile") MultipartFile profileImageFile) {
+        try {
+            userService.updateUserProfileImage(email, profileImageFile);
+            return ApiResponse.createSuccessWithNoContent("프로필 이미지 업데이트 성공");
+        } catch (IOException e) {
+            log.error("프로필 이미지 업데이트 실패: {}", e.getMessage());
+            return ApiResponse.createError(ErrorCode.USER_REGISTER_FAILED);
+        } catch (Exception e) {
+            log.error("프로필 이미지 업데이트 실패: {}", e.getMessage());
+            return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    // == 프로필 텍스트 업데이트 ==
+    @Operation(summary = "프로필 텍스트 업데이트", description = "회원의 프로필 텍스트 정보를 업데이트합니다.")
+    @PutMapping("/profile/text")
+    public ApiResponse<?> updateProfileText(@RequestBody RequestUpdateDTO dto) {
+        try {
+            userService.updateUserProfileText(dto);
+            return ApiResponse.createSuccessWithNoContent("프로필 텍스트 업데이트 성공");
+        } catch (Exception e) {
+            log.error("프로필 텍스트 업데이트 실패: {}", e.getMessage());
+            return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
+        }
+    }
 
     // == Refresh Token 쿠키 추출 ==
     private String extractRefreshToken(HttpServletRequest request) {
