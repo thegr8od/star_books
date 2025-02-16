@@ -222,23 +222,23 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 모든 필드 유효성 검사
-    const newErrors = {};
-    Object.keys(formData).forEach((field) => {
-      const error = validateField(field, formData[field], formData);
-      if (error) {
-        newErrors[field] = error;
-      }
-    });
+    // // 모든 필드 유효성 검사
+    // const newErrors = {};
+    // Object.keys(formData).forEach((field) => {
+    //   const error = validateField(field, formData[field], formData);
+    //   if (error) {
+    //     newErrors[field] = error;
+    //   }
+    // });
 
-    // 에러가 있으면 업데이트하고 제출하지 않음
-    if (Object.keys(newErrors).length > 0) {
-      setErrors((prev) => ({
-        ...prev,
-        ...newErrors,
-      }));
-      return;
-    }
+    // // 에러가 있으면 업데이트하고 제출하지 않음
+    // if (Object.keys(newErrors).length > 0) {
+    //   setErrors((prev) => ({
+    //     ...prev,
+    //     ...newErrors,
+    //   }));
+    //   return;
+    // }
 
     // axios 요청
     const { confirmPassword, ...requestData } = formData;
