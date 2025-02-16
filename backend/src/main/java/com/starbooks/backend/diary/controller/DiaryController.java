@@ -2,6 +2,7 @@ package com.starbooks.backend.diary.controller;
 
 //import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 //import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
+import com.starbooks.backend.common.service.S3Service;
 import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
@@ -9,15 +10,21 @@ import com.starbooks.backend.emotion.model.EmotionPoint;
 import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.diary.service.DiaryService;
 import com.starbooks.backend.emotion.service.EmotionService;
+import io.jsonwebtoken.io.IOException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/diary")
 @RequiredArgsConstructor
@@ -25,6 +32,7 @@ public class DiaryController {
 
     private final DiaryService diaryService;
     private final EmotionService emotionService;
+    private final S3Service s3Service;
 
     /**
      * 1️⃣ 빈 다이어리 생성 (버튼 클릭 시)
@@ -51,6 +59,34 @@ public class DiaryController {
         return ResponseEntity.ok(result);
     }
 
+
+    @PostMapping("/upload")
+    public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
+        try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "파일이 비어있습니다."));
+            }
+
+            // 이미지 파일 검증
+            if (!file.getContentType().startsWith("image")) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "이미지 파일만 업로드 가능합니다."));
+            }
+
+            String imageUrl = s3Service.uploadFile(file);
+            return ResponseEntity.ok(Map.of("imageUrl", imageUrl));
+
+        } catch (IOException e) {
+            log.error("파일 업로드 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "파일 업로드에 실패했습니다: " + e.getMessage()));
+        } catch (Exception e) {
+            log.error("예상치 못한 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "서버 오류가 발생했습니다."));
+        }
+    }
 
     /**
      * 4️⃣ 내용 입력 및 저장

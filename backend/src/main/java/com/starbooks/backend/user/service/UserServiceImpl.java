@@ -1,6 +1,7 @@
 package com.starbooks.backend.user.service;
 
 import com.starbooks.backend.common.ErrorCode;
+import com.starbooks.backend.common.service.S3Service;
 import com.starbooks.backend.user.dto.request.RequestRegisterDTO;
 import com.starbooks.backend.user.dto.request.RequestUpdateDTO;
 import com.starbooks.backend.user.dto.response.ResponseUserDTO;
@@ -38,6 +39,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void registerUser(RequestRegisterDTO dto) {
+
+        // 이메일 중복 체크
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new ResponseStatusException(
                     ErrorCode.EMAIL_ALREADY_EXIST.getHttpStatus(),
@@ -45,6 +48,7 @@ public class UserServiceImpl implements UserService {
             );
         }
 
+        // snsAccount 기본값 설정
         if (dto.getSnsAccount() == null) {
             dto.setSnsAccount(false);
         }
@@ -88,7 +92,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
-            String fileUrl = s3Service.upload(profileImageFile.getOriginalFilename(), profileImageFile);
+            // S3 업로드 후 URL 획득
+            String fileUrl = s3Service.uploadFile(profileImageFile);
 
             ProfileImage profileImage = user.getProfileImage();
             if (profileImage == null) {
@@ -133,6 +138,7 @@ public class UserServiceImpl implements UserService {
     public boolean existsByNickname(String nickname) {
         return userRepository.existsByNickname(nickname);
     }
+
 
     @Override
     public boolean existsByEmail(String email) {
