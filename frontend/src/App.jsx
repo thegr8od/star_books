@@ -22,11 +22,10 @@ import DiaryCalendar from "./pages/Diary/DiaryCalendar";
 import Diary from "./pages/Diary/Diary";
 
 function App() {
-  const noLayout = location.pathname === "/" || location.pathname === "/universe" || location.pathname.startsWith("/constellation/detail/"); // 홈 페이지 여부 확인
   return (
     <>
-      <div className={noLayout ? "" : "flex min-h-screen bg-gradient-to-b from-[#000054] to-[#010121]"}>
-        {!noLayout && <BackgroundStar />}
+      <div className="flex min-h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121]">
+        <BackgroundStar />
         <Routes>
           {/* Auth 관련 */}
           <Route path="" element={<Home />} />

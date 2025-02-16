@@ -7,7 +7,7 @@ import KeyboardVoiceOutlinedIcon from "@mui/icons-material/KeyboardVoiceOutlined
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
 import { useEffect, useRef, useState } from "react";
-import { getLiveBroadcasts, updateParticipants } from "../../api/useRadioApi";
+import useRadioApi from "../../api/useRadioApi";
 
 function RadioList() {
   const categories = ["전체", "일상", "연애", "음악", "취미", "건강", "기타"];

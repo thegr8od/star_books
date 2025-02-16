@@ -17,9 +17,9 @@ function ConstellationCreateAiEvent({ data }) {
     ctx.fillStyle = "#000033";
     ctx.fillRect(0, 0, width, height);
 
-    // 🛠 AI (0,0) → 왼쪽 상단, (100,100) → 오른쪽 하단 좌표 변환
-    const scaleX = (x) => (x / 100) * width;
-    const scaleY = (y) => (y / 100) * height;
+    // 좌표계 변환이 필요 없음 (이미 0-100 범위의 백분율)
+    const scaleX = (x) => (x * width) / 100;
+    const scaleY = (y) => (y * height) / 100;
 
     // 별자리 선 그리기
     ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
@@ -68,9 +68,11 @@ function ConstellationCreateAiEvent({ data }) {
       for (let i = 0; i < remainingCount; i++) {
         const randomLine = lines[Math.floor(Math.random() * lines.length)];
         const t = Math.random();
-        const x = randomLine.start.x + (randomLine.end.x - randomLine.start.x) * t;
-        const y = randomLine.start.y + (randomLine.end.y - randomLine.start.y) * t;
-        drawStar(x, y, color[i % color.length]);
+        const x =
+          randomLine.start.x + (randomLine.end.x - randomLine.start.x) * t;
+        const y =
+          randomLine.start.y + (randomLine.end.y - randomLine.start.y) * t;
+        drawStar(x, y, color[pointsArray.length + i]);
       }
     }
   }, [lines, color, count]);
