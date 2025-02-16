@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { HomeOutlined, PersonOutlined, EditCalendarOutlined, PublicOutlined, AutoAwesomeOutlined, LeaderboardOutlined, PodcastsOutlined, ForumOutlined, LogoutOutlined, Menu as MenuIcon, ArrowBackIos, Close, AccountCircle } from "@mui/icons-material";
+import useMemberApi from "../api/useMemberApi";
 
 // 네비게이션 아이템 상수
 const NAV_ITEMS = [
@@ -77,8 +78,34 @@ const MenuItem = ({ item, onClick }) => {
   );
 };
 
+const LogoutButton = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    const response = await useMemberApi.logoutMember();
+    console.log(response);
+    if (response.status === "J001") {
+      console.log("로그아웃 성공");
+      navigate("/");
+    } else {
+      console.log("로그아웃 실패");
+      alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  return (
+    <button onClick={handleLogout} className="flex items-center gap-3 p-3 w-full text-gray-700 rounded-full hover:bg-[#8993c7] hover:text-white transition-colors">
+      <span className="flex items-center justify-center">
+        <LogoutOutlined />
+      </span>
+      <span>로그아웃</span>
+    </button>
+  );
+};
+
 // [메인] 네비게이션 컴포넌트
-const Nav = ({ title = "", profileImage = null }) => {
+const Nav = ({ profileImage = null }) => {
+  const title = "";
   const [showMenu, setShowMenu] = useState(false);
 
   return (
@@ -107,16 +134,9 @@ const Nav = ({ title = "", profileImage = null }) => {
               ))}
             </ul>
 
-            {/* 로그아웃 버튼 */}
-            <div className="p-2 border-t">
-              <MenuItem
-                item={{
-                  label: "로그아웃",
-                  path: "/logout",
-                  icon: <LogoutOutlined />,
-                }}
-                onClick={() => setShowMenu(false)}
-              />
+            {/* 로그아웃 */}
+            <div onClick={() => setShowMenu(false)} className="p-2 border-t">
+              <LogoutButton />
             </div>
           </div>
         </div>
