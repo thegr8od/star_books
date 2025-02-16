@@ -6,8 +6,7 @@ import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserField, setUser } from "../../store/userSlice";
-import updateProfile from "@/api/memberApi";
-import updateProfileImage from "@/api/memberApi";
+import useMemberApi from "../../api/useMemberApi";
 
 const ProfileEdit = () => {
   const dispatch = useDispatch();
@@ -72,7 +71,20 @@ const ProfileEdit = () => {
       };
       reader.readAsDataURL(file);
 
-      handleImageUpload(file);
+      //API 호출
+      updateProfileImage(file)
+        .then((response) => {
+          dispatch(
+            updateUserField({
+              field: "profileImagePath",
+              value: response.data.profileImagePath,
+            })
+          );
+        })
+        .catch((error) => {
+          console.error("이미지 업로드 실패 : ", error);
+          alert("이미지 업로드에 실패했습니다.");
+        });
     }
   };
 
@@ -80,12 +92,16 @@ const ProfileEdit = () => {
   const handleProfileUpdate = () => {
     const profileData = {
       nickname: formData.name,
-      email: `${formData.email}@${formData.emailDomain}`,
+      email: formData.email,
       gender: formData.gender,
     };
 
     updateProfile(profileData)
       .then((response) => {
+        if (response.status === 404) {
+          alert("프로필 업데이트에 실패했습니다.");
+          return;
+        }
         dispatch(
           setUser({
             ...user,
@@ -94,7 +110,7 @@ const ProfileEdit = () => {
             gender: profileData.gender,
           })
         );
-        alert("프로필이 성공적으로 업데이트되었습니다.");
+        alert("프로필이 성공적으로 업데이트 되었습니다.");
       })
       .catch((error) => {
         console.error("프로필 업데이트 실패 : ", error);
@@ -163,38 +179,16 @@ const ProfileEdit = () => {
                 />
               </div>
 
-              {/* 이메일 */}
-              <div className="flex flex-col space-y-[10px]">
+              <div className="flex flex-col space-y-2">
                 <span>이메일</span>
-                <div className="flex w-full items-center space-x-2">
-                  <input
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-[45%] bg-transparent border-b border-gray-400 pb-1 focus:outline-none"
-                  />
-                  <span className="flex-[1]">@</span>
-                  <select
-                    onChange={handleInputChange}
-                    className="w-[45%] bg-transparent border-b border-gray-400 pb-1"
-                  >
-                    <option value="선택" className="text-black">
-                      선택
-                    </option>
-                    <option value="gmail" className="text-black">
-                      gmail.com
-                    </option>
-                    <option value="naver" className="text-black">
-                      naver.com
-                    </option>
-                    <option value="daum" className="text-black">
-                      daum.net
-                    </option>
-                    <option value="nate" className="text-black">
-                      nate.com
-                    </option>
-                  </select>
-                </div>
+                <input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="이메일을 입력하세요."
+                  className="w-full bg-transparent border-b border-gray-400 focus:outline-none pb-1"
+                />
               </div>
 
               {/* 성별 */}
