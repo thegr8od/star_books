@@ -6,6 +6,8 @@ import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserField, setUser } from "../../store/userSlice";
+import updateProfile from "@/api/memberApi";
+import updateProfileImage from "@/api/memberApi";
 
 const ProfileEdit = () => {
   const dispatch = useDispatch();
@@ -18,7 +20,7 @@ const ProfileEdit = () => {
     name: "",
     email: "",
     emailDomain: "",
-    gender: ""
+    gender: "",
   }); // 콘솔로 찍어보기
 
   // 초기 데이터 불러오기
@@ -203,7 +205,7 @@ const ProfileEdit = () => {
                     <input
                       type="radio"
                       name="gender"
-                      value="male"
+                      value="MALE"
                       checked={formData.gender === "male"}
                       onChange={handleInputChange}
                     />
@@ -213,7 +215,7 @@ const ProfileEdit = () => {
                     <input
                       type="radio"
                       name="gender"
-                      value="female"
+                      value="FEMALE"
                       checked={formData.gender === "female"}
                       onChange={handleInputChange}
                     />
