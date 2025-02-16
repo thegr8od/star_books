@@ -144,7 +144,7 @@ const checkNickname = async (data) => {
 const updateProfileImage = async (data) => {
   const jwt = localStorage.getItem("accessToken");
   const formData = new FormData();
-  formData.append("file", data);
+  formData.append("profileImageFile", data);
 
   try {
     const response = await useAxiosInstance
