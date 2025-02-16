@@ -86,6 +86,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 3-1) 회원가입, 로그인, OAuth2 콜백 등은 토큰 없어도 접근 가능
                         .requestMatchers(
+                                "/ws/**",
+                                "/api/radio/**",
                                 "/api/member",
                                 "/api/member/login",
                                 "/api/member/check-nickname",
@@ -146,7 +148,7 @@ public class SecurityConfig {
         return web -> web.ignoring().requestMatchers(
                 "/v3/api-docs",
                 "/ws/**",
-                "/radio/**",
+                "/api/radio/**",
                 "/v3/api-docs/**",
                 "/swagger-resources/**",
                 "/swagger-ui/**",
