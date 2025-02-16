@@ -18,7 +18,6 @@ const ProfileEdit = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    emailDomain: "",
     gender: "",
   }); // 콘솔로 찍어보기
 
@@ -27,8 +26,7 @@ const ProfileEdit = () => {
     if (user) {
       setFormData({
         name: user.nickname || "",
-        email: user.email ? user.email.split("@")[0] : "",
-        emailDomain: user.email ? user.email.split("@")[1] : "",
+        email: user.email || "",
         gender: user.gender || "",
       });
       setImagePreview(user.profileImagePath);
@@ -72,7 +70,8 @@ const ProfileEdit = () => {
       reader.readAsDataURL(file);
 
       //API 호출
-      updateProfileImage(file)
+      useMemberApi
+        .updateProfileImage(file)
         .then((response) => {
           dispatch(
             updateUserField({
@@ -96,12 +95,9 @@ const ProfileEdit = () => {
       gender: formData.gender,
     };
 
-    updateProfile(profileData)
+    useMemberApi
+      .updateProfile(profileData)
       .then((response) => {
-        if (response.status === 404) {
-          alert("프로필 업데이트에 실패했습니다.");
-          return;
-        }
         dispatch(
           setUser({
             ...user,
@@ -110,7 +106,7 @@ const ProfileEdit = () => {
             gender: profileData.gender,
           })
         );
-        alert("프로필이 성공적으로 업데이트 되었습니다.");
+        alert("프로필이 성공적으로 업데이트되었습니다.");
       })
       .catch((error) => {
         console.error("프로필 업데이트 실패 : ", error);
@@ -200,7 +196,7 @@ const ProfileEdit = () => {
                       type="radio"
                       name="gender"
                       value="MALE"
-                      checked={formData.gender === "male"}
+                      checked={formData.gender === "MALE"}
                       onChange={handleInputChange}
                     />
                     <span>남자</span>
@@ -210,7 +206,7 @@ const ProfileEdit = () => {
                       type="radio"
                       name="gender"
                       value="FEMALE"
-                      checked={formData.gender === "female"}
+                      checked={formData.gender === "FEMALE"}
                       onChange={handleInputChange}
                     />
                     <span>여자</span>
