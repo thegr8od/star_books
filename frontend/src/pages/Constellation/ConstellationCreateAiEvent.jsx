@@ -17,20 +17,14 @@ function ConstellationCreateAiEvent({ data }) {
     ctx.fillStyle = "#000033";
     ctx.fillRect(0, 0, width, height);
 
-    // AI의 (-10,10) 좌표계를 캔버스 좌표로 변환하는 함수
-    const scaleX = (x) => (x + 10) * (width / 20);
-    const scaleY = (y) => (10 - y) * (height / 20);
+    // 🛠 AI (0,0) → 왼쪽 상단, (100,100) → 오른쪽 하단 좌표 변환
+    const scaleX = (x) => (x / 100) * width;
+    const scaleY = (y) => (y / 100) * height;
 
-    // 모든 선의 교차점과 끝점을 수집
-    const points = new Set();
-    lines.forEach((line) => {
-      points.add(`${line.start.x},${line.start.y}`);
-      points.add(`${line.end.x},${line.end.y}`);
-    });
+    // 별자리 선 그리기
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.lineWidth = 2;
 
-    // 선 그리기
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-    ctx.lineWidth = 1;
     lines.forEach((line) => {
       ctx.beginPath();
       ctx.moveTo(scaleX(line.start.x), scaleY(line.start.y));
@@ -38,13 +32,14 @@ function ConstellationCreateAiEvent({ data }) {
       ctx.stroke();
     });
 
-    // 수집된 점들을 배열로 변환
-    const pointsArray = Array.from(points).map((point) => {
-      const [x, y] = point.split(",").map(Number);
-      return { x, y };
+    // 모든 별점을 배열로 저장
+    const points = new Set();
+    lines.forEach((line) => {
+      points.add(`${line.start.x},${line.start.y}`);
+      points.add(`${line.end.x},${line.end.y}`);
     });
 
-    // 별 그리기 함수 (빛나는 효과 포함)
+    // 별 그리기 함수 (빛나는 효과)
     const drawStar = (x, y, fillStyle, size = 4) => {
       ctx.beginPath();
       ctx.arc(scaleX(x), scaleY(y), size, 0, Math.PI * 2);
@@ -58,34 +53,30 @@ function ConstellationCreateAiEvent({ data }) {
     };
 
     // 모든 교차점에 별 그리기
-    pointsArray.forEach((point, index) => {
+    Array.from(points).forEach((point, index) => {
+      const [x, y] = point.split(",").map(Number);
       if (index < count) {
-        drawStar(point.x, point.y, color[index % color.length]);
+        drawStar(x, y, color[index % color.length]);
       } else {
-        drawStar(point.x, point.y, "#FFFFFF");
+        drawStar(x, y, "#FFFFFF");
       }
     });
 
     // 남은 컬러 별들을 선 위에 추가로 배치
-    if (pointsArray.length < count) {
-      const remainingCount = count - pointsArray.length;
+    if (points.size < count) {
+      const remainingCount = count - points.size;
       for (let i = 0; i < remainingCount; i++) {
         const randomLine = lines[Math.floor(Math.random() * lines.length)];
         const t = Math.random();
         const x = randomLine.start.x + (randomLine.end.x - randomLine.start.x) * t;
         const y = randomLine.start.y + (randomLine.end.y - randomLine.start.y) * t;
-        drawStar(x, y, color[pointsArray.length + i]);
+        drawStar(x, y, color[i % color.length]);
       }
     }
   }, [lines, color, count]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={400}
-      height={400}
-      className="w-full h-full rounded-2xl"
-    />
+    <canvas ref={canvasRef} width={400} height={400} className="w-full h-full rounded-2xl" />
   );
 }
 
