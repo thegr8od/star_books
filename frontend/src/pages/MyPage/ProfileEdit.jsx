@@ -4,9 +4,13 @@ import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import Layout from "../../components/Layout";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
-import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { updateUserField, setUser } from "../../store/userSlice";
 
 const ProfileEdit = () => {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
+
   const [imagePreview, setImagePreview] = useState(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -14,8 +18,21 @@ const ProfileEdit = () => {
     name: "",
     email: "",
     emailDomain: "",
-    gender: "",
-  });
+    gender: ""
+  }); // 콘솔로 찍어보기
+
+  // 초기 데이터 불러오기
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.nickname || "",
+        email: user.email ? user.email.split("@")[0] : "",
+        emailDomain: user.email ? user.email.split("@")[1] : "",
+        gender: user.gender || "",
+      });
+      setImagePreview(user.profileImagePath);
+    }
+  }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -25,6 +42,24 @@ const ProfileEdit = () => {
     }));
   };
 
+  // 이미지 업로드 함수
+  const handleImageUpload = (file) => {
+    updateProfileImage(file)
+      .then((response) => {
+        dispatch(
+          updateUserField({
+            field: "profileImagePath",
+            value: response.data.profileImagePath,
+          })
+        );
+      })
+      .catch((error) => {
+        console.error("이미지 업로드 실패:", error);
+        alert("이미지 업로드에 실패했습니다.");
+      });
+  };
+
+  // 이미지 변경 함수
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
@@ -34,7 +69,35 @@ const ProfileEdit = () => {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
+
+      handleImageUpload(file);
     }
+  };
+
+  // 프로필 업데이트 함수
+  const handleProfileUpdate = () => {
+    const profileData = {
+      nickname: formData.name,
+      email: `${formData.email}@${formData.emailDomain}`,
+      gender: formData.gender,
+    };
+
+    updateProfile(profileData)
+      .then((response) => {
+        dispatch(
+          setUser({
+            ...user,
+            nickname: profileData.nickname,
+            email: profileData.email,
+            gender: profileData.gender,
+          })
+        );
+        alert("프로필이 성공적으로 업데이트되었습니다.");
+      })
+      .catch((error) => {
+        console.error("프로필 업데이트 실패 : ", error);
+        alert("프로필 업데이트에 실패했습니다.");
+      });
   };
 
   return (
@@ -173,6 +236,7 @@ const ProfileEdit = () => {
                     text={"변경사항 저장"}
                     type={"DEFAULT"}
                     className="w-full px-8 py-2"
+                    onClick={handleProfileUpdate}
                   />
                 </div>
                 <div className="w-full">
