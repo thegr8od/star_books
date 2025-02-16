@@ -89,7 +89,7 @@ pipeline {
                     sh """
                     docker stop ${DOCKER_CONTAINER_NAME} || true
                     docker rm ${DOCKER_CONTAINER_NAME} || true
-                    docker run -d --name ${DOCKER_CONTAINER_NAME} \
+                    docker run -d --name ${DOCKER_CONTAINER_NAME} --network host\
                         -p 9097:9097 \
                         -e "DB_URL=${DB_URL}" \
                         -e "DB_USER=${DB_USER}" \
