@@ -36,7 +36,8 @@ pipeline {
                         string(credentialsId: 'LIVEKIT_REMOVED', variable: 'LIVEKIT_REMOVED'),
                         string(credentialsId: 'LIVEKIT_API_SECRET', variable: 'LIVEKIT_API_SECRET'),
                         string(credentialsId: 'AWS_CLOUD_ACCESS_KEY', variable: 'AWS_CLOUD_ACCESS_KEY'),
-                        string(credentialsId: 'AWS_CLOUD_SECRET_KEY', variable: 'AWS_CLOUD_SECRET_KEY')
+                        string(credentialsId: 'AWS_CLOUD_SECRET_KEY', variable: 'AWS_CLOUD_SECRET_KEY'),
+                        string(credentialsId: 'ANTHROPIC_REMOVED', variable: 'ANTHROPIC_REMOVED')
                     ]) {
                         env.MATTERMOST_WEBHOOK_URL = MATTERMOST_WEBHOOK_URL
                         env.DB_URL = DB_URL
@@ -57,6 +58,7 @@ pipeline {
                         env.LIVEKIT_API_SECRET = LIVEKIT_API_SECRET
                         env.AWS_CLOUD_ACCESS_KEY = AWS_CLOUD_ACCESS_KEY
                         env.AWS_CLOUD_SECRET_KEY = AWS_CLOUD_SECRET_KEY
+                        env.ANTHROPIC_REMOVED = ANTHROPIC_REMOVED
                     }
                 }
             }
@@ -104,6 +106,7 @@ pipeline {
                         -e "LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}" \
                         -e "AWS_CLOUD_ACCESS_KEY=${AWS_CLOUD_ACCESS_KEY}" \
                         -e "AWS_CLOUD_SECRET_KEY=${AWS_CLOUD_SECRET_KEY}" \
+                        -e "ANTHROPIC_REMOVED=${ANTHROPIC_REMOVED}" \
                         ${DOCKER_IMAGE_NAME}
                     """
                 }

@@ -97,6 +97,10 @@ cloud:
     region:
       static: ap-northeast-2
 
+anthropic:
+  api:
+    key: ${ANTHROPIC_REMOVED}
+
 logging:
   level:
     org.hibernate.SQL: debug
