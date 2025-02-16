@@ -2,6 +2,7 @@ package com.starbooks.backend.user.service;
 
 import com.starbooks.backend.common.ErrorCode;
 import com.starbooks.backend.common.service.S3Service;
+import com.starbooks.backend.user.dto.request.RequestChangePasswordDTO;
 import com.starbooks.backend.user.dto.request.RequestRegisterDTO;
 import com.starbooks.backend.user.dto.request.RequestUpdateDTO;
 import com.starbooks.backend.user.dto.response.ResponseUserDTO;
@@ -11,6 +12,7 @@ import com.starbooks.backend.user.repository.jpa.ProfileImageRepository;
 import com.starbooks.backend.user.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,7 +29,9 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public
+
+class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ProfileImageRepository profileImageRepository;
@@ -108,6 +112,15 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    public String getUserProfileImage(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
+        ProfileImage profileImage = user.getProfileImage();
+        return (profileImage != null) ? profileImage.getSaveFilePath() : null;
+    }
+
     // == 프로필 텍스트만 업데이트 ==
     @Override
     @Transactional
@@ -143,5 +156,28 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(RequestChangePasswordDTO dto) {
+        // 이메일로 사용자 조회
+        User user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, ErrorCode.USER_NOT_FOUND.getMessage()
+                ));
+
+        // 기존 비밀번호 확인
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "현재 비밀번호가 올바르지 않습니다."
+            );
+        }
+
+        // 새 비밀번호 암호화 후 업데이트
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
+
+        log.info("비밀번호 변경 완료: email={}", dto.getEmail());
     }
 }
