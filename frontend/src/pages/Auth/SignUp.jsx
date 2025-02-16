@@ -44,8 +44,8 @@ const Signup = () => {
   // 에러 메시지
   const ERROR_MESSAGES = {
     required: (fieldName) => `${fieldName}을(를) 입력해 주세요`,
-    email: { format: "올바른 이메일 형식이 아닙니다", check: "이메일 중복 확인이 필요합니다.", duplicate: "사용할 수 없는 이메일입니다." },
-    nickname: { format: "영문, 한글, 숫자를 사용하여 20자 이내로 입력해 주세요", check: "닉네임 중복 확인이 필요합니다.", duplicate: "사용할 수 없는 닉네임입니다." },
+    email: { format: "올바른 이메일 형식이 아닙니다", check: "이메일 중복 확인이 필요합니다." },
+    nickname: { format: "영문, 한글, 숫자를 사용하여 20자 이내로 입력해 주세요", check: "닉네임 중복 확인이 필요합니다." },
     password: {
       format: "8~15자, 숫자/영문(소문자)/특수문자(!@#$%^&)를 조합하여 입력해주세요.",
       match: "비밀번호가 일치하지 않습니다",
@@ -175,9 +175,9 @@ const Signup = () => {
   // 중복 확인 핸들러 (axios 요청)
   const handleValidation = async (type) => {
     // 유효성 검사를 통과하지 않았거나 이미 중복 확인이 완료된 경우
-    // if (!validationStatus[type].isChecked || validationStatus[type].isValid) {
-    //   return;
-    // }
+    if (!validationStatus[type].isChecked || validationStatus[type].isValid) {
+      return;
+    }
 
     // axios 요청
     const requestData = { [type]: formData[type] };
@@ -188,69 +188,68 @@ const Signup = () => {
       response = await useMemberApi.checkNickname(requestData);
     }
     console.log(response);
-    // if (response.status === 200) {
-    //   console.log(`${FIELD_LABELS[type]} 중복 확인 성공`);
-    //   alert(response.data.message);
-    // } else {
-    //   console.log(`${FIELD_LABELS[type]}  중복 확인 실패`);
-    //   alert(response.data.message);
-    // }
-
-    // try {
-    //   // 중복 검사 결과 업데이트
-    //   setValidationStatus((prev) => ({
-    //     ...prev,
-    //     [type]: {
-    //       ...prev[type],
-    //       isValid: response.data.isAvailable,
-    //     },
-    //   }));
-    //   // 유효성 검사 결과에 따라 에러 메시지 업데이트
-    //   setErrors((prev) => ({
-    //     ...prev,
-    //     [type]: response.data.isAvailable ? "" : ERROR_MESSAGES[type].duplicate,
-    //   }));
-    // } catch (error) {
-    //   setErrors((prev) => ({
-    //     ...prev,
-    //     [type]: ERROR_MESSAGES.serverError,
-    //   }));
-    // }
+    if (response?.status === "C000") {
+      console.log(`${FIELD_LABELS[type]} 중복 확인 성공`);
+      // 중복 검사 결과 업데이트
+      setValidationStatus((prev) => ({
+        ...prev,
+        [type]: {
+          ...prev[type],
+          isValid: true,
+        },
+      }));
+      setErrors((prev) => ({
+        ...prev,
+        [type]: "",
+      }));
+    } else if (response?.status === "U011" || response?.status === "U012") {
+      // 유효성 검사 결과에 따라 에러 메시지 업데이트
+      setErrors((prev) => ({
+        ...prev,
+        [type]: response.message,
+      }));
+    } else {
+      console.log(`${FIELD_LABELS[type]} 중복 확인 실패`);
+      setErrors((prev) => ({
+        ...prev,
+        [type]: ERROR_MESSAGES.serverError,
+      }));
+    }
   };
 
   // 제출 핸들러
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // // 모든 필드 유효성 검사
-    // const newErrors = {};
-    // Object.keys(formData).forEach((field) => {
-    //   const error = validateField(field, formData[field], formData);
-    //   if (error) {
-    //     newErrors[field] = error;
-    //   }
-    // });
+    // 모든 필드 유효성 검사
+    const newErrors = {};
+    Object.keys(formData).forEach((field) => {
+      const error = validateField(field, formData[field], formData);
+      if (error) {
+        newErrors[field] = error;
+      }
+    });
 
-    // // 에러가 있으면 업데이트하고 제출하지 않음
-    // if (Object.keys(newErrors).length > 0) {
-    //   setErrors((prev) => ({
-    //     ...prev,
-    //     ...newErrors,
-    //   }));
-    //   return;
-    // }
+    // 에러가 있으면 업데이트하고 제출하지 않음
+    if (Object.keys(newErrors).length > 0) {
+      setErrors((prev) => ({
+        ...prev,
+        ...newErrors,
+      }));
+      return;
+    }
 
     // axios 요청
     const { confirmPassword, ...requestData } = formData;
     const response = await useMemberApi.registerMember(requestData);
     console.log(response);
-    if (response.status === 200) {
+    if (response.status === "C000") {
       console.log("회원가입 성공");
-      alert(response.data.message);
+      alert(response.message);
       navigate("/");
     } else {
       console.log("회원가입 실패");
-      alert(response.data.message);
+      alert(response.message);
     }
   };
 
