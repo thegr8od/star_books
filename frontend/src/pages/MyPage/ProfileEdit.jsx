@@ -29,7 +29,7 @@ const ProfileEdit = () => {
         email: user.email || "",
         gender: user.gender || "",
       });
-      setImagePreview(user.profileImagePath);
+      setImagePreview(user.profileImageFile);
     }
   }, [user]);
 
@@ -58,8 +58,8 @@ const ProfileEdit = () => {
         .then((response) => {
           dispatch(
             updateUserField({
-              field: "profileImagePath",
-              value: response.profileImagePath,
+              field: "profileImageFile",
+              value: response.profileImageFile,
             })
           );
         })
