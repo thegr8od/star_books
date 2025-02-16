@@ -100,7 +100,7 @@ public class DiaryService {
     }
 
     @Transactional
-    public DiaryResponse updateDiaryContent(Long diaryId, DiaryContentRequest contentRequest) {
+    public DiaryResponse updateDiaryContent(Long diaryId, DiaryContentRequest contentRequest, String newImgUrl) {
         Diary diary = getDiaryEntity(diaryId);
 
         // 기존에 다이어리 내용이 존재하면 업데이트, 없으면 새로 생성
@@ -116,7 +116,23 @@ public class DiaryService {
             content.setTitle(contentRequest.getTitle());
             content.setContent(contentRequest.getContent());
         }
-        // 해시태그나 감정 등은 그대로 두므로, 수정하지 않습니다.
+
+        // 이미지 업데이트 로직 추가
+        if (newImgUrl != null) {
+            DiaryImage diaryImage = diary.getImage();
+            if (diaryImage == null) {
+                // 기존 이미지가 없는 경우 새로 생성
+                diaryImage = DiaryImage.builder()
+                        .diary(diary)
+                        .Imgurl(newImgUrl)
+                        .build();
+                diary.setImage(diaryImage);
+            } else {
+                // 기존 이미지가 있는 경우 URL 업데이트
+                diaryImage.setImgurl(newImgUrl);
+            }
+        }
+
         return DiaryResponse.from(diary);
     }
 

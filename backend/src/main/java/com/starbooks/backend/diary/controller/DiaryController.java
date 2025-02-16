@@ -107,7 +107,7 @@ public class DiaryController {
     public ResponseEntity<DiaryResponse> updateContent(
             @PathVariable Long diaryId,
             @RequestBody @Valid DiaryContentRequest request) {
-        DiaryResponse response = diaryService.updateDiaryContent(diaryId, request);
+        DiaryResponse response = diaryService.updateDiaryContent(diaryId, request,request.getImageUrl());
         return ResponseEntity.ok(response);
     }
 
