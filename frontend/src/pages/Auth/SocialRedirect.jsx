@@ -18,9 +18,9 @@ const SocialRedirect = () => {
       if (email) localStorage.setItem("email", email);
       if (nickname) localStorage.setItem("nickname", nickname);
 
-      navigate("/");
+      window.location.href = "/";
     } else {
-      navigate("/login");
+      window.location.href = "/";
     }
   }, [navigate]);
 
