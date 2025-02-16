@@ -41,23 +41,6 @@ const ProfileEdit = () => {
     }));
   };
 
-  // 이미지 업로드 함수
-  const handleImageUpload = (file) => {
-    updateProfileImage(file)
-      .then((response) => {
-        dispatch(
-          updateUserField({
-            field: "profileImagePath",
-            value: response.data.profileImagePath,
-          })
-        );
-      })
-      .catch((error) => {
-        console.error("이미지 업로드 실패:", error);
-        alert("이미지 업로드에 실패했습니다.");
-      });
-  };
-
   // 이미지 변경 함수
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -69,19 +52,19 @@ const ProfileEdit = () => {
       };
       reader.readAsDataURL(file);
 
-      //API 호출
+      // memberApi 객체를 통해 이미지 업로드 함수 호출
       useMemberApi
         .updateProfileImage(file)
         .then((response) => {
           dispatch(
             updateUserField({
               field: "profileImagePath",
-              value: response.data.profileImagePath,
+              value: response.profileImagePath,
             })
           );
         })
         .catch((error) => {
-          console.error("이미지 업로드 실패 : ", error);
+          console.error("이미지 업로드 실패:", error);
           alert("이미지 업로드에 실패했습니다.");
         });
     }
