@@ -109,7 +109,7 @@ const getUserInfo = async () => {
 //get
 const checkEmail = async (data) => {
     try{
-        const response = await useAxiosInstance.get(
+        const response = await useAxiosInstance.apiClient.get(
             `/member/check-email?email=${data.email}`,
         );
         return response.data;
@@ -125,7 +125,7 @@ const checkEmail = async (data) => {
 //get
 const checkNickname = async (data) => {
     try{
-        const response = await useAxiosInstance.get(
+        const response = await useAxiosInstance.apiClient.get(
             `/member/check-nickname?nickname=${data.nickname}`,
         );
         return response.data;
@@ -141,12 +141,15 @@ const checkNickname = async (data) => {
 // post
 const updateProfileImage = async (data) => {
     const jwt = localStorage.get('accessToken');
+    const formData = new FormData();
+    formData.append('file', data);
+
     try{
         const response = await useAxiosInstance
             .authApiClient(jwt)
             .post(
                 `/member/profile/image`,
-                data
+                formData,
             );
         return response.data;
     } catch(e) {
