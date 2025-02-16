@@ -16,7 +16,7 @@ const Signup = () => {
     confirmPassword: "",
   });
 
-  // 유효성 검사 메시지
+  // 유효성 검사 메시지 상태
   const [errors, setErrors] = useState({
     email: "",
     nickname: "",
@@ -32,7 +32,7 @@ const Signup = () => {
   });
 
   // ====================================== 상태 관련 상수화 ======================================
-  // 입력 필드 라벨 상수
+  // 입력 필드 라벨
   const FIELD_LABELS = {
     email: "이메일",
     nickname: "닉네임",
@@ -41,7 +41,7 @@ const Signup = () => {
     confirmPassword: "비밀번호",
   };
 
-  // 에러 메시지 상수
+  // 에러 메시지
   const ERROR_MESSAGES = {
     required: (fieldName) => `${fieldName}을(를) 입력해 주세요`,
     email: { format: "올바른 이메일 형식이 아닙니다", check: "이메일 중복 확인이 필요합니다.", duplicate: "사용할 수 없는 이메일입니다." },
@@ -74,8 +74,9 @@ const Signup = () => {
       return ERROR_MESSAGES.required(FIELD_LABELS[name]);
     }
 
-    // 필드별 추가 유효성 검사
+    // 필드별 유효성 검사
     switch (name) {
+      // 이메일
       case "email":
         if (!EMAIL_REGEX.test(value)) {
           error = ERROR_MESSAGES.email.format;
@@ -88,8 +89,13 @@ const Signup = () => {
               isChecked: true,
             },
           }));
+          // 중복 확인 여부
+          if (!validationStatus.email.isValid) {
+            error = ERROR_MESSAGES.email.check;
+          }
         }
         break;
+      // 닉네임
       case "nickname":
         if (!NICKNAME_REGEX.test(value) || value.length > 20) {
           error = ERROR_MESSAGES.nickname.format;
@@ -102,12 +108,18 @@ const Signup = () => {
               isChecked: true,
             },
           }));
+          // 중복 확인 여부
+          if (!validationStatus.nickname.isValid) {
+            error = ERROR_MESSAGES.nickname.check;
+          }
         }
         break;
+      // 비밀번호
       case "password":
         if (!PASSWORD_REGEX.test(value)) {
           error = ERROR_MESSAGES.password.format;
         }
+        // 비밀번호 확인 일치 여부
         if (formData.confirmPassword) {
           if (value !== formData.confirmPassword) {
             setErrors((prev) => ({
@@ -122,6 +134,7 @@ const Signup = () => {
           }
         }
         break;
+      // 비밀번호 확인
       case "confirmPassword":
         if (formData.password && value !== formData.password) {
           error = ERROR_MESSAGES.password.match;
@@ -161,9 +174,13 @@ const Signup = () => {
 
   // 중복 확인 핸들러 (axios 요청)
   const handleValidation = async (type) => {
-    try {
-      // axios 요청
+    // 유효성 검사를 통과하지 않았거나 이미 중복 확인이 완료된 경우
+    if (!validationStatus[type].isChecked || validationStatus[type].isValid) {
+      return;
+    }
 
+    // axios 요청
+    try {
       // 중복 검사 결과 업데이트
       setValidationStatus((prev) => ({
         ...prev,
@@ -186,7 +203,7 @@ const Signup = () => {
   };
 
   // 제출 핸들러
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // 모든 필드 유효성 검사
@@ -198,46 +215,17 @@ const Signup = () => {
       }
     });
 
-    // 에러가 없으면 제출
-    if (Object.keys(newErrors).length === 0) {
-      // 폼 제출 로직
-      console.log("Form submitted:", formData);
+    // 에러가 있으면 업데이트하고 제출하지 않음
+    if (Object.keys(newErrors).length > 0) {
+      setErrors((prev) => ({
+        ...prev,
+        ...newErrors,
+      }));
+      return;
     }
 
-    // 에러가 있으면 업데이트
-    setErrors((prev) => ({
-      ...prev,
-      ...newErrors,
-    }));
+    // axios 요청
   };
-
-  // 폼 제출 핸들러
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   if (!validateForm()) {
-  //     return;
-  //   }
-
-  //   // axios
-  //   try {
-  //     const response = await axios.post("/api/member", {
-  //       email,
-  //       name,
-  //       gender,
-  //       password,
-  //     });
-  //     console.log("회원가입 성공:", response.data);
-  //     navigate("/login");
-  //   } catch (error) {
-  //     if (error.response?.data) {
-  //       alert("회원가입 중 오류가 발생했습니다.");
-  //     } else {
-  //       alert("서버와의 통신 중 오류가 발생했습니다.");
-  //     }
-  //     console.error("회원가입 실패:", error);
-  //   }
-  // };
 
   // const handleSubmit = async () => {
   // const member = {
@@ -282,7 +270,7 @@ const Signup = () => {
             <label className={styles.label}>이메일</label>
             <div className="flex items-center space-x-2">
               <input type="email" name="email" value={formData.email} onChange={handleChange} onBlur={handleBlur} placeholder="이메일을 입력해 주세요" className={`${styles.input} flex-1`} />
-              <button type="button" onClick={() => handleValidation("email")} disabled={!validationStatus.email.isChecked || validationStatus.email.isValid} className={`${styles.button} px-2 rounded-md ${!validationStatus.email.isChecked || validationStatus.email.isValid ? "opacity-70" : ""}`}>
+              <button type="button" onClick={() => handleValidation("email")} className={`${styles.button} px-2 rounded-md`}>
                 확인
               </button>
             </div>
@@ -294,12 +282,7 @@ const Signup = () => {
             <label className={styles.label}>닉네임</label>
             <div className="flex items-center space-x-2">
               <input type="text" name="nickname" value={formData.nickname} onChange={handleChange} onBlur={handleBlur} placeholder="닉네임을 입력해 주세요" className={`${styles.input} flex-1`} />
-              <button
-                type="button"
-                onClick={() => handleValidation("nickname")}
-                disabled={!validationStatus.nickname.isChecked || validationStatus.nickname.isValid}
-                className={`${styles.button} px-2 rounded-md ${!validationStatus.nickname.isChecked || validationStatus.nickname.isValid ? "opacity-70" : ""}`}
-              >
+              <button type="button" onClick={() => handleValidation("nickname")} className={`${styles.button} px-2 rounded-md`}>
                 확인
               </button>
             </div>
