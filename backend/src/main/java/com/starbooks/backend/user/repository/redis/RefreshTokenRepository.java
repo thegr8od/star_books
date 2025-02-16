@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 
 import com.starbooks.backend.user.model.RefreshToken;
 
-@Repository
 public interface RefreshTokenRepository extends CrudRepository<RefreshToken, String> {
     List<RefreshToken> findAllByUserEmail(String userEmail);
 }
