@@ -233,6 +233,23 @@ public class UserController {
         }
     }
 
+    // == 프로필 이미지 조회 ==
+    @Operation(summary = "프로필 이미지 조회", description = "회원의 프로필 이미지를 조회합니다.")
+    @GetMapping("/profile/image")
+    public ApiResponse<?> getProfileImage(@RequestParam String email) {
+        try {
+            String imageUrl = userService.getUserProfileImage(email);
+            if (imageUrl == null || imageUrl.isEmpty()) {
+                return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
+            }
+            return ApiResponse.createSuccess(imageUrl, "프로필 이미지 조회 성공");
+        } catch (Exception e) {
+            log.error("프로필 이미지 조회 실패: {}", e.getMessage());
+            return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+
     @PostMapping("/change-password")
     public ApiResponse<?> changePassword(@RequestBody RequestChangePasswordDTO dto) {
         try {
