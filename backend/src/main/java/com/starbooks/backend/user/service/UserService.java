@@ -1,5 +1,6 @@
 package com.starbooks.backend.user.service;
 
+import com.starbooks.backend.user.dto.request.RequestChangePasswordDTO;
 import com.starbooks.backend.user.dto.request.RequestRegisterDTO;
 import com.starbooks.backend.user.dto.request.RequestUpdateDTO;
 import com.starbooks.backend.user.dto.response.ResponseUserDTO;
@@ -34,4 +35,6 @@ public interface UserService {
     boolean existsByEmail(String email);
 
     boolean existsByNickname(String nickname);
+
+    void changePassword(RequestChangePasswordDTO dto);
 }

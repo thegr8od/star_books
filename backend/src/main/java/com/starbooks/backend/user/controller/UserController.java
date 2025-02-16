@@ -3,6 +3,7 @@ package com.starbooks.backend.user.controller;
 import com.starbooks.backend.common.ApiResponse;
 import com.starbooks.backend.common.ErrorCode;
 import com.starbooks.backend.common.JwtTokenProvider;
+import com.starbooks.backend.user.dto.request.RequestChangePasswordDTO;
 import com.starbooks.backend.user.dto.request.RequestLoginDTO;
 import com.starbooks.backend.user.dto.request.RequestRegisterDTO;
 import com.starbooks.backend.user.dto.request.RequestUpdateDTO;
@@ -229,6 +230,17 @@ public class UserController {
         } catch (Exception e) {
             log.error("프로필 텍스트 업데이트 실패: {}", e.getMessage());
             return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ApiResponse<?> changePassword(@RequestBody RequestChangePasswordDTO dto) {
+        try {
+            userService.changePassword(dto);
+            return ApiResponse.createSuccessWithNoContent("비밀번호 변경이 완료되었습니다.");
+        } catch (Exception e) {
+            log.error("비밀번호 변경 실패: {}", e.getMessage());
+            return ApiResponse.createError(ErrorCode.USER_UPDATE_FAILED);
         }
     }
 
