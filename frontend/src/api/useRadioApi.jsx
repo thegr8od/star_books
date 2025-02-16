@@ -1,7 +1,8 @@
 import useAxiosInstance from "./useAxiosInstance";
 
 //기존 역할 확인 API
-const getRole = async (roomName, participantName) => {
+//post
+const getRole = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
@@ -9,7 +10,7 @@ const getRole = async (roomName, participantName) => {
             .authApiClient(jwt)
             .post(
                 "/radio/endBroadcast",
-                {participantName, roomName}
+                data
             )
         return response;
     } catch(e) {
@@ -18,7 +19,8 @@ const getRole = async (roomName, participantName) => {
 }
 
 //LiveKit 토큰 생성 API
-const createToken = async (roomName, participantName) => {
+//post
+const createToken = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
@@ -26,7 +28,7 @@ const createToken = async (roomName, participantName) => {
             .authApiClient(jwt)
             .post(
                 "/radio/endBroadcast",
-                {participantName, roomName}
+                data
             )
         return response;
     } catch(e) {
@@ -35,7 +37,8 @@ const createToken = async (roomName, participantName) => {
 }
 
 //방송종료 API
-const closeBroadcast = async (roomName, participantName) => {
+//post
+const closeBroadcast = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
@@ -43,7 +46,7 @@ const closeBroadcast = async (roomName, participantName) => {
             .authApiClient(jwt)
             .post(
                 "/radio/endBroadcast",
-                {participantName, roomName}
+                data
             )
         return response;
     } catch(e) {
@@ -53,6 +56,7 @@ const closeBroadcast = async (roomName, participantName) => {
 
 
 //방송상태
+//get
 const getBroadcastStatus = async (roomName) => {
     const jwt = localStorage.getItem("accessToken");
 
@@ -60,7 +64,7 @@ const getBroadcastStatus = async (roomName) => {
         const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
-                "/radio/broadcastStatus",
+                `/radio/broadcastStatus?roomName=${roomName}`,
             )
         return response;
     } catch(e) {
@@ -69,6 +73,7 @@ const getBroadcastStatus = async (roomName) => {
 }
 
 //방송리스트
+//get
 const getLiveBroadcasts = async () => {
     const jwt = localStorage.getItem("accessToken");
 
@@ -85,7 +90,8 @@ const getLiveBroadcasts = async () => {
 }
 
 //참가자 수 업데이트
-const updateParticipants = async (roomName, action) => {
+//post
+const updateParticipants = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
@@ -93,7 +99,7 @@ const updateParticipants = async (roomName, action) => {
             .authApiClient(jwt)
             .post(
                 "/radio/updateParticipants",
-                {roomName, action},
+                data
             )
         return response;
     } catch(e) {
@@ -102,6 +108,7 @@ const updateParticipants = async (roomName, action) => {
 }
 
 //reaction 생성
+//get
 const getReactions = async (roomName) => {
     const jwt = localStorage.getItem("accessToken");
 
@@ -109,8 +116,7 @@ const getReactions = async (roomName) => {
         const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
-                "/radio/reactions",
-                {roomName}
+                `/radio/reactions?roomName=${roomName}`
             )
         return response;
     } catch(e) {
