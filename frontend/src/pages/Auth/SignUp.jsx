@@ -175,31 +175,47 @@ const Signup = () => {
   // 중복 확인 핸들러 (axios 요청)
   const handleValidation = async (type) => {
     // 유효성 검사를 통과하지 않았거나 이미 중복 확인이 완료된 경우
-    if (!validationStatus[type].isChecked || validationStatus[type].isValid) {
-      return;
-    }
+    // if (!validationStatus[type].isChecked || validationStatus[type].isValid) {
+    //   return;
+    // }
 
     // axios 요청
-    try {
-      // 중복 검사 결과 업데이트
-      setValidationStatus((prev) => ({
-        ...prev,
-        [type]: {
-          ...prev[type],
-          isValid: response.data.isAvailable,
-        },
-      }));
-      // 유효성 검사 결과에 따라 에러 메시지 업데이트
-      setErrors((prev) => ({
-        ...prev,
-        [type]: response.data.isAvailable ? "" : ERROR_MESSAGES[type].duplicate,
-      }));
-    } catch (error) {
-      setErrors((prev) => ({
-        ...prev,
-        [type]: ERROR_MESSAGES.serverError,
-      }));
+    const requestData = { [type]: formData[type] };
+    let response;
+    if (type === "email") {
+      response = await useMemberApi.checkEmail(requestData);
+    } else if (type === "nickname") {
+      response = await useMemberApi.checkNickname(requestData);
     }
+    console.log(response);
+    // if (response.status === 200) {
+    //   console.log(`${FIELD_LABELS[type]} 중복 확인 성공`);
+    //   alert(response.data.message);
+    // } else {
+    //   console.log(`${FIELD_LABELS[type]}  중복 확인 실패`);
+    //   alert(response.data.message);
+    // }
+
+    // try {
+    //   // 중복 검사 결과 업데이트
+    //   setValidationStatus((prev) => ({
+    //     ...prev,
+    //     [type]: {
+    //       ...prev[type],
+    //       isValid: response.data.isAvailable,
+    //     },
+    //   }));
+    //   // 유효성 검사 결과에 따라 에러 메시지 업데이트
+    //   setErrors((prev) => ({
+    //     ...prev,
+    //     [type]: response.data.isAvailable ? "" : ERROR_MESSAGES[type].duplicate,
+    //   }));
+    // } catch (error) {
+    //   setErrors((prev) => ({
+    //     ...prev,
+    //     [type]: ERROR_MESSAGES.serverError,
+    //   }));
+    // }
   };
 
   // 제출 핸들러
@@ -225,31 +241,18 @@ const Signup = () => {
     }
 
     // axios 요청
+    const { confirmPassword, ...requestData } = formData;
+    const response = await useMemberApi.registerMember(requestData);
+    console.log(response);
+    if (response.status === 200) {
+      console.log("회원가입 성공");
+      alert(response.data.message);
+      navigate("/");
+    } else {
+      console.log("회원가입 실패");
+      alert(response.data.message);
+    }
   };
-
-  // const handleSubmit = async () => {
-  // const member = {
-  //   email,
-  //   password,
-  //   nickname,
-  //   gender,
-  // };
-
-  // try {
-  //   console.log(member);
-
-  //   const response = await useMemberApi.registerMember(member);
-
-  //   if (response.status === "C000") {
-  //     console.log(response.message);
-  //     alert(response.message);
-  //   } else {
-  //     alert(response.message);
-  //   }
-  // } catch (e) {
-  //   alert(e.message);
-  // }
-  // };
 
   // 공통 스타일 정의
   const styles = {
