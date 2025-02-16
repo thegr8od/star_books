@@ -20,10 +20,9 @@ public interface UserService {
     void deleteUserByEmail(String email);
 
     /**
-     * 프로필 이미지 포함 전체 업데이트
-     * (이미지 파일이 있다면 업로드, RequestUpdateDTO로 텍스트 정보도 함께 업데이트)
+     * 프로필 '이미지'만 업데이트
      */
-    void updateUserProfile(String email, RequestUpdateDTO dto, MultipartFile profileImageFile) throws IOException;
+    void updateUserProfileImage(String email, MultipartFile profileImageFile) throws IOException;
 
     /**
      * 프로필 '텍스트 정보'만 업데이트 (이미지 제외)
@@ -35,5 +34,4 @@ public interface UserService {
     boolean existsByEmail(String email);
 
     boolean existsByNickname(String nickname);
-
 }

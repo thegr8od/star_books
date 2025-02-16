@@ -32,10 +32,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        if (uri.startsWith("/api/member") || uri.startsWith("/api/member/login")) {
+        if (uri.equals("/api/member") ||
+                uri.equals("/api/member/login") ||
+                uri.equals("/api/member/check-email") ||
+                uri.equals("/api/member/check-nickname") ||
+                uri.equals("/api/member/refresh")) {
             filterChain.doFilter(request, response);
             return;
         }
+
 
         try {
             String token = getJwtFromRequest(request);
