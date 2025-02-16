@@ -18,8 +18,8 @@ const ProfileEdit = () => {
     name: "",
     email: "",
     emailDomain: "",
-    gender: "",
-  });
+    gender: ""
+  }); // 콘솔로 찍어보기
 
   // 초기 데이터 불러오기
   useEffect(() => {
