@@ -57,9 +57,11 @@ const sampleData = [
 
 const MonthlyDiary = () => {
   const location = useLocation();
-  const [diaries, setDiaries] = useState(sampleData);
-  const selectedDate = location.state?.selectedDate;
   const diaryRefs = useRef({});
+
+  const [diaries, setDiaries] = useState(sampleData);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const selectedDate = location.state?.selectedDate;
 
   useEffect(() => {
     console.log(selectedDate);
@@ -85,8 +87,8 @@ const MonthlyDiary = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col h-screen">
-        {/* <DiaryDate /> */}
+      <div className="flex flex-col h-[calc(100vh-4rem)]">
+        <DiaryDate currentDate={currentDate} setCurrentDate={setCurrentDate} />
         <div className="flex-1 flex-col space-y-4 overflow-y-auto bg-neutral-100 rounded-3xl p-4" style={{ scrollbarWidth: "none" }}>
           {diaries?.length ? (
             diaries.map((diary, index) => {
