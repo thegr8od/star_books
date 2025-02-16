@@ -17,9 +17,9 @@ function ConstellationCreateAiEvent({ data }) {
     ctx.fillStyle = "#000033";
     ctx.fillRect(0, 0, width, height);
 
-    // AI의 (-10,10) 좌표계를 캔버스 좌표로 변환하는 함수
-    const scaleX = (x) => (x + 10) * (width / 20);
-    const scaleY = (y) => (10 - y) * (height / 20);
+    // 좌표계 변환이 필요 없음 (이미 0-100 범위의 백분율)
+    const scaleX = (x) => (x * width) / 100;
+    const scaleY = (y) => (y * height) / 100;
 
     // 모든 선의 교차점과 끝점을 수집
     const points = new Set();
@@ -72,8 +72,10 @@ function ConstellationCreateAiEvent({ data }) {
       for (let i = 0; i < remainingCount; i++) {
         const randomLine = lines[Math.floor(Math.random() * lines.length)];
         const t = Math.random();
-        const x = randomLine.start.x + (randomLine.end.x - randomLine.start.x) * t;
-        const y = randomLine.start.y + (randomLine.end.y - randomLine.start.y) * t;
+        const x =
+          randomLine.start.x + (randomLine.end.x - randomLine.start.x) * t;
+        const y =
+          randomLine.start.y + (randomLine.end.y - randomLine.start.y) * t;
         drawStar(x, y, color[pointsArray.length + i]);
       }
     }
