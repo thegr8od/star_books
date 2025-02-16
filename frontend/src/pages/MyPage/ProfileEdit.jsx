@@ -54,7 +54,7 @@ const ProfileEdit = () => {
 
       // memberApi 객체를 통해 이미지 업로드 함수 호출
       useMemberApi
-        .updateProfileImage(file)
+        .updateProfileImage(file, user.email)
         .then((response) => {
           dispatch(
             updateUserField({
@@ -66,6 +66,7 @@ const ProfileEdit = () => {
         .catch((error) => {
           console.error("이미지 업로드 실패:", error);
           alert("이미지 업로드에 실패했습니다.");
+          setImagePreview(user.profileImageFile);
         });
     }
   };
