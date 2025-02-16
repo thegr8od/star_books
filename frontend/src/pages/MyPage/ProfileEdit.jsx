@@ -53,21 +53,19 @@ const ProfileEdit = () => {
       reader.readAsDataURL(file);
 
       // memberApi 객체를 통해 이미지 업로드 함수 호출
-      useMemberApi
-        .updateProfileImage(file, user.email)
-        .then((response) => {
+      useMemberApi.updateProfileImage(file, user.email).then((response) => {
+        if (response.status === "success") {
+          // 이미지 미리보기 상태만 업데이트
           dispatch(
             updateUserField({
               field: "profileImageFile",
-              value: response.profileImageFile,
+              value: imagePreview, // 현재 미리보기 URL 사용
             })
           );
-        })
-        .catch((error) => {
-          console.error("이미지 업로드 실패:", error);
-          alert("이미지 업로드에 실패했습니다.");
-          setImagePreview(user.profileImageFile);
-        });
+        } else {
+          throw new Error(response.message || "이미지 업로드 실패");
+        }
+      });
     }
   };
 
