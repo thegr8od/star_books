@@ -34,7 +34,9 @@ pipeline {
                         string(credentialsId: 'OPENAI_REMOVED', variable: 'OPENAI_REMOVED'),
                         string(credentialsId: 'REDIS_PASSWORD', variable: 'REDIS_PASSWORD'),
                         string(credentialsId: 'LIVEKIT_REMOVED', variable: 'LIVEKIT_REMOVED'),
-                        string(credentialsId: 'LIVEKIT_API_SECRET', variable: 'LIVEKIT_API_SECRET')
+                        string(credentialsId: 'LIVEKIT_API_SECRET', variable: 'LIVEKIT_API_SECRET'),
+                        string(credentialsId: 'AWS_CLOUD_ACCESS_KEY', variable: 'AWS_CLOUD_ACCESS_KEY'),
+                        string(credentialsId: 'AWS_CLOUD_SECRET_KEY', variable: 'AWS_CLOUD_SECRET_KEY')
                     ]) {
                         env.MATTERMOST_WEBHOOK_URL = MATTERMOST_WEBHOOK_URL
                         env.DB_URL = DB_URL
@@ -53,6 +55,8 @@ pipeline {
                         env.REDIS_PASSWORD = REDIS_PASSWORD
                         env.LIVEKIT_REMOVED = LIVEKIT_REMOVED
                         env.LIVEKIT_API_SECRET = LIVEKIT_API_SECRET
+                        env.AWS_CLOUD_ACCESS_KEY = AWS_CLOUD_ACCESS_KEY
+                        env.AWS_CLOUD_SECRET_KEY = AWS_CLOUD_SECRET_KEY
                     }
                 }
             }

@@ -94,7 +94,6 @@ public class SecurityConfig {
                                 "/login/oauth2/**",
                                 "/oauth_test.html",
                                 "/index.html",
-                                "/api/starline/**",
                                 "/api/member/refresh"
                         ).permitAll()
 

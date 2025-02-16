@@ -87,15 +87,15 @@ jwt:
   refreshToken-expiration: 1209600000
   oauth-sign-up-expiration: 600000
 
-#cloud:
-#  aws:
-#    credentials:
-#      accessKey: your_access_key #
-#      secretKey: your_secret_key #
-#    s3:
-#      bucket: your_s3_bucket_name
-#    region:
-#      static: ap-northeast-2
+cloud:
+  aws:
+    credentials:
+      accessKey: ${AWS_CLOUD_ACCESS_KEY}
+      secretKey: ${AWS_CLOUD_SECRET_KEY}
+    s3:
+      bucket: starbooks
+    region:
+      static: ap-northeast-2
 
 logging:
   level:

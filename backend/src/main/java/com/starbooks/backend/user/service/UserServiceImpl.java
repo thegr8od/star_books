@@ -1,6 +1,7 @@
 package com.starbooks.backend.user.service;
 
 import com.starbooks.backend.common.ErrorCode;
+import com.starbooks.backend.common.service.S3Service;
 import com.starbooks.backend.user.dto.request.RequestRegisterDTO;
 import com.starbooks.backend.user.dto.request.RequestUpdateDTO;
 import com.starbooks.backend.user.dto.response.ResponseUserDTO;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-import com.starbooks.backend.common.service.S3Service;
+
 import java.io.IOException;
 import java.util.Optional;
 
@@ -52,17 +53,12 @@ public class UserServiceImpl implements UserService {
             dto.setSnsAccount(false);
         }
 
-        // 비밀번호 암호화
-        String encodedPassword = passwordEncoder.encode(dto.getPassword());
-        dto.setPassword(encodedPassword);
-
-        // User 엔티티 생성 & 저장
+        dto.setPassword(passwordEncoder.encode(dto.getPassword()));
         User user = dto.toEntity();
         userRepository.save(user);
 
         log.info("신규 회원 가입: email={}, snsAccount={}", user.getEmail(), user.getSnsAccount());
     }
-
 
     // == 이메일로 회원 검색 ==
     @Override
@@ -88,46 +84,31 @@ public class UserServiceImpl implements UserService {
         log.info("회원 탈퇴: email={}", email);
     }
 
-    // == 프로필 (이미지 + 텍스트) 업데이트 ==
+    // == 프로필 이미지 업데이트 ==
     @Override
     @Transactional
-    public void updateUserProfile(String email, RequestUpdateDTO dto, MultipartFile profileImageFile) throws IOException {
-        // 1) 유저 조회
+    public void updateUserProfileImage(String email, MultipartFile profileImageFile) throws IOException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
-        // 2) 프로필 이미지 업로드/갱신
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
             // S3 업로드 후 URL 획득
             String fileUrl = s3Service.uploadFile(profileImageFile);
 
-            // DB에 ProfileImage 엔티티 생성 또는 수정
             ProfileImage profileImage = user.getProfileImage();
             if (profileImage == null) {
-                // 새로운 프로필 이미지 생성
-                profileImage = ProfileImage.builder()
-                        .saveFilePath(fileUrl)
-                        .build();
-                user.assignProfileImage(profileImage);  // User와 연결
+                profileImage = ProfileImage.builder().saveFilePath(fileUrl).build();
+                user.assignProfileImage(profileImage);
                 profileImageRepository.save(profileImage);
             } else {
-                // 기존 프로필 이미지 업데이트
                 profileImage.updateImagePath(fileUrl);
                 profileImageRepository.save(profileImage);
             }
         }
-
-        // 3) 텍스트 정보 업데이트 (RequestUpdateDTO)
-        if (dto.getNickname() != null)  user.setNickname(dto.getNickname());
-        if (dto.getGender() != null)    user.setGender(dto.getGender());
-        if (dto.getSnsAccount() != null) user.setSnsAccount(dto.getSnsAccount()); // 변경된 부분
-        if (dto.getRole() != null)      user.setRole(dto.getRole());
-        if (dto.getIsActive() != null)  user.setIsActive(dto.getIsActive());
-
         userRepository.save(user);
     }
 
-    // == 프로필 텍스트만 업데이트 (이미지 제외) ==
+    // == 프로필 텍스트만 업데이트 ==
     @Override
     @Transactional
     public void updateUserProfileText(RequestUpdateDTO dto) {
@@ -138,15 +119,12 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
 
+        // 오직 닉네임과 성별만 업데이트
         if (dto.getNickname() != null) user.setNickname(dto.getNickname());
         if (dto.getGender() != null) user.setGender(dto.getGender());
-        if (dto.getSnsAccount() != null) user.setSnsAccount(dto.getSnsAccount()); // boolean 체크 가능
-        if (dto.getRole() != null) user.setRole(dto.getRole());
-        if (dto.getIsActive() != null) user.setIsActive(dto.getIsActive());
 
         userRepository.save(user);
     }
-
 
     // == 로그인용 인증 ==
     @Override

@@ -95,7 +95,7 @@ public class DiaryController {
     public ResponseEntity<Void> addContent(
             @PathVariable Long diaryId,
             @RequestBody @Valid DiaryContentRequest request) {
-        diaryService.addContentAndImages(diaryId, request, request.getImageUrls());
+        diaryService.addContentAndImages(diaryId, request, request.getImageUrl());
         return ResponseEntity.ok().build();
     }
 
