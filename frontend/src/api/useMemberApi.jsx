@@ -4,26 +4,33 @@ import useAxiosInstance from "./useAxiosInstance";
 //post
 const loginMember = async (member) => {
   try {
+    console.log(member);
     const response = await useAxiosInstance.apiClient.post(
       "/member/login",
       member
     );
+    console.log(response);
 
     // 백엔드 응답 헤더에서 accessToken 가져오기
-    const accessToken = response.data.accessToken;
+    const accessToken = response.data.data.accessToken;
 
     if (accessToken) {
-      localStorage.setItem(accessToken); // Axios에 Authorization 헤더 설정
+      localStorage.setItem("accessToken", accessToken); // key 이름 추가
     } else {
       throw new Error("Access token이 응답 헤더에 없음");
     }
 
-    return response.data;
-  } catch (e) {
-    //오류 체크
-    if (e.respose.data.stauts == 404) {
-      return e.response.data;
+    return response.data.data;
+  } catch (error) {
+    console.log("에러:", error);
+
+    // 서버에서 응답이 온 경우
+    if (error.response) {
+      return error.response.data;
     }
+
+    // 네트워크 에러 등 다른 에러인 경우
+    throw error; // 에러를 상위로 전파
   }
 };
 
@@ -36,7 +43,7 @@ const registerMember = async (member) => {
     return response.data;
   } catch (e) {
     //오류 체크
-    if (e.respose.data.stauts === 404) {
+    if (e.response.data.stauts === 404) {
       return e.response.data;
     }
   }
@@ -55,7 +62,7 @@ const logoutMember = async () => {
     return response.data;
   } catch (e) {
     //오류 체크
-    if (e.respose.data.stauts == 404) {
+    if (e.response.data.stauts == 404) {
       return e.response.data;
     }
   }
@@ -70,13 +77,13 @@ const refreshToken = async () => {
     const newToken = response.data.accessToken;
 
     if (newToken) {
-      locaiton.setItem(newToken); // Axios에 Authorization 헤더 설정
+      location.setItem(newToken); // Axios에 Authorization 헤더 설정
       return true;
     } else {
       throw new Error("Access token이 응답 헤더에 없음");
     }
   } catch (e) {
-    if (e.respose.data.stauts == 404) {
+    if (e.response.data.stauts == 404) {
       return e.response.data;
     }
   }
@@ -94,7 +101,7 @@ const getUserInfo = async () => {
     return response.data;
   } catch (e) {
     //오류 체크
-    if (e.respose.data.stauts == 404) {
+    if (e.response.data.stauts == 404) {
       return e.response.data;
     }
   }
@@ -110,7 +117,7 @@ const checkEmail = async (data) => {
     return response.data;
   } catch (e) {
     //오류 체크
-    if (e.respose.data.stauts == 404) {
+    if (e.response.data.stauts == 404) {
       return e.response.data;
     }
   }
@@ -126,7 +133,7 @@ const checkNickname = async (data) => {
     return response.data;
   } catch (e) {
     //오류 체크
-    if (e.respose.data.stauts == 404) {
+    if (e.response.data.stauts == 404) {
       return e.response.data;
     }
   }
@@ -146,7 +153,7 @@ const updateProfileImage = async (data) => {
     return response.data;
   } catch (e) {
     //오류 체크
-    if (e.respose.data.stauts == 404) {
+    if (e.response.data.stauts == 404) {
       return e.response.data;
     }
   }
@@ -163,7 +170,7 @@ const updateProfile = async (data) => {
     return response.data;
   } catch (e) {
     //오류 체크
-    if (e.respose.data.stauts == 404) {
+    if (e.response.data.stauts == 404) {
       return e.response.data;
     }
   }
@@ -176,7 +183,7 @@ export default {
   getUserInfo,
   checkNickname,
   checkEmail,
-  // refreshToken,
+  refreshToken,
   updateProfileImage,
   updateProfile,
 };

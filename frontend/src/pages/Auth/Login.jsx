@@ -48,25 +48,28 @@ const Login = () => {
           email: email,
           password: password,
         });
-        console.log(response);
-        if (response.data.statusCode === 200) {
-          //리덕스에 저장하기
-          dispatch(setUser({ ...response.data.user, isLogin: true }));
+
+        console.log("로그인 응답:", response);
+
+        // response가 있고 성공적인 응답인 경우
+        if (response && response.user) {
+          // 리덕스에 저장하기
+          dispatch(setUser({ ...response.user, isLogin: true }));
           setAlertMessage("로그인에 성공했습니다!");
           setShowAlert(true);
 
           setTimeout(() => {
             window.location.href = "/";
           }, 2000);
+        } else {
+          // 실패한 경우
+          setAlertMessage("로그인에 실패했습니다.");
+          setShowAlert(true);
         }
       } catch (error) {
         console.error("로그인 에러:", error);
         setAlertMessage("이메일 또는 비밀번호가 일치하지 않습니다.");
         setShowAlert(true);
-
-        if (error.response && error.response.data) {
-          console.error(error.response.data.message);
-        }
       }
     }
   };
