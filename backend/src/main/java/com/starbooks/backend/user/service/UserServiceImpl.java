@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.starbooks.backend.common.service.S3Service;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -99,7 +99,7 @@ public class UserServiceImpl implements UserService {
         // 2) 프로필 이미지 업로드/갱신
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
             // S3 업로드 후 URL 획득
-            String fileUrl = s3Service.upload(profileImageFile.getOriginalFilename(), profileImageFile);
+            String fileUrl = s3Service.uploadFile(profileImageFile);
 
             // DB에 ProfileImage 엔티티 생성 또는 수정
             ProfileImage profileImage = user.getProfileImage();
