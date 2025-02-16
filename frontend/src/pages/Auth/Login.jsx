@@ -1,21 +1,29 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+//redux
+import { useDispatch } from "react-redux";
+import { setUser } from "../../store/userSlice";
+//api함수
+import memberApi from "@api/useMemberApi";
+//커스텀
 import LoginModal from "./LoginModal";
 import CustomAlert from "../../components/CustomAlert";
+//아이콘
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import loginMember from "@api/useMemberApi"
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [showAlert, setShowAlert] = useState(false);
+  const [email, setEmail] = useState(""); //이메일
+  const [password, setPassword] = useState(""); //패스워드
+  const [showPassword, setShowPassword] = useState(false); //패스워드상태
+  const [errors, setErrors] = useState({}); //에러
+  const [isModalOpen, setIsModalOpen] = useState(false); //모달
+  const [alertMessage, setAlertMessage] = useState(""); //알람
+  const [showAlert, setShowAlert] = useState(false); //알람상태
+  const dispatch = useDispatch();
 
+  //에러
   const validateForm = () => {
     const newErrors = {};
 
@@ -36,21 +44,19 @@ const Login = () => {
 
     if (validateForm()) {
       try {
-        const response = await loginMember ({
+        const response = await memberApi.loginMember({
           email: email,
           password: password,
         });
-
+        console.log(response);
         if (response.data.statusCode === 200) {
-          localStorage.setItem("accessToken", response.data.data.accessToken);
-          localStorage.setItem("email", response.data.data.user.email);
-          localStorage.setItem("nickname", response.data.data.user.nickname);
-
+          //리덕스에 저장하기
+          dispatch(setUser({ ...response.data.user, isLogin: true }));
           setAlertMessage("로그인에 성공했습니다!");
           setShowAlert(true);
 
           setTimeout(() => {
-            navigate("/");
+            window.location.href = "/";
           }, 2000);
         }
       } catch (error) {
