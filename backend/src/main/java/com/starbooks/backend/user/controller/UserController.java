@@ -28,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -114,9 +116,15 @@ public class UserController {
             // AccessToken -> 헤더
             response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
 
-            // 사용자 정보 반환
+            // 사용자 정보 변환
             ResponseUserDTO responseUser = ResponseUserDTO.fromEntity(user);
-            return ApiResponse.createSuccess(responseUser, "로그인 성공");
+
+            // JSON 응답 본문에 사용자 정보와 Access Token 추가
+            Map<String, Object> data = new HashMap<>();
+            data.put("user", responseUser);
+            data.put("accessToken", accessToken);
+
+            return ApiResponse.createSuccess(data, "로그인 성공");
         }
         return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
     }
