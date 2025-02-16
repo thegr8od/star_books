@@ -29,7 +29,9 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public
+
+class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ProfileImageRepository profileImageRepository;
@@ -108,6 +110,15 @@ public class UserServiceImpl implements UserService {
             }
         }
         userRepository.save(user);
+    }
+
+    @Override
+    public String getUserProfileImage(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
+
+        ProfileImage profileImage = user.getProfileImage();
+        return (profileImage != null) ? profileImage.getSaveFilePath() : null;
     }
 
     // == 프로필 텍스트만 업데이트 ==

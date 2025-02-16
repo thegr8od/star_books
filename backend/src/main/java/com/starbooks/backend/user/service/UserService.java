@@ -37,4 +37,7 @@ public interface UserService {
     boolean existsByNickname(String nickname);
 
     void changePassword(RequestChangePasswordDTO dto);
+
+    String getUserProfileImage(String email);
+
 }
