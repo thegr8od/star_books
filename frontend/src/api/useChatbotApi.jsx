@@ -1,7 +1,6 @@
-import { use } from "react";
 import useAxiosInstance from "./useAxiosInstance";
 
-const chat = async (email, message, persona) => {
+const chat = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try {
@@ -9,11 +8,7 @@ const chat = async (email, message, persona) => {
             .authApiClient(jwt)
             .post(
                 '/chat/message',
-                {   
-                    email,
-                    message,
-                    persona
-                }
+                data
             );
 
         return response;
