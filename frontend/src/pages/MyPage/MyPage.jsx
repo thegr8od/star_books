@@ -4,16 +4,16 @@ import Layout from "../../components/Layout";
 import MypageBarChart from "./MypageBarChart";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function Mypage() {
+  const user = useSelector((state) => state.user);
   const navigate = useNavigate();
-  const [imagePreview, setImagePreview] = useState(null);
-  const userId = 1;
   const [selectedPeriod, setSelectedPeriod] = useState("월");
 
   // 수정 페이지로 이동
   const handleEditClick = () => {
-    navigate(`/mypage/${userId}/edit`);
+    navigate("/mypage/edit");
   };
 
   const handleMyUniverseClick = () => {
@@ -37,9 +37,9 @@ function Mypage() {
             <div className="flex items-center gap-6">
               {/* 프로필 이미지 */}
               <div className="">
-                {imagePreview ? (
+                {user.profileImagePath ? (
                   <img
-                    src={imagePreview}
+                    src={user.profileImagePath}
                     alt="프로필"
                     className="w-20 h-20 md:w-24 md:h-24 lg:w-30 lg:h-30 rounded-full object-cover"
                   />
@@ -60,7 +60,7 @@ function Mypage() {
               </div>
               <div>
                 <div className="flex items-center gap-3">
-                  <h1 className="text-xl font-bold">닉네임</h1>
+                  <h1 className="text-xl font-bold">{user.nickname}</h1>
                   <div
                     className="w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-full bg-gray-200 flex justify-center items-center opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
                     onClick={handleEditClick}
@@ -76,11 +76,6 @@ function Mypage() {
                       }}
                     />
                   </div>
-                </div>
-                <div className="flex gap-3 mt-3 text-gray-300">
-                  <p>팔로우 0</p>
-                  <p className="text-gray-500">|</p>
-                  <p>팔로워 0</p>
                 </div>
               </div>
             </div>
