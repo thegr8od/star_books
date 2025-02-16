@@ -12,7 +12,6 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/radio")
 @RestController
 public class RadioController {
