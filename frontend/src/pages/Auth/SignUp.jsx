@@ -132,37 +132,10 @@ const Signup = () => {
   };
 
   // 폼 제출 핸들러
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   if (!validateForm()) {
-  //     return;
-  //   }
-
-  //   // axios
-  //   try {
-  //     const response = await axios.post("/api/member", {
-  //       email,
-  //       name,
-  //       birthDate,
-  //       gender,
-  //       password,
-  //     });
-  //     console.log("회원가입 성공:", response.data);
-  //     navigate("/login");
-  //   } catch (error) {
-  //     if (error.response?.data) {
-  //       alert("회원가입 중 오류가 발생했습니다.");
-  //     } else {
-  //       alert("서버와의 통신 중 오류가 발생했습니다.");
-  //     }
-  //     console.error("회원가입 실패:", error);
-  //   }
-  // };
   const handleSubmit = async () => {
-    // if(!validateForm()){
-    //   return;
-    // }
+    if(!validateForm()){
+      return;
+    }
     
     const member = {
       email,
@@ -177,8 +150,11 @@ const Signup = () => {
       const response = await useMemberApi.registerMember(member);
 
       if(response.status === "C000") {
-        console.log(response.message);
+        console.log("회원가입 완료료");
         alert(response.message);
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
       } else {
         alert(response.message);
       }

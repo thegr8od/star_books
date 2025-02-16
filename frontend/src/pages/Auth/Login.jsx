@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import LoginModal from "./LoginModal";
 import CustomAlert from "../../components/CustomAlert";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import loginMember from "@api/useMemberApi"
 
 const Login = () => {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ const Login = () => {
 
     if (validateForm()) {
       try {
-        const response = await axios.post("/api/member/login", {
+        const response = await loginMember ({
           email: email,
           password: password,
         });
