@@ -25,6 +25,12 @@ const Signup = () => {
     confirmPassword: "",
   });
 
+  // 중복 검사 상태
+  const [validationStatus, setValidationStatus] = useState({
+    email: { isValid: false, isChecked: false },
+    nickname: { isValid: false, isChecked: false },
+  });
+
   // ====================================== 상태 관련 상수화 ======================================
   // 입력 필드 라벨 상수
   const FIELD_LABELS = {
@@ -38,12 +44,13 @@ const Signup = () => {
   // 에러 메시지 상수
   const ERROR_MESSAGES = {
     required: (fieldName) => `${fieldName}을(를) 입력해 주세요`,
-    email: "올바른 이메일 형식이 아닙니다",
-    nickname: "영문, 한글, 숫자를 사용하여 20자 이내로 입력해 주세요",
+    email: { format: "올바른 이메일 형식이 아닙니다", check: "이메일 중복 확인이 필요합니다.", duplicate: "사용할 수 없는 이메일입니다." },
+    nickname: { format: "영문, 한글, 숫자를 사용하여 20자 이내로 입력해 주세요", check: "닉네임 중복 확인이 필요합니다.", duplicate: "사용할 수 없는 닉네임입니다." },
     password: {
       format: "8~15자, 숫자/영문(소문자)/특수문자(!@#$%^&)를 조합하여 입력해주세요.",
       match: "비밀번호가 일치하지 않습니다",
     },
+    serverError: "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
   };
 
   // 형식 검증을 위한 정규식
@@ -70,21 +77,37 @@ const Signup = () => {
     // 필드별 추가 유효성 검사
     switch (name) {
       case "email":
-        // 이메일 형식
         if (!EMAIL_REGEX.test(value)) {
-          error = ERROR_MESSAGES.email;
+          error = ERROR_MESSAGES.email.format;
+        } else {
+          // 유효성 검사 통과
+          setValidationStatus((prev) => ({
+            ...prev,
+            email: {
+              ...prev.email,
+              isChecked: true,
+            },
+          }));
         }
         break;
       case "nickname":
         if (!NICKNAME_REGEX.test(value) || value.length > 20) {
-          error = ERROR_MESSAGES.nickname;
+          error = ERROR_MESSAGES.nickname.format;
+        } else {
+          // 유효성 검사 통과
+          setValidationStatus((prev) => ({
+            ...prev,
+            nickname: {
+              ...prev.nickname,
+              isChecked: true,
+            },
+          }));
         }
         break;
       case "password":
         if (!PASSWORD_REGEX.test(value)) {
           error = ERROR_MESSAGES.password.format;
         }
-        // 비밀번호 확인 값이 있는 경우 일치 여부 검사
         if (formData.confirmPassword) {
           if (value !== formData.confirmPassword) {
             setErrors((prev) => ({
@@ -117,6 +140,13 @@ const Signup = () => {
       ...prev,
       [name]: value,
     }));
+    // 이메일이나 닉네임이 변경되면 검증 상태 초기화
+    if (name === "email" || name === "nickname") {
+      setValidationStatus((prev) => ({
+        ...prev,
+        [name]: { isValid: false, isChecked: false },
+      }));
+    }
   };
 
   // blur 이벤트 핸들러 - 유효성 검사
@@ -127,6 +157,32 @@ const Signup = () => {
       ...prev,
       [name]: error,
     }));
+  };
+
+  // 중복 확인 핸들러 (axios 요청)
+  const handleValidation = async (type) => {
+    try {
+      // axios 요청
+
+      // 중복 검사 결과 업데이트
+      setValidationStatus((prev) => ({
+        ...prev,
+        [type]: {
+          ...prev[type],
+          isValid: response.data.isAvailable,
+        },
+      }));
+      // 유효성 검사 결과에 따라 에러 메시지 업데이트
+      setErrors((prev) => ({
+        ...prev,
+        [type]: response.data.isAvailable ? "" : ERROR_MESSAGES[type].duplicate,
+      }));
+    } catch (error) {
+      setErrors((prev) => ({
+        ...prev,
+        [type]: ERROR_MESSAGES.serverError,
+      }));
+    }
   };
 
   // 제출 핸들러
@@ -154,62 +210,6 @@ const Signup = () => {
       ...newErrors,
     }));
   };
-
-  // // 이메일 중복 체크 핸들러
-  // const handleEmailCheck = async () => {
-  //   if (isEmailChecked) return;
-
-  //   if (!email) {
-  //     setEmailError("이메일을 입력해주세요.");
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await axios.get("/api/member/email", {
-  //       params: { email },
-  //     });
-
-  //     console.log(response.data);
-  //     setIsEmailChecked(!response.data);
-  //     setEmailError(response.data ? "이미 사용 중인 이메일입니다." : "사용 가능한 이메일입니다.");
-  //   } catch (error) {
-  //     setEmailError("확인 중 오류가 발생했습니다.");
-  //   }
-  // };
-
-  // // 이름 중복 체크 핸들러
-  // const handleNameCheck = async () => {
-  //   if (isNameChecked) return;
-
-  //   if (!nickname) {
-  //     setNicknameError("이름을 입력해주세요.");
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await axios.get("/api/member/name", {
-  //       params: { email },
-  //     });
-
-  //     console.log(response.data);
-  //     setIsEmailChecked(!response.data);
-  //     setEmailError(response.data ? "이미 사용 중인 이름입니다." : "사용 가능한 이름입니다.");
-  //   } catch (error) {
-  //     setEmailError("확인 중 오류가 발생했습니다.");
-  //   }
-
-  //   // axios
-  //   try {
-  //     const response = await axios.get("/api/member/name", {
-  //       params: { name },
-  //     });
-
-  //     setIsNameChecked(!response.data);
-  //     setNicknameError(response.data ? "이미 사용 중인 이름입니다." : "사용 가능한 이름입니다.");
-  //   } catch (error) {
-  //     setNicknameError("확인 중 오류가 발생했습니다.");
-  //   }
-  // };
 
   // 폼 제출 핸들러
   // const handleSubmit = async (e) => {
@@ -282,7 +282,7 @@ const Signup = () => {
             <label className={styles.label}>이메일</label>
             <div className="flex items-center space-x-2">
               <input type="email" name="email" value={formData.email} onChange={handleChange} onBlur={handleBlur} placeholder="이메일을 입력해 주세요" className={`${styles.input} flex-1`} />
-              <button type="button" className={`${styles.button} px-2 rounded-md`}>
+              <button type="button" onClick={() => handleValidation("email")} disabled={!validationStatus.email.isChecked || validationStatus.email.isValid} className={`${styles.button} px-2 rounded-md ${!validationStatus.email.isChecked || validationStatus.email.isValid ? "opacity-70" : ""}`}>
                 확인
               </button>
             </div>
@@ -294,7 +294,12 @@ const Signup = () => {
             <label className={styles.label}>닉네임</label>
             <div className="flex items-center space-x-2">
               <input type="text" name="nickname" value={formData.nickname} onChange={handleChange} onBlur={handleBlur} placeholder="닉네임을 입력해 주세요" className={`${styles.input} flex-1`} />
-              <button type="button" className={`${styles.button} px-2 rounded-md`}>
+              <button
+                type="button"
+                onClick={() => handleValidation("nickname")}
+                disabled={!validationStatus.nickname.isChecked || validationStatus.nickname.isValid}
+                className={`${styles.button} px-2 rounded-md ${!validationStatus.nickname.isChecked || validationStatus.nickname.isValid ? "opacity-70" : ""}`}
+              >
                 확인
               </button>
             </div>
