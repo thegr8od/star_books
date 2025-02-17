@@ -1,6 +1,6 @@
 import Colors from './Colors';
 
-export default function GetColor({ x, y }) {
+export default function GetColor( x, y ) {
   // x와 y 좌표를 키 형식으로 변환
   const key = `${x},${y}`;
   
