@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.starbooks.backend.constellation.dto.ConstellationLineDto;
+import com.starbooks.backend.constellation.service.ConstellationDBService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Base64;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,9 +33,6 @@ public class ConstellationService {
 
     private static final String CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 
-    /**
-     * 📤 MultipartFile 이미지를 Base64로 변환
-     */
     public String encodeFileToBase64(MultipartFile file) {
         try {
             byte[] fileContent = file.getBytes();
@@ -44,65 +43,34 @@ public class ConstellationService {
         }
     }
 
-    private List<Map<String, Object>> parseAIResponse(String responseBody) {
-        try {
-            log.info("🔍 Claude API 응답 원본: {}", responseBody);
-
-            // JSON 파싱
-            JsonNode jsonNode = objectMapper.readTree(responseBody);
-            String responseText = jsonNode.get("content").get(0).get("text").asText();
-
-            // JSON 코드 블록 감지 및 제거
-            Matcher matcher = Pattern.compile("\\[(.*?)\\]", Pattern.DOTALL).matcher(responseText);
-            if (matcher.find()) {
-                responseText = "[" + matcher.group(1) + "]";
-            }
-
-            // JSON을 리스트로 변환
-            List<Map<String, Object>> parsedData = objectMapper.readValue(responseText, new TypeReference<>() {});
-            log.info("✅ 최종 파싱된 데이터: {}", parsedData);
-
-            return parsedData;
-        } catch (Exception e) {
-            log.error("❌ Claude API 응답 파싱 오류 발생", e);
-            throw new RuntimeException("응답 처리 실패");
-        }
-    }
-
-
-    /**
-     * 🛠 Claude API 호출 및 응답 처리 + 데이터 저장
-     */
     public List<Map<String, Object>> generateLinesFromAI(String base64Image, Long userId) {
         try {
             log.info("🛠 Claude API 요청 시작...");
 
-            // Claude API 호출
             List<Map<String, Object>> parsedData = callClaudeAPI(base64Image);
 
-            // 데이터를 DTO로 변환 후 저장
-            List<ConstellationLineDto> lineDtos = new ArrayList<>();
-            for (Map<String, Object> line : parsedData) {
-                Map<String, Integer> start = (Map<String, Integer>) line.get("start");
-                Map<String, Integer> end = (Map<String, Integer>) line.get("end");
-
-                lineDtos.add(new ConstellationLineDto(null, null,
-                        start.get("x"), start.get("y"), end.get("x"), end.get("y")));
+            if (parsedData == null || parsedData.isEmpty()) {
+                throw new RuntimeException("Claude API 응답이 비어 있습니다.");
             }
 
+            List<ConstellationLineDto> lineDtos = parsedData.stream()
+                    .map(line -> {
+                        Map<String, Integer> start = (Map<String, Integer>) line.get("start");
+                        Map<String, Integer> end = (Map<String, Integer>) line.get("end");
+
+                        return new ConstellationLineDto(null, null,
+                                start.get("x"), start.get("y"), end.get("x"), end.get("y"));
+                    })
+                    .collect(Collectors.toList());
+
             constellationDBService.saveConstellation(userId, lineDtos);
-
             return parsedData;
-
         } catch (Exception e) {
             log.error("❌ Claude API 요청 중 오류 발생", e);
             throw new RuntimeException("Claude API 처리 실패");
         }
     }
 
-    /**
-     * 🛠 Claude API 호출 로직
-     */
     private List<Map<String, Object>> callClaudeAPI(String base64Image) {
         try {
             Map<String, Object> requestBody = new HashMap<>();
@@ -121,8 +89,11 @@ public class ConstellationService {
                                             "원형 부분은 8개의 선분을 사용하여 부드럽게 표현해주세요. " +
                                             "눈, 코, 입은 점으로 단순히 표현할 수 있으며, 입은 표정에 따라 선으로 표현할 수도 있습니다. " +
                                             "사람 머리카락은 얼굴 선 옆에 간단한 선으로 추가해 주세요. " +
-                                            "설명 없이 JSON 배열만 반환해야 하며, '//' 같은 주석 없이 오직 JSON 형식으로 응답해 주세요. " +
-                                            "예시: [{\"start\": {\"x\": 30, \"y\": 20}, \"end\": {\"x\": 50, \"y\": 40}}, ...]"),
+                                            "**설명 없이 오직 JSON 배열만 반환해야 합니다.** " +  // ✅ JSON만 반환 강조
+                                            "**'//' 같은 주석, 텍스트, 부가 설명을 절대 포함하지 마세요.** " +  // ✅ 추가적인 주석도 포함하지 않도록 요청
+                                            "**예시와 완전히 동일한 JSON 배열을 반환하세요.** " +
+                                            "**예시: [{\"start\": {\"x\": 30, \"y\": 20}, \"end\": {\"x\": 50, \"y\": 40}}, ...]**"
+                            ),
                             Map.of("type", "image", "source",
                                     Map.of("type", "base64", "media_type", "image/png", "data", base64Image))
                     )
@@ -138,11 +109,41 @@ public class ConstellationService {
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
             ResponseEntity<String> response = restTemplate.exchange(CLAUDE_API_URL, HttpMethod.POST, requestEntity, String.class);
 
-            return parseAIResponse(response.getBody());
+            log.info("📝 Claude API 응답: {}", response.getBody()); // ✅ 응답을 로그로 확인
 
+            return parseAIResponse(response.getBody());
         } catch (Exception e) {
             log.error("❌ Claude API 요청 중 오류 발생", e);
             throw new RuntimeException("Claude API 처리 실패");
         }
     }
+
+
+    private List<Map<String, Object>> parseAIResponse(String responseBody) {
+        try {
+            if (responseBody == null || responseBody.isBlank()) {
+                throw new RuntimeException("Claude API 응답이 비어 있습니다.");
+            }
+
+            // ✅ JSON 형식이 아닌 경우 예외 처리
+            if (!responseBody.trim().startsWith("{") && !responseBody.trim().startsWith("[")) {
+                log.error("❌ 예상치 못한 응답 형식: {}", responseBody);
+                throw new RuntimeException("Claude API 응답이 JSON 형식이 아닙니다.");
+            }
+
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
+
+            // ✅ JSON 형식이 맞지만 content가 존재하지 않는 경우 예외 처리
+            if (!jsonNode.has("content")) {
+                log.error("❌ JSON 구조 오류: {}", jsonNode);
+                throw new RuntimeException("Claude API 응답에서 'content' 키를 찾을 수 없습니다.");
+            }
+
+            return objectMapper.readValue(jsonNode.get("content").get(0).get("text").asText(), new TypeReference<>() {});
+        } catch (Exception e) {
+            log.error("❌ Claude API 응답 파싱 오류 발생: {}", responseBody, e);
+            throw new RuntimeException("응답 처리 실패");
+        }
+    }
+
 }

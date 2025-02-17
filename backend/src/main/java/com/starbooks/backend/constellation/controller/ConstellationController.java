@@ -1,5 +1,8 @@
 package com.starbooks.backend.constellation.controller;
 
+import com.starbooks.backend.common.ApiResponse;
+import com.starbooks.backend.common.ErrorCode;
+import com.starbooks.backend.config.CustomUserDetails;
 import com.starbooks.backend.constellation.dto.ConstellationDto;
 import com.starbooks.backend.constellation.dto.ConstellationLineDto;
 import com.starbooks.backend.constellation.service.ConstellationDBService;
@@ -7,6 +10,7 @@ import com.starbooks.backend.constellation.service.ConstellationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,12 +27,14 @@ public class ConstellationController {
     private final ConstellationDBService constellationDBService;
 
     /**
-     * 📌 AI가 생성한 별자리 데이터 저장 (DB에 저장)
+     * 📌 AI가 생성한 별자리 데이터 저장 (JWT 토큰에서 userId 자동 추출)
      */
-    @PostMapping("/generate/{userId}")
+    @PostMapping("/generate-lines")
     public ResponseEntity<?> generateConstellation(
-            @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,  // ✅ 토큰에서 userId 가져오기
             @RequestParam("file") MultipartFile file) {
+
+        Long userId = userDetails.getUserId(); // ✅ userId 추출
         log.info("📌 [ConstellationController] 별자리 생성 요청 - userId: {}", userId);
 
         if (file.isEmpty()) {
@@ -38,28 +44,34 @@ public class ConstellationController {
         try {
             String base64Image = constellationService.encodeFileToBase64(file);
             List<Map<String, Object>> linesData = constellationService.generateLinesFromAI(base64Image, userId);
-            return ResponseEntity.ok(Map.of("message", "별자리 생성 및 저장 완료", "data", linesData));
-
+            return ResponseEntity.ok(ApiResponse.createSuccess(linesData, "별자리 생성 및 저장 완료"));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("별자리 생성 중 오류 발생");
+            log.error("❌ 별자리 생성 중 오류 발생", e);
+            return ResponseEntity.status(500).body(ApiResponse.createError(ErrorCode.INTERNAL_SERVER_ERROR));
         }
     }
 
     /**
-     * 🔍 특정 유저의 별자리 조회
+     * 🔍 현재 로그인한 유저의 별자리 목록 조회 (JWT 토큰에서 userId 자동 추출)
      */
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ConstellationDto>> getConstellations(@PathVariable Long userId) {
+    @GetMapping("/user")
+    public ResponseEntity<ApiResponse<List<ConstellationDto>>> getConstellations(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        Long userId = userDetails.getUserId();  // ✅ userId 추출
         log.info("📌 [ConstellationController] 유저 별자리 조회 - userId: {}", userId);
-        return ResponseEntity.ok(constellationDBService.getConstellationsByUser(userId));
+
+        List<ConstellationDto> constellations = constellationDBService.getConstellationsByUser(userId);
+        return ResponseEntity.ok(ApiResponse.createSuccess(constellations, "별자리 목록 조회 성공"));
     }
 
     /**
      * 🔍 특정 별자리의 선 데이터 조회
      */
     @GetMapping("/{constellationId}/lines")
-    public ResponseEntity<List<ConstellationLineDto>> getLines(@PathVariable Long constellationId) {
+    public ResponseEntity<ApiResponse<List<ConstellationLineDto>>> getLines(@PathVariable Long constellationId) {
         log.info("📌 [ConstellationController] 별자리 선 조회 - constellationId: {}", constellationId);
-        return ResponseEntity.ok(constellationDBService.getLinesByConstellationId(constellationId));
+        List<ConstellationLineDto> lines = constellationDBService.getLinesByConstellationId(constellationId);
+        return ResponseEntity.ok(ApiResponse.createSuccess(lines, "별자리 선 데이터 조회 성공"));
     }
 }
