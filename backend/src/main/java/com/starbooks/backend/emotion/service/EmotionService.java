@@ -84,6 +84,10 @@ public class EmotionService {
         return new EmotionPoint(weightedValence, weightedArousal);
     }
 
+    public EmotionPoint getTagCoordinate(String tag) {
+        return tagCoordinateMap.getOrDefault(tag, new EmotionPoint(0.0, 0.0));
+    }
+
     private double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }
