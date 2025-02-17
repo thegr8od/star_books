@@ -1,6 +1,7 @@
 package com.starbooks.backend.diary.service;
 
 //import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
+import com.starbooks.backend.config.CustomUserDetails;
 import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
 import com.starbooks.backend.diary.dto.response.HashtagStatsResponse;
@@ -11,6 +12,7 @@ import com.starbooks.backend.emotion.model.EmotionPoint;
 import com.starbooks.backend.emotion.service.EmotionService;
 import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.diary.repository.DiaryRepository;
+import com.starbooks.backend.user.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,12 +29,16 @@ public class DiaryService {
     private final DiaryRepository diaryRepository;
     private final EmotionService emotionService; // 감정 분석 서비스
     private final HashtagStatsRepository hashtagStatsRepository;
+    private final UserRepository userRepository;
 
     /**
      * 1️⃣ 빈 다이어리 생성
      */
     @Transactional
-    public DiaryResponse createEmptyDiary(User user) {
+    public DiaryResponse createEmptyDiary(Long userId) {  // userId만 받음
+        User user = userRepository.findById(userId)  // userId로 User 엔티티 조회
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
         Diary diary = Diary.builder()
                 .user(user)
                 .createdAt(LocalDateTime.now())
@@ -40,6 +46,7 @@ public class DiaryService {
         diaryRepository.save(diary);
         return DiaryResponse.from(diary);
     }
+
 
     /**
      * 2️⃣ 해시태그 추가 (수정된 버전)
@@ -216,10 +223,13 @@ public class DiaryService {
     /**
      * 월별 다이어리 조회
      */
-    public List<DiaryResponse> getDiariesByMonth(User user, int year, int month) {
+    public List<DiaryResponse> getDiariesByMonth(Long userId, int year, int month) {
         LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0, 0);
-        // 해당 월의 마지막 시점
         LocalDateTime end = start.plusMonths(1).minusNanos(1);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));  // User 조회
+
         List<Diary> diaries = diaryRepository.findAllByUserAndCreatedAtBetween(user, start, end);
         return diaries.stream()
                 .map(DiaryResponse::from)

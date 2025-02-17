@@ -1,5 +1,6 @@
 package com.starbooks.backend.diary.repository;
 
+import com.starbooks.backend.config.CustomUserDetails;
 import com.starbooks.backend.diary.model.Diary;
 import com.starbooks.backend.user.model.User;
 import org.springframework.data.domain.Page;
