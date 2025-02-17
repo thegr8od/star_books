@@ -57,8 +57,9 @@ function Diary() {
               type="DEFAULT"
               className="h-9 w-[15%] min-w-[40px] rounded-full border border-white bg-transparent hover:bg-white/10 transition-colors duration-200"
               onClick={async () => {
-                const result = await diaryApi.createEmptyDiary();
-                console.log(result);
+                // try {
+                const result = await diaryApi.createEmptyDiary(); // 수정된 부분
+                // console.log(result);
                 handleSetShowModal(true, result);
               }}
             />
