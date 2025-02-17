@@ -20,7 +20,19 @@ const ProfileEdit = () => {
     name: "",
     email: "",
     gender: "",
-  }); // 콘솔로 찍어보기
+  });
+
+  // 비밀번호 변경 관련
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordErrors, setPasswordErrors] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   // 닉네임 유효성 검사 상태
   const [validationStatus, setValidationStatus] = useState({
@@ -188,6 +200,83 @@ const ProfileEdit = () => {
       });
   };
 
+  // 비밀번호 유효성 검사를 위한 정규식
+  const PASSWORD_REGEX =
+    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$/;
+
+  // 비밀번호 입력 처리
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // 입력 시 해당 필드의 에러 메시지 초기화
+    setPasswordErrors((prev) => ({
+      ...prev,
+      [name]: "",
+    }));
+  };
+
+  // 비밀번호 유효성 검사
+  const validatePassword = () => {
+    let isValid = true;
+    const newErrors = {};
+
+    if (!passwordData.oldPassword) {
+      newErrors.oldPassword = "현재 비밀번호를 입력해주세요.";
+      isValid = false;
+    }
+
+    if (!PASSWORD_REGEX.test(passwordData.newPassword)) {
+      newErrors.newPassword =
+        "비밀번호는 8-20자의 영문, 숫자, 특수문자를 포함해야 합니다.";
+      isValid = false;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      newErrors.confirmPassword = "새 비밀번호가 일치하지 않습니다.";
+      isValid = false;
+    }
+
+    setPasswordErrors(newErrors);
+    return isValid;
+  };
+
+  // 비밀번호 변경 제출
+  const handlePasswordSubmit = async () => {
+    if (!validatePassword()) return;
+
+    try {
+      const response = await useMemberApi.changePassword({
+        email: user.email,
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      });
+
+      if (response?.status === "C000") {
+        alert("비밀번호가 성공적으로 변경되었습니다.");
+        setPasswordData({
+          oldPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setIsPasswordModalOpen(false);
+      } else if (response?.status === 404) {
+        setPasswordErrors((prev) => ({
+          ...prev,
+          oldPassword: "현재 비밀번호가 일치하지 않습니다.",
+        }));
+      } else {
+        alert("비밀번호 변경에 실패했습니다. 다시 시도해주세요.");
+      }
+    } catch (error) {
+      console.error("비밀번호 변경 오류:", error);
+      alert("비밀번호 변경 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <>
       <Layout>
@@ -334,32 +423,73 @@ const ProfileEdit = () => {
         title={"비밀번호 변경"}
       >
         <div className="flex flex-col gap-4">
-          <span>현재 비밀번호</span>
-          <input
-            type="password"
-            className="w-full p-1 bg-[#D9D9D9] rounded-md focus:outline-none"
-          />
-          <span>현재 비밀번호</span>
-          <input
-            type="w-full password"
-            className="w-full p-1 bg-[#D9D9D9] focus:outline-none"
-          />
-          <span>현재 비밀번호</span>
-          <input
-            type="password"
-            className="w-full p-1 bg-[#D9D9D9] focus:outline-none"
-          />
+          <div className="flex flex-col gap-2">
+            <span>현재 비밀번호</span>
+            <input
+              type="password"
+              name="oldPassword"
+              value={passwordData.oldPassword}
+              onChange={handlePasswordChange}
+              className="w-full p-1 bg-[#D9D9D9] rounded-md focus:outline-none"
+            />
+            {passwordErrors.oldPassword && (
+              <p className="text-xs text-red-500">
+                {passwordErrors.oldPassword}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span>새 비밀번호</span>
+            <input
+              type="password"
+              name="newPassword"
+              value={passwordData.newPassword}
+              onChange={handlePasswordChange}
+              className="w-full p-1 bg-[#D9D9D9] rounded-md focus:outline-none"
+            />
+            {passwordErrors.newPassword && (
+              <p className="text-xs text-red-500">
+                {passwordErrors.newPassword}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span>새 비밀번호 확인</span>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={passwordData.confirmPassword}
+              onChange={handlePasswordChange}
+              className="w-full p-1 bg-[#D9D9D9] rounded-md focus:outline-none"
+            />
+            {passwordErrors.confirmPassword && (
+              <p className="text-xs text-red-500">
+                {passwordErrors.confirmPassword}
+              </p>
+            )}
+          </div>
+
           <div className="flex justify-center gap-7 mt-[10px]">
             <Button
               text="취소"
               type={"PREV"}
-              onClick={() => setIsPasswordModalOpen(false)}
+              onClick={() => {
+                setIsPasswordModalOpen(false);
+                setPasswordData({
+                  oldPassword: "",
+                  newPassword: "",
+                  confirmPassword: "",
+                });
+                setPasswordErrors({});
+              }}
               className="px-[30px] py-2"
             />
             <Button
               text="확인"
               type={"DEFAULT"}
-              onClick={() => setIsPasswordModalOpen(false)}
+              onClick={handlePasswordSubmit}
               className="px-[30px] py-2"
             />
           </div>
