@@ -11,12 +11,12 @@ function ErrorPage({ title = "404 ERROR", message, customStyle }) {
   return (
     <Layout>
       <div className="flex flex-col items-center justify-center min-h-screen text-center px-4 ">
-        <div className="space-y-10">
+        <div className="space-y-8">
           <div className="w-40 h-40 mx-auto">
             <img src={errorImage} alt="에러이미지" />
           </div>
           {/* 잘못된 접근했을 때도 이 페이지 사용할 수 있도록 수정 */}
-          <h1 className="text-[50px] font-bold text-white">{title}</h1>
+          <h1 className="text-[40px] font-bold text-white">{title}</h1>
           <div className={`space-y-4 text-white ${customStyle}`}>
             {message || (
               <div>

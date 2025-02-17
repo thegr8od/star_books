@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
-import { Camera } from "lucide-react";
+import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
 import Button from "../../components/Button";
 import GetColor from "../../components/GetColor";
 import ErrorPage from "../ErrorPage";
+import useDiaryApi from "../../api/useDiaryApi";
 
 const DiaryWrite = () => {
   const location = useLocation();
-  const { emotions } = location.state;
+  const { emotions, xvalue, yvalue, diaryId } = location.state;
   const [text, setText] = useState("");
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -16,10 +17,16 @@ const DiaryWrite = () => {
   const isEditMode = !!diaryData; // 데이터 있으면 true 데이터 없으면 false
   const [imagePreview, setImagePreview] = useState(null); // 프리뷰 이미지
   const [existingImage, setExistingImage] = useState(null); // 기존에 저장되어있는 이미지가 있을 때
-  const [content, setContent] = useState(""); // 일기 내용
+  const [uploadedImageUrl, setUploadedImageUrl] = useState(null); // 업로드된 이미지 URL 저장
+  const [imageUploadError, setImageUploadError] = useState(""); // 이미지 업로드 에러 메시지
 
   // URL로 접근해서 해당 일기에 대한 데이터가 없을 때 에러페이지로 이동
-  if (!location.state?.emotion) {
+  if (
+    !location.state?.emotions ||
+    !location.state?.xvalue ||
+    !location.state?.yvalue ||
+    !location.state?.diaryId
+  ) {
     return (
       <ErrorPage
         title="잘못된 접근입니다."
@@ -44,13 +51,26 @@ const DiaryWrite = () => {
   // 이미지 업로드
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
+    setImageUploadError("");
 
     if (file) {
+      // 파일 미리보기 설정
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
+
+      // 서버에 업로드
+      useDiaryApi
+        .uploadImage(file)
+        .then((response) => {
+          setUploadedImageUrl(response.imageUrl);
+        })
+        .catch((error) => {
+          setImageUploadError(error.message);
+          setImagePreview(null);
+        });
     }
   };
 
@@ -61,13 +81,21 @@ const DiaryWrite = () => {
   // 저장, 수정 버튼 클릭 시 데이터 넘기기
   const handleSave = () => {
     const updatedDiaryData = {
-      content,
-      image: imagePreview || existingImage,
+      content: text,
+      diaryId,
+      image: uploadedImageUrl || existingImage,
       created_at: isEditMode ? diaryData.created_at : new Date().toISOString(),
-      // 수정모드일 때 기존 id 유지
       ...(isEditMode && { id: diaryData.id }),
     };
-    navigate("/diary/calendar");
+
+    useDiaryApi
+      .addDiaryContent(diaryId, updatedDiaryData)
+      .then(() => {
+        navigate("/diary/calendar");
+      })
+      .catch((error) => {
+        console.error("일기 저장 실패 : ", error);
+      });
   };
 
   // 취소 버튼 클릭
@@ -133,7 +161,7 @@ const DiaryWrite = () => {
                 />
               ) : (
                 <div className="flex items-center justify-center">
-                  <Camera className="w-8 h-8 text-white" />
+                  <PhotoCameraOutlinedIcon className="w-8 h-8 text-white" />
                 </div>
               )}
             </div>

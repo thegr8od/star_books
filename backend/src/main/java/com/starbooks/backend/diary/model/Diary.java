@@ -35,6 +35,7 @@ public class Diary {
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryHashtag> hashtags = new ArrayList<>();
 
+
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DiaryImage> images = new ArrayList<>();
 
@@ -67,5 +68,9 @@ public class Diary {
     public void addHashtag(DiaryHashtag hashtag) {
         hashtags.add(hashtag);
         hashtag.setDiary(this);
+    }
+
+    public enum HashtagType {
+        기쁨, 슬픔, 화남, 혼란스러움, 피곤함
     }
 }
