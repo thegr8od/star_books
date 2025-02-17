@@ -78,8 +78,8 @@ public class EmotionService {
             return new EmotionPoint(0.0, 0.0);
         }
 
-        double weightedValence = clamp(sumValence / sumWeight, -5.0, 5.0);
-        double weightedArousal = clamp(sumArousal / sumWeight, -5.0, 5.0);
+        int weightedValence = (int)clamp(sumValence / sumWeight, -5.0, 5.0);
+        int weightedArousal = (int)clamp(sumArousal / sumWeight, -5.0, 5.0);
 
         return new EmotionPoint(weightedValence, weightedArousal);
     }
