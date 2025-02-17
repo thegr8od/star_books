@@ -3,6 +3,7 @@ package com.starbooks.backend.diary.controller;
 //import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 //import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
 import com.starbooks.backend.common.service.S3Service;
+import com.starbooks.backend.config.CustomUserDetails;
 import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
@@ -40,11 +41,13 @@ public class DiaryController {
      * 1️⃣ 빈 다이어리 생성 (버튼 클릭 시)
      */
     @PostMapping("/create")
-    public ResponseEntity<DiaryResponse> createEmptyDiary(@AuthenticationPrincipal User user) {
-        DiaryResponse response = diaryService.createEmptyDiary(user);
+    public ResponseEntity<DiaryResponse> createEmptyDiary(@AuthenticationPrincipal CustomUserDetails userDetails) {  // CustomUserDetails로 변경
+        Long userId = userDetails.getUserId();  // userId 추출
+        DiaryResponse response = diaryService.createEmptyDiary(userId);  // userId 전달
         return ResponseEntity.created(URI.create("/api/diary/" + response.diaryId()))
                 .body(response);
     }
+
 
     /**
      * 2️⃣ 해시태그 입력과 동시에 감정 분석 처리
@@ -176,11 +179,16 @@ public class DiaryController {
      */
     @GetMapping("/year/{year}/month/{month}")
     public ResponseEntity<List<DiaryResponse>> getDiariesByMonth(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal CustomUserDetails userDetails,  // CustomUserDetails로 변경
             @PathVariable int year,
             @PathVariable int month) {
-        List<DiaryResponse> responses = diaryService.getDiariesByMonth(user, year, month);
+
+        Long userId = userDetails.getUserId();  // userId 가져오기
+        System.out.println("Authenticated User ID: " + userId);
+
+        List<DiaryResponse> responses = diaryService.getDiariesByMonth(userId, year, month);
         return ResponseEntity.ok(responses);
     }
+
 
 }
