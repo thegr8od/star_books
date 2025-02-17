@@ -4,10 +4,7 @@ import Modal from "../../components/Modal";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
 import MoodSurveyToast from "./MoodSurveyToast";
-import {
-  createEmptyDiary,
-  addHashtagsAndAnalyzeEmotion,
-} from "../../api/useDiaryApi";
+import useDiaryApi from "../../api/useDiaryApi";
 
 const MoodSurvey = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -125,37 +122,29 @@ const MoodSurvey = ({ isOpen, onClose }) => {
     // 로딩 메시지 표시 (나중에 속도 조절 필요!!)
     showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 3000);
 
-    // 1. 빈 다이어리 생성
-    createEmptyDiary()
-      .then((response) => {
-        if (response.status === 200) {
-          const diaryId = response.data.id;
-
-          // 2. 해시태그 추가 및 감정 분석
-          return addHashtagsAndAnalyzeEmotion(diaryId, selectedEmotions);
-        } else {
-          throw new Error("다이어리 생성 실패");
-        }
+    // 해시태그 추가 및 감정 분석
+    useDiaryApi
+      .addHashtagsAndAnalyzeEmotion(diaryId, {
+        // 아직 다이어리아이디 어디서 끌어올지 안함
+        hashtags: selectedEmotions,
       })
       .then((response) => {
-        if (response.status === 200) {
-          setShowToast(false);
-          handleClose();
-          navigate("../diary/write", {
-            state: {
-              emotions: selectedEmotions,
-              xvalue: response.data.xvalue,
-              yvalue: response.data.yvalue,
-            },
-          });
-        }
+        setShowToast(false);
+        handleClose();
+        navigate("../diary/write", {
+          state: {
+            emotions: selectedEmotions,
+            xvalue: response.xvalue,
+            yvalue: response.yvalue,
+            diaryId: diaryId,
+          },
+        });
       })
       .catch((error) => {
-        console.error("에러 발생 : ", error);
+        console.error("에러 발생:", error);
         showToastMessage("오류가 발생했습니다. 다시 시도해주세요.", 800);
       });
   };
-
   return (
     <div>
       <MoodSurveyToast
@@ -194,9 +183,7 @@ const MoodSurvey = ({ isOpen, onClose }) => {
         {/* 세부 감정 설문 */}
         {step === 2 && (
           <div className="flex flex-col h-[400px] w-[320px]">
-            <div
-              className="flex-1 overflow-y-auto pr-2"
-            >
+            <div className="flex-1 overflow-y-auto pr-2">
               {/* 감정 카테고리와 버튼들 */}
               {getOrderedCategories().map((category) => (
                 <div key={category} className="mb-8">
