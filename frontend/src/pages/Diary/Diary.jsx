@@ -58,7 +58,7 @@ function Diary() {
                 // try {
                 const result = await diaryApi.createEmptyDiary(); // 수정된 부분
                 console.log(result);
-                setShowModal(true);
+                setShowModal(true, result);
 
                 //   if (result && result !== 401 && result !== 400) {
                 //     console.log("성공");
