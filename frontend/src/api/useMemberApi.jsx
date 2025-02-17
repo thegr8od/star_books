@@ -159,6 +159,27 @@ const updateProfileImage = async (data, email) => {
   }
 };
 
+// 프로필 이미지 조회
+// get
+const getProfileImage = async (email) => {
+  const jwt = localStorage.getItem("accessToken");
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .get(`/member/profile/image`, {
+        params: {
+          email: email,
+        },
+      });
+    return response.data;
+  } catch (e) {
+    // 오류 체크
+    if (e.response.data.stauts == 404) {
+      return e.response.data;
+    }
+  }
+};
+
 //마이페이지 수정
 //put
 const updateProfile = async (data) => {
