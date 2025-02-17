@@ -23,4 +23,10 @@ public interface PersonalUnivRepository extends JpaRepository<PersonalUniv, Long
     @Query("SELECT p FROM PersonalUniv p WHERE p.universeId = :universeId AND p.diaryEmotion.diary.user.userId = :userId")
     Optional<PersonalUniv> findByUserIdAndUniverseId(@Param("userId") Long userId,
                                                      @Param("universeId") Long universeId);
+
+
+    @Query("SELECT p FROM PersonalUniv p WHERE p.diaryEmotion.diary.user.userId = :userId AND p.diaryEmotion.diaryEmotionId = :diaryEmotionId")
+    Optional<PersonalUniv> findByUserIdAndDiaryEmotionId(@Param("userId") Long userId,
+                                                         @Param("diaryEmotionId") Long diaryEmotionId);
+
 }
