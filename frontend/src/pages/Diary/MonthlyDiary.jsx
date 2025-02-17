@@ -1,136 +1,144 @@
-import { useEffect, useRef, useState } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import Nav from "../.././components/Nav";
-import { DIARY_ENTRIES } from '../../data/diaryData';
+import { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { Edit, Delete } from "@mui/icons-material";
+import Layout from "../../components/Layout";
+import DiaryDate from "./DiaryDate";
+
+const sampleData = [
+  {
+    id: 1,
+    date: "2025-01-01",
+    color: "#4169E1",
+    content: "오늘은 뭔든 하트뿅뿅다. 하자면 주만 시작물화 보고 머튿다브니 분이 생겼다.",
+    hashtags: ["즐적인", "감사한", "외로운", "행만한"],
+    image: null,
+  },
+  {
+    id: 2,
+    date: "2025-01-03",
+    color: "#FFD700",
+    content: "재밌던 하루!!! 최애 콘서트를 다녀왔다!! ♥️♥️",
+    hashtags: ["즐거운", "행복한", "재밌는", "차근한"],
+    image: "https://images.unsplash.com/photo-1519052537078-e6302a4968d4?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fCVFQSVCMyVBMCVFQyU5NiU5MSVFQyU5RCVCNHxlbnwwfHwwfHx8MA%3D%3D",
+  },
+  {
+    id: 3,
+    date: "2025-01-05",
+    color: "#9370DB",
+    content: "우울하다~~~~",
+    hashtags: ["울적한", "슬픈", "외로운", "불안한", "울적한", "슬픈", "외로운", "불안한"],
+    image: null,
+  },
+  {
+    id: 4,
+    date: "2025-01-07",
+    color: "#FFD700",
+    content: "재밌던 하루!!! 최애 콘서트를 다녀왔다!! ♥️♥️",
+    hashtags: ["즐거운", "행복한", "재밌는", "차근한"],
+    image: null,
+  },
+  {
+    id: 5,
+    date: "2025-01-11",
+    color: "#FFD700",
+    content: "재밌던 하루!!! 최애 콘서트를 다녀왔다!! ♥️♥️",
+    hashtags: ["즐거운", "행복한", "재밌는", "차근한"],
+    image: "https://images.unsplash.com/photo-1519052537078-e6302a4968d4?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fCVFQSVCMyVBMCVFQyU5NiU5MSVFQyU5RCVCNHxlbnwwfHwwfHx8MA%3D%3D",
+  },
+  {
+    id: 6,
+    date: "2025-01-26",
+    color: "#9370DB",
+    content: "우울하다~~~~",
+    hashtags: ["울적한", "슬픈", "외로운", "불안한", "울적한", "슬픈", "외로운", "불안한"],
+    image: null,
+  },
+];
 
 const MonthlyDiary = () => {
-  const { month } = useParams();
   const location = useLocation();
+  const [diaries, setDiaries] = useState(sampleData);
   const selectedDate = location.state?.selectedDate;
-  const selectedDay = location.state?.day;
-  const newEntry = location.state?.newEntry;
-  
-  const containerRef = useRef(null);
-  const targetDateRef = useRef(null);
-  const [diaryEntries, setDiaryEntries] = useState(() => {
-    // localStorage에서 데이터 불러오기
-    const savedEntries = localStorage.getItem('diaryEntries');
-    // 저장된 데이터가 없으면 더미 데이터 사용
-    return savedEntries ? JSON.parse(savedEntries) : DIARY_ENTRIES;
-  });
-  const [hasScrolled, setHasScrolled] = useState(false);
+  const diaryRefs = useRef({});
 
-  // 해당 월의 일기만 필터링
-  const filteredEntries = diaryEntries.filter(entry => {
-    const entryDate = new Date(entry.date);
-    const entryYearMonth = `${entryDate.getFullYear()}${String(entryDate.getMonth() + 1).padStart(2, '0')}`;
-    return entryYearMonth === month;
-  });
-
-  // 새로운 엔트리 추가
   useEffect(() => {
-    if (newEntry) {
-      setDiaryEntries(prev => {
-        const filteredEntries = prev.filter(entry => entry.id !== newEntry.id);
-        const updatedEntries = [...filteredEntries, newEntry].sort((a, b) => 
-          new Date(b.date) - new Date(a.date)
-        );
-        localStorage.setItem('diaryEntries', JSON.stringify(updatedEntries));
-        return updatedEntries;
+    console.log(selectedDate);
+    if (selectedDate && diaryRefs.current[selectedDate]) {
+      diaryRefs.current[selectedDate].scrollIntoView({
+        behavior: "smooth",
+        block: "start",
       });
     }
-  }, [newEntry]);
+  }, [selectedDate]);
 
-  // 선택된 날짜로 스크롤하는 함수
-  const scrollToSelectedDate = () => {
-    if (targetDateRef.current && !hasScrolled) {
-      setTimeout(() => {
-        targetDateRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-        setHasScrolled(true);
-      }, 100);
+  // 수정 버튼 클릭 시
+  const handleEdit = (id) => {
+    console.log("Edit diary:", id);
+  };
+
+  // 삭제 버튼 클릭 시
+  const handleDelete = (id) => {
+    if (window.confirm("일기를 삭제하시겠습니까?")) {
+      setDiaries(diaries.filter((diary) => diary.id !== id));
     }
   };
 
-  useEffect(() => {
-    scrollToSelectedDate();
-  }, [selectedDate, month, diaryEntries]);
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
-  };
-
-  // month 파라미터에서 년월 추출
-  const year = month.substring(0, 4);
-  const monthNum = month.substring(4, 6);
-
   return (
-    <>
-      <Nav />
-      <div 
-        ref={containerRef} 
-        className="h-screen overflow-y-auto bg-gray-100 px-4 py-6"
-        style={{ scrollBehavior: 'smooth' }}
-      >
-        <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          {year}년 {parseInt(monthNum)}월의 일기
-        </h1>
-
-        <div className="max-w-2xl mx-auto space-y-4">
-          {filteredEntries.length === 0 ? (
-            <div className="text-center py-10 text-gray-500">
-              이번 달에 작성된 일기가 없습니다.
-            </div>
-          ) : (
-            filteredEntries.map((entry) => {
-              const entryDate = new Date(entry.date);
-              const day = entryDate.getDate();
-              const isSelected = day === selectedDay && 
-                               entryDate.getMonth() === new Date(selectedDate).getMonth() &&
-                               entryDate.getFullYear() === new Date(selectedDate).getFullYear();
-              
+    <Layout>
+      <div className="flex flex-col h-screen">
+        {/* <DiaryDate /> */}
+        <div className="flex-1 flex-col space-y-4 overflow-y-auto bg-neutral-100 rounded-3xl p-4" style={{ scrollbarWidth: "none" }}>
+          {diaries?.length ? (
+            diaries.map((diary, index) => {
+              const diaryDate = new Date(diary.date);
               return (
-                <div
-                  key={entry.id}
-                  ref={isSelected ? targetDateRef : null}
-                  className={`
-                    bg-white rounded-lg p-6 shadow-md
-                    ${isSelected ? 'ring-2 ring-blue-500' : ''}
-                  `}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className={`w-4 h-4 rounded-full ${entry.color}`} 
-                        title="Selected Color"
-                      />
-                      <h2 className="text-xl font-semibold text-gray-800">
-                        {entry.title}
-                      </h2>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-gray-900">
-                        {formatDate(entry.date)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {entry.time}
+                <div key={diary.id} ref={(el) => (diaryRefs.current[diary.date] = el)} className={`space-y-3 px-5 py-3 bg-white rounded-xl shadow-sm ${selectedDate === diary.date ? "animate-[pulse_1s_ease-in-out_1]" : ""}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex space-x-3">
+                      <div className="w-5 h-5 rounded-full" style={{ backgroundColor: diary.color }} />
+                      <div>
+                        <p className="text-gray-600">{diaryDate.toLocaleDateString("ko-KR", { month: "long", day: "numeric" })}</p>
+                        <p className="text-xs text-gray-400">{diaryDate.toLocaleDateString("ko-KR", { weekday: "long" })}</p>
                       </div>
                     </div>
+                    <div className="flex items-center space-x-4">
+                      <button onClick={() => handleEdit(diary.id)} className="text-gray-400 hover:text-gray-700">
+                        <Edit fontSize="inherit" />
+                      </button>
+                      <button onClick={() => handleDelete(diary.id)} className="text-gray-400 hover:text-gray-700">
+                        <Delete fontSize="inherit" />
+                      </button>
+                    </div>
                   </div>
-                  
-                  <div className="text-gray-600 whitespace-pre-line">
-                    {entry.content}
+
+                  <p className="text-sm">{diary.content}</p>
+
+                  {diary.image && (
+                    <div>
+                      <img src={diary.image} alt="Diary img" className="object-cover rounded-lg" />
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    {diary.hashtags.map((tag, index) => (
+                      <span key={index} className="text-xs text-gray-400">
+                        #{tag}
+                      </span>
+                    ))}
                   </div>
+
+                  <hr className="border-gray-200" />
                 </div>
               );
             })
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <p>해당 월에 작성한 일기가 없습니다</p>
+            </div>
           )}
         </div>
       </div>
-    </>
+    </Layout>
   );
 };
 

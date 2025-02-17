@@ -1,150 +1,183 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Nav from "../.././components/Nav";
-import Header from "../.././components/Header";
-import Button from "../.././components/Button";
+import { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Layout from "../../components/Layout";
+import { Camera } from "lucide-react";
+import Button from "../../components/Button";
+import GetColor from "../../components/GetColor";
+import ErrorPage from "../ErrorPage";
 
-function DiaryWrite() {
+const DiaryWrite = () => {
+  const location = useLocation();
+  const { emotions } = location.state;
+  const [text, setText] = useState("");
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [selectedColor, setSelectedColor] = useState('#FF9999');
-  
-  // 현재 날짜를 YYYY-MM-DD 형식으로 변환
-  const today = new Date();
-  const formattedToday = today.toISOString().split('T')[0];
-  const [selectedDate, setSelectedDate] = useState(formattedToday);
+  const { diaryData } = location.state || {}; // 일기 목록에서 데이터 넘겨줌
+  const isEditMode = !!diaryData; // 데이터 있으면 true 데이터 없으면 false
+  const [imagePreview, setImagePreview] = useState(null); // 프리뷰 이미지
+  const [existingImage, setExistingImage] = useState(null); // 기존에 저장되어있는 이미지가 있을 때
+  const [content, setContent] = useState(""); // 일기 내용
 
-  const convertToTailwindColor = (hexColor) => {
-    const colorMap = {
-      '#FF9999': 'bg-red-500',
-      '#FFB266': 'bg-orange-500',
-      '#FFFF99': 'bg-yellow-500',
-      '#99FF99': 'bg-green-500',
-      '#99FFFF': 'bg-cyan-500',
-      '#9999FF': 'bg-blue-500',
-      '#FF99FF': 'bg-pink-500'
-    };
-    return colorMap[hexColor] || 'bg-red-500';
+  // URL로 접근해서 해당 일기에 대한 데이터가 없을 때 에러페이지로 이동
+  if (!location.state?.emotion) {
+    return (
+      <ErrorPage
+        title="잘못된 접근입니다."
+        message="올바른 경로로 접근해주세요."
+        customStyle="text-l"
+      />
+    );
+  }
+
+  // 일기 작성 날짜, 요일
+  const getDayInfo = () => {
+    const days = ["일", "월", "화", "수", "목", "금", "토", "일"];
+    const date = isEditMode ? new Date(diaryData.created_at) : new Date();
+    const month = date.getMonth() + 1;
+    const dayNum = date.getDate();
+    const dayName = days[date.getDay()];
+    return { dayNum, dayName, month };
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    const selectedDateTime = new Date(selectedDate);
-    const date = selectedDateTime.getDate();
-    const month = selectedDateTime.getMonth() + 1;
-    const year = selectedDateTime.getFullYear();
-    
-    const currentTime = new Date();
-    const timeString = currentTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-    
-    const diaryEntry = {
-      id: Date.now(),
-      date: `${year}-${String(month).padStart(2, '0')}-${String(date).padStart(2, '0')}`,
-      color: convertToTailwindColor(selectedColor),
-      time: timeString,
-      title,
-      content
-    };
+  const { dayNum, dayName, month } = getDayInfo();
 
-    try {
-      console.log('Diary saved:', diaryEntry);
+  // 이미지 업로드
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
 
-      const monthParam = `${year}${String(month).padStart(2, '0')}`;
-      navigate(`/starbooks/diary/monthly/${monthParam}`, {
-        state: {
-          selectedDate: selectedDateTime.getTime(),
-          day: date,
-          newEntry: diaryEntry
-        }
-      });
-
-      navigate(`/starbooks/diary/calendar?date=${date}&month=${month}&color=${encodeURIComponent(selectedColor)}`);
-    } catch (error) {
-      console.error('Failed to save diary:', error);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
+  const handleCameraClick = () => {
+    fileInputRef.current.click();
+  };
+
+  // 저장, 수정 버튼 클릭 시 데이터 넘기기
+  const handleSave = () => {
+    const updatedDiaryData = {
+      content,
+      image: imagePreview || existingImage,
+      created_at: isEditMode ? diaryData.created_at : new Date().toISOString(),
+      // 수정모드일 때 기존 id 유지
+      ...(isEditMode && { id: diaryData.id }),
+    };
+    navigate("/diary/calendar");
+  };
+
+  // 취소 버튼 클릭
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
+  // 수정 모드 -> 기존 데이터 로드
+  useEffect(() => {
+    if (isEditMode && diaryData) {
+      setContent(diaryData.content || "");
+      // 이미지 있을 때
+      if (diaryData.image) {
+        setExistingImage(diaryData.image);
+        setImagePreview(diaryData.image);
+      }
+    }
+  }, [isEditMode, diaryData]);
+
   return (
-    <>
-      <Nav />
-      <div className="flex flex-col items-center w-full h-full px-4">
-        <div className="w-full max-w-xl">
-          <Header
-            title="일기 작성"
-            titleClassName="text-base md:text-lg font-semibold text-white"
-          />
-          
-          <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-            {/* 날짜 선택 */}
-            <div>
-              <label className="block text-white text-sm mb-2">날짜 선택:</label>
-              <input
-                type="date"
-                value={selectedDate}
-                max={formattedToday} // 미래 날짜 선택 방지
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-2 bg-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/30"
-                required
-              />
-            </div>
+    <Layout>
+      <div className="h-full flex flex-col space-y-6 pt-3">
+        {/* 날짜 */}
+        <div className="text-white px-3 text-lg">
+          <div className="flex items-baseline gap-2 border-b border-white pb-1 w-fit">
+            <span>{month}월</span>
+            <span>{dayNum}일</span>
+            <span>{dayName}요일</span>
+          </div>
+        </div>
 
-            {/* 제목 입력 */}
-            <div>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="제목을 입력하세요"
-                className="w-full px-4 py-2 bg-white/10 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
-                required
-              />
-            </div>
+        {/* 콘텐츠 - 흰색 카드 */}
+        <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+          {/* 감정 아이콘 */}
+          <div className="flex justify-center">
+            <span
+              className="rounded-full w-6 h-6"
+              {...GetColor((x = 1), (y = 2))}
+            />
+          </div>
 
-            {/* 내용 입력 */}
-            <div>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="오늘의 이야기를 들려주세요"
-                className="w-full h-64 px-4 py-3 bg-white/10 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 resize-none"
-                required
-              />
-            </div>
+          {/* 텍스트 입력 칸*/}
+          <div className="flex flex-col relative">
+            <textarea
+              className="w-full h-[150px] resize-none border-none focus:outline-none text-gray-800 placeholder-gray-400"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="이곳을 클릭하여 오늘의 이야기를 적어보세요."
+            />
+          </div>
 
-            {/* 색상 선택 */}
-            <div className="flex items-center space-x-4">
-              <label className="text-white text-sm">오늘의 색상:</label>
-              <div className="flex space-x-2">
-                {['#FF9999', '#FFB266', '#FFFF99', '#99FF99', '#99FFFF', '#9999FF', '#FF99FF'].map((colorOption) => (
-                  <button
-                    key={colorOption}
-                    type="button"
-                    onClick={() => setSelectedColor(colorOption)}
-                    className={`w-8 h-8 rounded-full focus:outline-none focus:ring-2 focus:ring-white/30 ${
-                      selectedColor === colorOption ? 'ring-2 ring-white' : ''
-                    }`}
-                    style={{ backgroundColor: colorOption }}
-                  />
-                ))}
-              </div>
+          {/* 이미지 업로드 */}
+          <div className="rounded-lg relative">
+            <div
+              className="w-full h-[280px] bg-gray-300 rounded-lg flex items-center justify-center cursor-pointer"
+              onClick={handleCameraClick}
+            >
+              {imagePreview || existingImage ? (
+                <img
+                  src={imagePreview}
+                  alt="preview"
+                  className="max-h-full max-w-full object-contain rounded-lg p-2"
+                />
+              ) : (
+                <div className="flex items-center justify-center">
+                  <Camera className="w-8 h-8 text-white" />
+                </div>
+              )}
             </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </div>
 
-            {/* 저장 버튼 */}
-            <div className="flex justify-end pt-4">
-              <Button
-                type="submit"
-                className="px-6 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors"
-              >
-                저장하기
-              </Button>
-            </div>
-          </form>
+          {/* 해시태그 */}
+          <div className="flex flex-wrap gap-3 px-2">
+            {emotions.map((emotion, index) => (
+              <span key={index} className="text-gray-500">
+                #{emotion}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* 버튼 */}
+        <div className="flex justify-center gap-10 pt-1">
+          <div className="w-[120px]">
+            <Button
+              text="취소"
+              type="PREV"
+              className="w-full py-2"
+              onClick={handleCancel}
+            />
+          </div>
+          <div className="w-[120px]">
+            <Button
+              text={isEditMode ? "수정" : "게시"}
+              type="NEXT"
+              className="w-full py-2"
+              onClick={handleSave}
+            />
+          </div>
         </div>
       </div>
-    </>
+    </Layout>
   );
-}
+};
 
 export default DiaryWrite;
