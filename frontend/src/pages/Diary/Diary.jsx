@@ -62,7 +62,7 @@ function Diary() {
               onClick={async () => {
                 // try {
                 const result = await diaryApi.createEmptyDiary(); // 수정된 부분
-                console.log(result);
+                // console.log(result);
                 handleSetShowModal(true, result);
 
                 //   if (result && result !== 401 && result !== 400) {

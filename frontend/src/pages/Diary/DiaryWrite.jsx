@@ -9,7 +9,7 @@ import useDiaryApi from "../../api/useDiaryApi";
 
 const DiaryWrite = () => {
   const location = useLocation();
-  const { emotions, xvalue, yvalue, diaryId } = location.state;
+  const { emotions, xvalue, yvalue, diaryId, originalData } = location.state;
   const [text, setText] = useState("");
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -31,7 +31,6 @@ const DiaryWrite = () => {
       <ErrorPage
         title="잘못된 접근입니다."
         message="올바른 경로로 접근해주세요."
-        customStyle="text-l"
       />
     );
   }
@@ -39,7 +38,11 @@ const DiaryWrite = () => {
   // 일기 작성 날짜, 요일
   const getDayInfo = () => {
     const days = ["일", "월", "화", "수", "목", "금", "토", "일"];
-    const date = isEditMode ? new Date(diaryData.created_at) : new Date();
+    const date = originalData?.created_at
+      ? new Date(originalData.created_at)
+      : isEditMode
+      ? new Date(diaryData.created_at)
+      : new Date();
     const month = date.getMonth() + 1;
     const dayNum = date.getDate();
     const dayName = days[date.getDay()];
@@ -51,6 +54,7 @@ const DiaryWrite = () => {
   // 이미지 업로드
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
+    console.log(file);
     setImageUploadError("");
 
     if (file) {
@@ -58,6 +62,7 @@ const DiaryWrite = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
+        console.log("프리뷰 : ", setImagePreview(reader.result));
       };
       reader.readAsDataURL(file);
 
@@ -65,11 +70,16 @@ const DiaryWrite = () => {
       useDiaryApi
         .uploadImage(file)
         .then((response) => {
-          setUploadedImageUrl(response.imageUrl);
+          console.log("서버 응답:", response);
+          if (response.imageUrl) {
+            setUploadedImageUrl(response.imageUrl);
+            console.log("업로드된 이미지 URL:", response.imageUrl); // 디버깅용
+          }
         })
         .catch((error) => {
           setImageUploadError(error.message);
           setImagePreview(null);
+          setUploadedImageUrl(null);
         });
     }
   };
@@ -83,10 +93,13 @@ const DiaryWrite = () => {
     const updatedDiaryData = {
       content: text,
       diaryId,
-      image: uploadedImageUrl || existingImage,
-      created_at: isEditMode ? diaryData.created_at : new Date().toISOString(),
+      imageUrl: uploadedImageUrl || existingImage,
+      created_at:
+        originalData?.created_at ||
+        (isEditMode ? diaryData.created_at : new Date().toISOString()),
       ...(isEditMode && { id: diaryData.id }),
     };
+    console.log("저장할 데이터:", updatedDiaryData);
 
     useDiaryApi
       .addDiaryContent(diaryId, updatedDiaryData)
@@ -106,11 +119,11 @@ const DiaryWrite = () => {
   // 수정 모드 -> 기존 데이터 로드
   useEffect(() => {
     if (isEditMode && diaryData) {
-      setContent(diaryData.content || "");
+      setText(diaryData.content || "");
       // 이미지 있을 때
-      if (diaryData.image) {
-        setExistingImage(diaryData.image);
-        setImagePreview(diaryData.image);
+      if (diaryData.imageUrl) {
+        setExistingImage(diaryData.imageUrl);
+        setImagePreview(diaryData.imageUrl);
       }
     }
   }, [isEditMode, diaryData]);
@@ -133,8 +146,9 @@ const DiaryWrite = () => {
           <div className="flex justify-center">
             <span
               className="rounded-full w-6 h-6"
-              {...GetColor((x = 1), (y = 2))}
+              style={{ backgroundColor: GetColor(xvalue, yvalue) }}
             />
+            {/* <span className={`rounded-full w-6 h-6 bg-[${GetColor(2, 3)}]`} /> */}
           </div>
 
           {/* 텍스트 입력 칸*/}
@@ -161,7 +175,10 @@ const DiaryWrite = () => {
                 />
               ) : (
                 <div className="flex items-center justify-center">
-                  <PhotoCameraOutlinedIcon className="w-8 h-8 text-white" />
+                  <PhotoCameraOutlinedIcon
+                    className="w-8 h-8 text-white"
+                    sx={{ fontSize: 50 }}
+                  />
                 </div>
               )}
             </div>
