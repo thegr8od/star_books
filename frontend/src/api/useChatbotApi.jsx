@@ -17,14 +17,14 @@ const chat = async (data) => {
     }
 }
 
-const getHistory = async (email) => {
+const getHistory = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try {
         const response = await useAxiosInstance
             .authApiClient(jwt)
             .get(
-                `/chat/history?email=${email}`,
+                `/chat/history?email=${data.email}`,
             );
 
         return response;
