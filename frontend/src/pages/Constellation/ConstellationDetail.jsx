@@ -8,7 +8,8 @@ import {
   CSS2DObject,
 } from "three/examples/jsm/renderers/CSS2DRenderer";
 import GetColor from "../../components/GetColor";
-import { yearlyConstellationData } from "../../data/dummyConstellationData";
+import universeApi from "../../api/useUniverseApi";
+import starlineApi from "../../api/useStarlineApi";
 
 function ConstellationDetail() {
   const { year } = useParams();
@@ -21,12 +22,124 @@ function ConstellationDetail() {
 
   const [isMaximized, setIsMaximized] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [universeData, setUniverseData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const yearData = yearlyConstellationData[year] || yearlyConstellationData[""];
-  const totalConstellations = yearData.constellationData.length;
-
+  // API 데이터 가져오기
   useEffect(() => {
-    if (!mountRef.current) return;
+    const fetchData = async () => {
+      try {
+        const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+        // 월별 데이터 순차적 처리
+        const monthlyResults = [];
+
+        // 각 월별로 순차적으로 데이터 처리
+        for (const month of months) {
+          // 유니버스 데이터 요청
+          const universeResponse = await universeApi.getMonthlyPersonalUniv({
+            year,
+            month,
+          });
+          console.log(universeResponse);
+          console.log(universeResponse.status);
+
+          // 별자리 선 데이터 요청
+          const starlineResponse = await starlineApi.getMonthlyStarlineCoords({
+            year,
+            month,
+          });
+          console.log(starlineResponse);
+          console.log(starlineResponse.status);
+
+          if (
+            universeResponse.status === "success" &&
+            starlineResponse.status === "success"
+          ) {
+            monthlyResults.push({
+              month,
+              universeData: universeResponse.data,
+              starlineData: starlineResponse.data,
+            });
+          } else {
+            monthlyResults.push({
+              month,
+              universeData: null,
+              starlineData: null,
+            });
+          }
+        }
+
+        // 월별 데이터 정리
+        const processedData = [];
+
+        // 각 월의 데이터를 정리된 형태로 저장
+        for (const monthResult of monthlyResults) {
+          const monthlyData = {
+            month: monthResult.month,
+            data: monthResult.universeData, // 유니버스(감정) 데이터
+            starlines: monthResult.starlineData, // 별자리 선 데이터
+          };
+          processedData.push(monthlyData);
+        }
+
+        // 유니버스 데이터 저장 (전체 월 데이터)
+        setUniverseData(processedData);
+        setLoading(false);
+      } catch (err) {
+        console.error("데이터 가져오기 실패:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [year]);
+
+  // 데이터 처리 로직
+  const processData = () => {
+    return universeData.map((monthData) => {
+      if (!monthData.data || !monthData.starlines) {
+        return {
+          month: monthData.month,
+          points: [],
+          lines: [],
+        };
+      }
+      console.log(processData);
+
+      const emotions = monthData.data;
+
+      return {
+        month: monthData.month,
+        points: emotions.map((emotion) => ({
+          x: emotion.xCoord,
+          y: emotion.yCoord,
+          emotionId: emotion.diaryEmotionId,
+          xvalue: emotion.xvalue,
+          yvalue: emotion.yvalue,
+        })),
+        lines: monthData.starlines
+          .map((line) => ({
+            start: emotions.findIndex(
+              (e) => e.diaryEmotionId === line.startEmotionId
+            ),
+            end: emotions.findIndex(
+              (e) => e.diaryEmotionId === line.endEmotionId
+            ),
+          }))
+          .filter((line) => line.start !== -1 && line.end !== -1),
+      };
+    });
+  };
+
+  // Three.js 렌더링
+  useEffect(() => {
+    if (!mountRef.current || loading) return;
+
+    const constellationData = processData();
+    const totalConstellations = constellationData.length;
 
     // Scene
     const scene = new THREE.Scene();
@@ -62,7 +175,10 @@ function ConstellationDetail() {
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+    renderer.setSize(
+      mountRef.current.clientWidth,
+      mountRef.current.clientHeight
+    );
     renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
     mountRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
@@ -112,11 +228,8 @@ function ConstellationDetail() {
     labelRendererRef.current = labelRenderer;
 
     // 별자리 생성 함수
-    const createConstellation = (index) => {
+    const createConstellation = (monthData) => {
       const group = new THREE.Group();
-      const pattern = yearData.constellationData[index];
-      const colors = yearData.colorData[index];
-      //
 
       const calculateZ = (x, y) => {
         const distanceFromCenter = Math.sqrt(x * x + y * y);
@@ -131,11 +244,11 @@ function ConstellationDetail() {
       const linesArr = [];
 
       // 별 생성
-      pattern.points.forEach((point, idx) => {
+      monthData.points.forEach((point, idx) => {
         const z = calculateZ(point.x, point.y);
         pointZValues[idx] = z;
 
-        const color = GetColor({ x: colors[idx].x, y: colors[idx].y });
+        const color = GetColor(point.xvalue, point.yvalue);
         const starMaterial = new THREE.MeshBasicMaterial({
           color: new THREE.Color(color),
           emissive: new THREE.Color(color),
@@ -160,28 +273,35 @@ function ConstellationDetail() {
         transparent: true,
         opacity: 0,
       });
-      pattern.lines.forEach((line) => {
-        const geometry = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(
-            pattern.points[line.start].x,
-            pattern.points[line.start].y,
-            pointZValues[line.start]
-          ),
-          new THREE.Vector3(
-            pattern.points[line.end].x,
-            pattern.points[line.end].y,
-            pointZValues[line.end]
-          ),
-        ]);
-        const constellationLine = new THREE.Line(geometry, lineMaterial.clone());
-        linesArr.push(constellationLine);
-        group.add(constellationLine);
+
+      monthData.lines.forEach((line) => {
+        if (monthData.points[line.start] && monthData.points[line.end]) {
+          const geometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(
+              monthData.points[line.start].x,
+              monthData.points[line.start].y,
+              pointZValues[line.start]
+            ),
+            new THREE.Vector3(
+              monthData.points[line.end].x,
+              monthData.points[line.end].y,
+              pointZValues[line.end]
+            ),
+          ]);
+          const constellationLine = new THREE.Line(
+            geometry,
+            lineMaterial.clone()
+          );
+          linesArr.push(constellationLine);
+          group.add(constellationLine);
+        }
       });
 
       // 월 표시 레이블
       const labelDiv = document.createElement("div");
-      labelDiv.className = "bg-white/30 text-white px-2 py-0.5 rounded-full text-[8px]";
-      labelDiv.textContent = `${index + 1}월`;
+      labelDiv.className =
+        "bg-white/30 text-white px-2 py-0.5 rounded-full text-[8px]";
+      labelDiv.textContent = `${monthData.month}월`;
       const label = new CSS2DObject(labelDiv);
       label.position.set(0, 3.5, 0);
       group.add(label);
@@ -200,7 +320,8 @@ function ConstellationDetail() {
             star.material.opacity = fadeProgress;
             const pulseAmount = 0.2;
             const pulse =
-              Math.sin(elapsed * 0.002 + star.userData.pulseTime) * pulseAmount +
+              Math.sin(elapsed * 0.002 + star.userData.pulseTime) *
+                pulseAmount +
               1;
             star.scale.set(
               star.userData.originalScale.x * pulse,
@@ -246,17 +367,20 @@ function ConstellationDetail() {
       yearLabel.position.set(0, (rows * verticalSpacing) / 2 + 4, 0);
       mainGroup.add(yearLabel);
 
-      for (let i = 0; i < totalConstellations; i++) {
-        const constellation = createConstellation(i);
+      // 각 월별 별자리 생성 및 배치
+      constellationData.forEach((monthData, i) => {
+        const constellation = createConstellation(monthData);
         const row = Math.floor(i / cols);
         const col = i % cols;
         constellation.position.x = (col - (cols - 1) / 2) * spacing;
         constellation.position.y = -(row - (rows - 1) / 2) * verticalSpacing;
         mainGroup.add(constellation);
-      }
+      });
     } else {
       // 개별 보기
-      const constellation = createConstellation(currentIndex);
+      const constellation = createConstellation(
+        constellationData[currentIndex]
+      );
       mainGroup.add(constellation);
     }
 
@@ -277,7 +401,8 @@ function ConstellationDetail() {
 
     const handleResize = () => {
       if (!mountRef.current || !renderer || !camera) return;
-      camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
+      camera.aspect =
+        mountRef.current.clientWidth / mountRef.current.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(
         mountRef.current.clientWidth,
@@ -299,16 +424,33 @@ function ConstellationDetail() {
       mountRef.current?.removeChild(labelRenderer.domElement);
       renderer.dispose();
     };
-  }, [isMaximized, currentIndex, year]);
+  }, [isMaximized, currentIndex, loading]);
+
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        로딩 중...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        에러: {error}
+      </div>
+    );
+  }
 
   const handlePrevious = () => {
     setCurrentIndex((prev) =>
-      prev === 0 ? totalConstellations - 1 : prev - 1
+      prev === 0 ? universeData.length - 1 : prev - 1
     );
   };
+
   const handleNext = () => {
     setCurrentIndex((prev) =>
-      prev === totalConstellations - 1 ? 0 : prev + 1
+      prev === universeData.length - 1 ? 0 : prev + 1
     );
   };
 
@@ -329,7 +471,7 @@ function ConstellationDetail() {
         </button>
       </div>
 
-      {!isMaximized && (
+      {!isMaximized && universeData.length > 0 && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
           <button
             onClick={handlePrevious}
