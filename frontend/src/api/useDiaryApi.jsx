@@ -13,7 +13,7 @@ const createEmptyDiary = async () => {
             );
         return response.data;
     } catch (e) {
-        return e.response.status;
+        return e.response;
     }
 }
 
