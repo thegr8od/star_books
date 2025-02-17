@@ -83,6 +83,13 @@ public class DiaryController {
         return ResponseEntity.ok(diaryService.getTop5Hashtags());
     }
 
+    @GetMapping("/my-hashtags")
+    public ResponseEntity<List<HashtagStatsResponse>> getMyHashtagStats(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
+        List<HashtagStatsResponse> stats = diaryService.getUserHashtagStats(userId);
+        return ResponseEntity.ok(stats);
+    }
+
     /**
      * 해시태그 통계 초기화 (관리자용)
      */

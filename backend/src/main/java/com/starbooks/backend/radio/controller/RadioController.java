@@ -35,6 +35,7 @@ public class RadioController {
      */
     @PostMapping(value = "/getRole")
     public ResponseEntity<Map<String, String>> getRole(@RequestBody Map<String, String> params) {
+        System.out.println(params);
         String roomName = params.get("roomName");
         String participantName = params.get("participantName");
 

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -96,6 +97,32 @@ public class DiaryService {
                             .usageCount(stats.getUsageCount())
                             .xValue((int) point.getxvalue())  // 좌표 추가
                             .yValue((int) point.getyvalue())  // 좌표 추가
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<HashtagStatsResponse> getUserHashtagStats(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        // 사용자의 모든 다이어리 조회
+        List<Diary> userDiaries = diaryRepository.findAllByUser(user);
+
+        // 해시태그 통계 계산
+        Map<String, Long> hashtagCountMap = userDiaries.stream()
+                .flatMap(diary -> diary.getHashtags().stream())
+                .collect(Collectors.groupingBy(tag -> tag.getHashtag().name(), Collectors.counting()));
+
+        // 각 해시태그별 좌표 추가
+        return hashtagCountMap.entrySet().stream()
+                .map(entry -> {
+                    EmotionPoint point = emotionService.getTagCoordinate(entry.getKey());
+                    return HashtagStatsResponse.builder()
+                            .hashtagType(entry.getKey())
+                            .usageCount(entry.getValue())
+                            .xValue((int) point.getxvalue())
+                            .yValue((int) point.getyvalue())
                             .build();
                 })
                 .collect(Collectors.toList());
