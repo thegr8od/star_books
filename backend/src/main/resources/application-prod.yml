@@ -8,6 +8,15 @@ livekit:
     secret: ${LIVEKIT_API_SECRET}
 
 spring:
+
+  jackson:
+    deserialization:
+      accept-single-value-as-array: true
+      accept-empty-string-as-null-object: true
+    serialization:
+      write-dates-as-timestamps: true
+    default-property-inclusion: non_null
+
   config:
     activate:
       on-profile: prod
