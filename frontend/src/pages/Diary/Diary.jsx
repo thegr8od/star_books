@@ -17,6 +17,11 @@ function Diary() {
   const isStarsMatch = useMatch({ path: "/diary/stars", end: true });
   const isCalendarMatch = useMatch({ path: "/diary/calendar", end: true });
   const currentTab = isStarsMatch ? "stars" : isCalendarMatch ? "calendar" : "";
+  const [modalData, setModalData] = useState(null);
+  const handleSetShowModal = (show, data) => {
+    setShowModal(show);
+    setModalData(data);
+  };
 
   return (
     <Layout>
@@ -58,7 +63,7 @@ function Diary() {
                 // try {
                 const result = await diaryApi.createEmptyDiary(); // 수정된 부분
                 console.log(result);
-                setShowModal(true, result);
+                handleSetShowModal(true, result);
 
                 //   if (result && result !== 401 && result !== 400) {
                 //     console.log("성공");
@@ -84,7 +89,11 @@ function Diary() {
       </div>
 
       {/* 모달 */}
-      <MoodSurvey isOpen={showModal} onClose={() => setShowModal(false)} />
+      <MoodSurvey
+        isOpen={showModal}
+        onClose={() => handleSetShowModal(false, null)}
+        data={modalData}
+      />
     </Layout>
   );
 }
