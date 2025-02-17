@@ -1,11 +1,14 @@
 import { useState } from "react";
-import axios from "axios";
+import { useDispatch } from "react-redux";
 import Layout from "../../components/Layout";
 import { useNavigate } from "react-router-dom";
 import useMemberApi from "../../api/useMemberApi";
+import { setUser } from "../../store/userSlice";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   // ====================================== 상태 관리 ======================================
   // 입력 필드 상태
   const [formData, setFormData] = useState({
@@ -246,6 +249,13 @@ const Signup = () => {
     if (response.status === "C000") {
       console.log("회원가입 성공");
       alert(response.message);
+      // 회원가입 후 로그인
+      const response1 = await useMemberApi.loginMember({
+        email: formData.email,
+        password: formData.password,
+      });
+      console.log(response1)
+      dispatch(setUser({ ...response1.user, isLogin: true }));
       navigate("/");
     } else {
       console.log("회원가입 실패");

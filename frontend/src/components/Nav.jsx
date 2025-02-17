@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { HomeOutlined, PersonOutlined, EditCalendarOutlined, PublicOutlined, AutoAwesomeOutlined, LeaderboardOutlined, PodcastsOutlined, ForumOutlined, LogoutOutlined, Menu as MenuIcon, ArrowBackIos, Close, AccountCircle } from "@mui/icons-material";
 import useMemberApi from "../api/useMemberApi";
+import { selectUserNickname, selectUserProfileImage, clearUser } from "../store/userSlice";
 
 // 네비게이션 아이템 상수
 const NAV_ITEMS = [
@@ -36,30 +37,22 @@ const Header = ({ title = "", setShowMenu }) => {
   );
 };
 
-// 프로필 이미지 컴포넌트
-const ProfileImage = ({ profileImage }) => {
-  // 프로필 이미지가 있을 경우
-  if (profileImage) {
-    return <img src={profileImage} alt="Profile" className="w-12 h-12 rounded-full object-cover" />;
-  }
-
-  // 프로필 이미지가 없을 경우 기본 아이콘
-  return (
-    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#8993c7] text-white">
-      <AccountCircle fontSize="large" />
-    </div>
-  );
-};
-
 // 프로필 컴포넌트
-const ProfileSection = ({ profileImage, nickname }) => {
-  // const { profileImage, nickname } = useSelector((state) => state.user);
+const ProfileSection = () => {
+  const profileImage = useSelector(selectUserProfileImage);
+  const nickname = useSelector(selectUserNickname);
 
   return (
     <div className="pt-8 pb-6 px-6 bg-[#f5f5f5]">
       <div className="flex items-center gap-4">
         {/* 프로필이미지 */}
-        <ProfileImage profileImage={profileImage} />
+        {profileImage ? (
+          <img src={profileImage} alt="Profile" className="w-12 h-12 rounded-full object-cover" />
+        ) : (
+          <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#8993c7] text-white">
+            <AccountCircle fontSize="large" />
+          </div>
+        )}
         {/* 닉네임 */}
         <p className="font-medium text-black">{nickname}</p>
       </div>
@@ -80,17 +73,14 @@ const MenuItem = ({ item, onClick }) => {
 
 const LogoutButton = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLogout = async () => {
     const response = await useMemberApi.logoutMember();
-    console.log(response);
-    if (response.status === "J001") {
-      console.log("로그아웃 성공");
-      navigate("/");
-    } else {
-      console.log("로그아웃 실패");
-      alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
-    }
+    console.log(response)
+    console.log("로그아웃 성공");
+    dispatch(clearUser());
+    navigate("/");
   };
 
   return (
@@ -104,7 +94,7 @@ const LogoutButton = () => {
 };
 
 // [메인] 네비게이션 컴포넌트
-const Nav = ({ profileImage = null }) => {
+const Nav = () => {
   const title = "";
   const [showMenu, setShowMenu] = useState(false);
 
@@ -123,7 +113,7 @@ const Nav = ({ profileImage = null }) => {
             </button>
 
             {/* 프로필 */}
-            <ProfileSection profileImage={profileImage} nickname="Sophie Rose" />
+            <ProfileSection />
 
             {/* 메뉴 아이템 */}
             <ul className="p-2 flex-1">
