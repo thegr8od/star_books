@@ -2,18 +2,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import HomeBackground from "./HomeBackground";
 import LoginHome from "./LoginHome";
-import useMemberApi from "../../api/useMemberApi";
-//redux
-import { useDispatch } from "react-redux";
-import { setUser } from "../../store/userSlice";
 
 const Home = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchParams] = useSearchParams();
   const location = useLocation(); // 현재 페이지 경로 가져오기
-  const dispatch = useDispatch();
-
-  
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -23,24 +16,6 @@ const Home = () => {
       // 토큰을 로컬 스토리지에 저장
       localStorage.setItem("accessToken", token);
       setIsLoggedIn(true); // 로그인 상태 업데이트
-
-      const getDetailData = async (jwt) => {
-        try{
-          const response = await useMemberApi.getUserInfo(jwt)
-          sessionStorage.setItem(response);
-          return response.data;
-        } catch(e) {
-          console.log(e)
-        }
-      }
-
-
-      const data = getDetailData(token);
-      if(data.gender === 'OTHER'){
-
-      } else {
-        dispatch(setUser({ ...data, isLogin: true }));
-      }
 
       window.location.replace("/");
     } else if (storedToken) {
