@@ -47,7 +47,7 @@ function ConstellationCreateAi({ constellationData }) {
     formData.append("file", fileInput.files[0]);
 
     // 🔹 백엔드의 실제 서버 주소로 변경
-    const BACKEND_URL = "http://localhost:9090/api/constellation/generate-lines";
+    const BACKEND_URL = "https://i12d206.p.ssafy.io/api/constellation/generate-lines";
 
     console.log("📤 [프론트엔드] 백엔드로 이미지 업로드 요청 전송...", BACKEND_URL);
 
@@ -77,7 +77,8 @@ function ConstellationCreateAi({ constellationData }) {
 };
 
 
-  // 별자리 저장 핸들러
+  // 별자리 저장 핸들러 
+  //
   const handleSave = async (visualizationData) => {
     try {
       const dataToSave = {

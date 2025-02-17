@@ -6,6 +6,7 @@ function ConstellationCreateAiEvent({ data }) {
 
   useEffect(() => {
     if (!canvasRef.current || !lines || !color) return;
+    //
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -16,6 +17,7 @@ function ConstellationCreateAiEvent({ data }) {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = "#000033";
     ctx.fillRect(0, 0, width, height);
+    
 
     // 🛠 AI (0,0) → 왼쪽 상단, (100,100) → 오른쪽 하단 좌표 변환
     const scaleX = (x) => (x / 100) * width;
