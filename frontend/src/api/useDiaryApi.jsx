@@ -48,6 +48,34 @@ const addDiaryContent = async (diaryId, data) => {
   }
 };
 
+// 이미지 업로드
+//post
+const uploadImage = async (file) => {
+  const jwt = localStorage.getItem("accessToken");
+
+  // FormData 객체 생성
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .post("/diary/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    return response.data;
+  } catch (e) {
+    if (e.response.status === 400) {
+      throw new Error(e.response.data.error);
+    } else if (e.response.status === 500) {
+      throw new Error("서버 오류가 발생했습니다.");
+    }
+    return e.response.status;
+  }
+};
+
 //다이어리 수정
 //put
 const updateContent = async (diaryId, data) => {
@@ -130,6 +158,7 @@ export default {
   createEmptyDiary,
   addHashtagsAndAnalyzeEmotion,
   addDiaryContent,
+  uploadImage,
   updateContent,
   getDiary,
   deleteDiary,
