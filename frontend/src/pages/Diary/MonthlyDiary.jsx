@@ -18,7 +18,7 @@ const MonthlyDiary = () => {
   // axios (mount 될 때, currentDate가 변경될 때마다 실행)
   useEffect(() => {
     (async () => {
-      const requestData = { targetYear: currentDate.getFullYear(), targeMonth: currentDate.getMonth() + 1 };
+      const requestData = { targetYear: currentDate.getFullYear(), targetMonth: currentDate.getMonth() + 1 };
       const response = await useDiaryApi.getDiariesByMonth(requestData);
       console.log(response);
       if (response.status === 200) {
