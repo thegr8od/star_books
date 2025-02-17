@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.livekit.server.AccessToken;
 import io.livekit.server.RoomJoin;
 import io.livekit.server.RoomName;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -24,11 +25,9 @@ public class RadioController {
     @Value("${livekit.api.secret}")
     private String LIVEKIT_API_SECRET;
 
-    private final RedisTemplate<String, String> redisTemplate;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
-    public RadioController(RedisTemplate<String, String> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
     /**
      * 기존 역할 확인 API
      * - 프론트에서 먼저 호출하여 기존 호스트 여부 확인
