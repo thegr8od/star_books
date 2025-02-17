@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { HomeOutlined, PersonOutlined, EditCalendarOutlined, PublicOutlined, AutoAwesomeOutlined, LeaderboardOutlined, PodcastsOutlined, ForumOutlined, LogoutOutlined, Menu as MenuIcon, ArrowBackIos, Close, AccountCircle } from "@mui/icons-material";
 import useMemberApi from "../api/useMemberApi";
-import { selectUserNickname, selectUserProfileImage } from "../store/userSlice";
+import { selectUserNickname, selectUserProfileImage, clearUser } from "../store/userSlice";
 
 // 네비게이션 아이템 상수
 const NAV_ITEMS = [
@@ -73,17 +73,14 @@ const MenuItem = ({ item, onClick }) => {
 
 const LogoutButton = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLogout = async () => {
     const response = await useMemberApi.logoutMember();
-    console.log(response);
-    if (response.status === "J001") {
-      console.log("로그아웃 성공");
-      navigate("/");
-    } else {
-      console.log("로그아웃 실패");
-      alert("로그아웃에 실패했습니다. 다시 시도해주세요.");
-    }
+    console.log(response)
+    console.log("로그아웃 성공");
+    dispatch(clearUser());
+    navigate("/");
   };
 
   return (
@@ -97,7 +94,7 @@ const LogoutButton = () => {
 };
 
 // [메인] 네비게이션 컴포넌트
-const Nav = ({ profileImage = null }) => {
+const Nav = () => {
   const title = "";
   const [showMenu, setShowMenu] = useState(false);
 
