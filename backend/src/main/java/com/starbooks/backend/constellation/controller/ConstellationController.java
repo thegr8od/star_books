@@ -19,7 +19,7 @@ public class ConstellationController {
 
     private final ConstellationService constellationService;
 
-    /**
+    /***
      * 📸 사용자 이미지 업로드 및 분석 요청 (MultipartFile 지원)
      */
     @PostMapping("/generate-lines")
