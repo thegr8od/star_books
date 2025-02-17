@@ -1,12 +1,20 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useOutletContext, useSearchParams } from "react-router-dom";
+import {
+  useNavigate,
+  useOutletContext,
+  useSearchParams,
+} from "react-router-dom";
 import { DIARY_ENTRIES } from "../../data/diaryData";
 
 const CalendarTile = ({ children, marker }) => {
   return (
     <div className="rounded-lg text-xs md:text-sm h-16 text-white relative">
       {children}
-      {marker && <div className={`w-2 h-2 rounded-full absolute bottom-2 left-1/2 transform -translate-x-1/2 ${marker.color}`} />}
+      {marker && (
+        <div
+          className={`w-2 h-2 rounded-full absolute bottom-2 left-1/2 transform -translate-x-1/2 ${marker.color}`}
+        />
+      )}
     </div>
   );
 };
@@ -33,7 +41,10 @@ const DiaryCalendar = () => {
       const currentDate = new Date();
       const newEntry = {
         id: Date.now(),
-        date: `${currentDate.getFullYear()}-${String(month).padStart(2, "0")}-${String(date).padStart(2, "0")}`,
+        date: `${currentDate.getFullYear()}-${String(month).padStart(
+          2,
+          "0"
+        )}-${String(date).padStart(2, "0")}`,
         color: color,
       };
 
@@ -48,21 +59,37 @@ const DiaryCalendar = () => {
     }
   }, [searchParams]);
 
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  const daysInMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1,
+    0
+  ).getDate();
 
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1
+  ).getDay();
 
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
 
   const isToday = (day) => {
-    return today.getDate() === day && today.getMonth() === currentDate.getMonth() && today.getFullYear() === currentDate.getFullYear();
+    return (
+      today.getDate() === day &&
+      today.getMonth() === currentDate.getMonth() &&
+      today.getFullYear() === currentDate.getFullYear()
+    );
   };
 
   const getMarkerForDay = (day) => {
     const entry = diaryEntries.find((entry) => {
       const entryDate = new Date(entry.date);
-      return entryDate.getDate() === day && entryDate.getMonth() === currentDate.getMonth() && entryDate.getFullYear() === currentDate.getFullYear();
+      return (
+        entryDate.getDate() === day &&
+        entryDate.getMonth() === currentDate.getMonth() &&
+        entryDate.getFullYear() === currentDate.getFullYear()
+      );
     });
 
     return entry ? { color: entry.color } : null;
@@ -75,7 +102,11 @@ const DiaryCalendar = () => {
   };
 
   const handleDateClick = (day) => {
-    const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    const selectedDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
     setSelectedDate(selectedDate);
     const monthParam = formatMonthParam(selectedDate);
     navigate(`/diary/monthly/${monthParam}`, {
@@ -90,7 +121,10 @@ const DiaryCalendar = () => {
       <div className="w-full max-w-xs md:max-w-lg lg:max-w-xl">
         <div className="grid grid-cols-7 gap-1 md:gap-2">
           {weekdays.map((day) => (
-            <div key={day} className="text-center p-1 text-xs md:text-sm text-white font-medium mb-2">
+            <div
+              key={day}
+              className="text-center p-1 text-xs md:text-sm text-white font-medium mb-2"
+            >
               {day}
             </div>
           ))}
@@ -113,8 +147,18 @@ const DiaryCalendar = () => {
                   items-start
                   p-1
                   rounded-lg
-                  ${selectedDate.getDate() === day && selectedDate.getMonth() === currentDate.getMonth() && selectedDate.getFullYear() === currentDate.getFullYear() ? "bg-blue-100 bg-opacity-20" : ""} 
-                  ${isToday(day) ? "bg-blue-100 bg-opacity-20 border border-white/55 hover:bg-blue-50/50" : ""}
+                  ${
+                    selectedDate.getDate() === day &&
+                    selectedDate.getMonth() === currentDate.getMonth() &&
+                    selectedDate.getFullYear() === currentDate.getFullYear()
+                      ? "bg-blue-100 bg-opacity-20"
+                      : ""
+                  } 
+                  ${
+                    isToday(day)
+                      ? "bg-blue-100 bg-opacity-20 border border-white/55 hover:bg-blue-50/50"
+                      : ""
+                  }
                 `}
               >
                 {day}
