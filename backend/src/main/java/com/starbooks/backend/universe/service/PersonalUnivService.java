@@ -1,5 +1,6 @@
 package com.starbooks.backend.universe.service;
 
+import com.starbooks.backend.universe.dto.request.RequestPersonalUnivDTO;
 import com.starbooks.backend.universe.dto.response.ResponsePersonalUnivDTO;
 import com.starbooks.backend.universe.model.PersonalUniv;
 import com.starbooks.backend.universe.repository.PersonalUnivRepository;
@@ -9,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,4 +54,38 @@ public class PersonalUnivService {
                 .map(ResponsePersonalUnivDTO::new)
                 .orElse(null);
     }
+
+    @Transactional
+    public List<ResponsePersonalUnivDTO> saveOrUpdatePersonalUnivs(Long userId, List<RequestPersonalUnivDTO> requestList) {
+        List<ResponsePersonalUnivDTO> responseList = new ArrayList<>();
+
+        for (RequestPersonalUnivDTO request : requestList) {
+            Optional<PersonalUniv> existingUniv = personalUnivRepository.findByUserIdAndDiaryEmotionId(userId, request.getDiaryEmotionId());
+
+            PersonalUniv personalUniv;
+            if (existingUniv.isPresent()) {
+                // ✅ 기존 데이터 업데이트
+                personalUniv = existingUniv.get();
+                personalUniv.setXCoord(request.getXCoord());
+                personalUniv.setYCoord(request.getYCoord());
+                personalUniv.setUpdatedAt(LocalDateTime.now());
+            } else {
+                // ✅ 새로운 데이터 생성
+                personalUniv = new PersonalUniv();
+                personalUniv.setDiaryEmotion(existingUniv.map(PersonalUniv::getDiaryEmotion)
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 diaryEmotionId")));
+
+                personalUniv.setXCoord(request.getXCoord());
+                personalUniv.setYCoord(request.getYCoord());
+                personalUniv.setUpdatedAt(LocalDateTime.now());
+            }
+
+            personalUnivRepository.save(personalUniv);
+            responseList.add(new ResponsePersonalUnivDTO(personalUniv));  // 변환 후 리스트에 추가
+        }
+
+        return responseList;
+    }
+
+
 }
