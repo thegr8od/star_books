@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import {
-  useNavigate,
-  useOutletContext,
-  useSearchParams,
-} from "react-router-dom";
-import { DIARY_ENTRIES } from "../../data/diaryData";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import diaryApi from "../../api/useDiaryApi";
+import GetColor from "../../components/GetColor";
 
+// 캘린더의 각 날짜 타일을 표시하는 컴포넌트
+// marker prop이 있으면 해당 날짜에 감정 색상 표시
 const CalendarTile = ({ children, marker }) => {
   return (
     <div className="rounded-lg text-xs md:text-sm h-16 text-white relative">
@@ -18,62 +17,68 @@ const CalendarTile = ({ children, marker }) => {
     </div>
   );
 };
-//상위폴더에 헤더를 넣었기 때문에, props를 주고 받는 로직을 추가해야 할 듯!
+
+// 메인 캘린더 컴포넌트
 const DiaryCalendar = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { currentDate } = useOutletContext();
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [diaryEntries, setDiaryEntries] = useState(() => {
-    // localStorage에서 데이터 불러오기
-    const savedEntries = localStorage.getItem("diaryEntries");
-    return savedEntries ? JSON.parse(savedEntries) : DIARY_ENTRIES;
-  });
-  const today = new Date();
+  const { currentDate } = useOutletContext(); // 상위 컴포넌트에서 현재 날짜 받아오기
+  const [selectedDate, setSelectedDate] = useState(new Date()); // 선택된 날짜 상태
+  const [diaryEntries, setDiaryEntries] = useState([]); // 다이어리 엔트리 데이터 상태
+  const today = new Date(); // 오늘 날짜
 
-  // URL 파라미터 처리
+  // 현재 월의 다이어리 데이터를 서버에서 가져오는 useEffect
   useEffect(() => {
-    const date = searchParams.get("date");
-    const month = searchParams.get("month");
-    const color = searchParams.get("color");
+    const fetchMonthlyDiaries = async () => {
+      try {
+        const data = {
+          targetYear: currentDate.getFullYear(),
+          targetMonth: currentDate.getMonth() + 1,
+        };
 
-    if (date && month && color) {
-      const currentDate = new Date();
-      const newEntry = {
-        id: Date.now(),
-        date: `${currentDate.getFullYear()}-${String(month).padStart(
-          2,
-          "0"
-        )}-${String(date).padStart(2, "0")}`,
-        color: color,
-      };
+        const response = await diaryApi.getDiariesByMonth(data);
 
-      setDiaryEntries((prev) => {
-        const updatedEntries = [...prev, newEntry];
-        localStorage.setItem("diaryEntries", JSON.stringify(updatedEntries));
-        return updatedEntries;
-      });
+        if (response && response.data) {
+          const formattedEntries = response.data.map((entry) => {
+            const emotion = entry.emotions[0];
+            return {
+              id: entry.diaryId,
+              date: {
+                year: entry.createdAt[0],
+                month: entry.createdAt[1] - 1, // JavaScript의 월은 0부터 시작하므로 1을 빼줍니다
+                day: entry.createdAt[2],
+              },
+              color: GetColor(emotion.xValue, emotion.yValue),
+            };
+          });
+          setDiaryEntries(formattedEntries);
+        }
+      } catch (error) {
+        console.error("다이어리 데이터 조회 실패:", error);
+      }
+    };
 
-      // URL 파라미터 제거
-      window.history.replaceState({}, "", window.location.pathname);
-    }
-  }, [searchParams]);
+    fetchMonthlyDiaries();
+  }, [currentDate]);
 
+  // 현재 월의 총 일수 계산
   const daysInMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth() + 1,
     0
   ).getDate();
 
+  // 현재 월의 1일이 무슨 요일인지 계산 (0: 일요일, 6: 토요일)
   const firstDayOfMonth = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth(),
     1
   ).getDay();
 
+  // 달력에 표시할 날짜 배열 생성
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
 
+  // 오늘 날짜인지 확인하는 함수
   const isToday = (day) => {
     return (
       today.getDate() === day &&
@@ -82,44 +87,60 @@ const DiaryCalendar = () => {
     );
   };
 
+  // 특정 날짜의 다이어리 엔트리와 감정 색상을 찾는 함수
   const getMarkerForDay = (day) => {
     const entry = diaryEntries.find((entry) => {
-      const entryDate = new Date(entry.date);
       return (
-        entryDate.getDate() === day &&
-        entryDate.getMonth() === currentDate.getMonth() &&
-        entryDate.getFullYear() === currentDate.getFullYear()
+        entry.date.day === day &&
+        entry.date.month === currentDate.getMonth() &&
+        entry.date.year === currentDate.getFullYear()
       );
     });
 
     return entry ? { color: entry.color } : null;
   };
 
+  // URL에 사용할 년/월 형식으로 변환하는 함수
   const formatMonthParam = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     return `${year}/${month}`;
   };
 
+  // 날짜 클릭 시 해당 날짜의 상세 페이지로 이동하는 함수
   const handleDateClick = (day) => {
+    // 해당 날짜에 일기가 있는지 확인
+    const entry = diaryEntries.find(
+      (entry) =>
+        entry.date.day === day &&
+        entry.date.month === currentDate.getMonth() &&
+        entry.date.year === currentDate.getFullYear()
+    );
+
     const selectedDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       day
     );
     setSelectedDate(selectedDate);
-    const monthParam = formatMonthParam(selectedDate);
-    navigate(`/diary/monthly/${monthParam}`, {
-      state: {
-        selectedDate: selectedDate.toLocaleDateString("fr-CA"),
-      },
-    });
+
+    // 일기가 있는 경우에만 monthly 페이지로 이동
+    if (entry) {
+      const monthParam = formatMonthParam(selectedDate);
+      navigate(`/diary/monthly/${monthParam}`, {
+        state: {
+          selectedDate: selectedDate.toLocaleDateString("fr-CA"),
+        },
+      });
+    }
   };
 
+  // 캘린더 UI 렌더링
   return (
     <div className="flex flex-col items-center w-full h-full">
       <div className="w-full max-w-xs md:max-w-lg lg:max-w-xl">
         <div className="grid grid-cols-7 gap-1 md:gap-2">
+          {/* 요일 헤더 표시 */}
           {weekdays.map((day) => (
             <div
               key={day}
@@ -129,12 +150,14 @@ const DiaryCalendar = () => {
             </div>
           ))}
 
+          {/* 첫 주의 빈 칸 처리 */}
           {Array(firstDayOfMonth)
             .fill(null)
             .map((_, index) => (
               <div key={`empty-${index}`} />
             ))}
 
+          {/* 날짜 타일 표시 */}
           {days.map((day) => (
             <CalendarTile key={day} marker={getMarkerForDay(day)}>
               <button
@@ -147,6 +170,12 @@ const DiaryCalendar = () => {
                   items-start
                   p-1
                   rounded-lg
+                  cursor-pointer
+                  ${
+                    getMarkerForDay(day)
+                      ? "hover:bg-blue-50/20"
+                      : "hover:bg-blue-50/10"
+                  } 
                   ${
                     selectedDate.getDate() === day &&
                     selectedDate.getMonth() === currentDate.getMonth() &&
@@ -156,7 +185,7 @@ const DiaryCalendar = () => {
                   } 
                   ${
                     isToday(day)
-                      ? "bg-blue-100 bg-opacity-20 border border-white/55 hover:bg-blue-50/50"
+                      ? "border border-white/55 hover:bg-blue-50/50"
                       : ""
                   }
                 `}
