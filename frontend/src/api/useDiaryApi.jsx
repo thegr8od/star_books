@@ -3,7 +3,7 @@ import useAxiosInstance from "./useAxiosInstance";
 //다이러리 생성
 //post
 const createEmptyDiary = async () => {
-    const jwt = localStorage.getItem("accesToken");
+    const jwt = localStorage.getItem("accessToken");
 
     try{
         const response = await useAxiosInstance
@@ -23,7 +23,7 @@ const createEmptyDiary = async () => {
  * post
  */
 const addHashtagsAndAnalyzeEmotion = async (diaryId, data) => {
-    const jwt = localStorage.getItem("accesToken");
+    const jwt = localStorage.getItem("accessToken");
 
     try{
         const response = await useAxiosInstance
@@ -41,7 +41,7 @@ const addHashtagsAndAnalyzeEmotion = async (diaryId, data) => {
 //다이어리 내용 입력
 //post
 const addDiaryContent = async (diaryId, data) => {
-    const jwt = localStorage.getItem("accesToken");
+    const jwt = localStorage.getItem("accessToken");
 
     try{
         const response = await useAxiosInstance
@@ -59,7 +59,7 @@ const addDiaryContent = async (diaryId, data) => {
 //다이어리 수정
 //put
 const updateContent = async (diaryId, data) => {
-    const jwt = localStorage.getItem("accesToken");
+    const jwt = localStorage.getItem("accessToken");
 
     try{
         const response = await useAxiosInstance
@@ -77,7 +77,7 @@ const updateContent = async (diaryId, data) => {
 //다이어리 조회
 //get
 const getDiary = async (diaryId) => {
-    const jwt = localStorage.getItem("accesToken");
+    const jwt = localStorage.getItem("accessToken");
 
     try{
         const response = await useAxiosInstance
@@ -94,7 +94,7 @@ const getDiary = async (diaryId) => {
 //다이어리 삭제
 //delete
 const deleteDiary = async (diaryId) => {
-    const jwt = localStorage.getItem("accesToken");
+    const jwt = localStorage.getItem("accessToken");
 
     try {
         const response = await useAxiosInstance
@@ -112,7 +112,7 @@ const deleteDiary = async (diaryId) => {
 //연도별 다이어리 조회
 //get
 const getDiariesDyYear = async (data) => {
-    const jwt = localStorage.getItem("accesToken");
+    const jwt = localStorage.getItem("accessToken");
 
     try {
         const response = await useAxiosInstance
@@ -130,7 +130,7 @@ const getDiariesDyYear = async (data) => {
 //해당연도의 해당 달의 diary 데이터 받기
 //get
 const getDiariesByMonth = async (data) => {
-    const jwt = localStorage.getItem("accesToken");
+    const jwt = localStorage.getItem("accessToken");
 
     try {
         const response = await useAxiosInstance
