@@ -1,136 +1,126 @@
-import { useEffect, useRef, useState } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
-import Nav from "../.././components/Nav";
-import { DIARY_ENTRIES } from '../../data/diaryData';
+import { useState, useRef, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Edit, Delete } from "@mui/icons-material";
+import Layout from "../../components/Layout";
+import DiaryDate from "./DiaryDate";
+import useDiaryApi from "../../api/useDiaryApi";
+import GetColor from "../../components/GetColor";
 
 const MonthlyDiary = () => {
-  const { month } = useParams();
+  const navigate = useNavigate();
   const location = useLocation();
+  const diaryRefs = useRef({});
+
+  const [diaries, setDiaries] = useState([]);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const selectedDate = location.state?.selectedDate;
-  const selectedDay = location.state?.day;
-  const newEntry = location.state?.newEntry;
-  
-  const containerRef = useRef(null);
-  const targetDateRef = useRef(null);
-  const [diaryEntries, setDiaryEntries] = useState(() => {
-    // localStorage에서 데이터 불러오기
-    const savedEntries = localStorage.getItem('diaryEntries');
-    // 저장된 데이터가 없으면 더미 데이터 사용
-    return savedEntries ? JSON.parse(savedEntries) : DIARY_ENTRIES;
-  });
-  const [hasScrolled, setHasScrolled] = useState(false);
 
-  // 해당 월의 일기만 필터링
-  const filteredEntries = diaryEntries.filter(entry => {
-    const entryDate = new Date(entry.date);
-    const entryYearMonth = `${entryDate.getFullYear()}${String(entryDate.getMonth() + 1).padStart(2, '0')}`;
-    return entryYearMonth === month;
-  });
-
-  // 새로운 엔트리 추가
+  // axios (mount 될 때, currentDate가 변경될 때마다 실행)
   useEffect(() => {
-    if (newEntry) {
-      setDiaryEntries(prev => {
-        const filteredEntries = prev.filter(entry => entry.id !== newEntry.id);
-        const updatedEntries = [...filteredEntries, newEntry].sort((a, b) => 
-          new Date(b.date) - new Date(a.date)
-        );
-        localStorage.setItem('diaryEntries', JSON.stringify(updatedEntries));
-        return updatedEntries;
+    (async () => {
+      const requestData = { targetYear: currentDate.getFullYear(), targetMonth: currentDate.getMonth() + 1 };
+      const response = await useDiaryApi.getDiariesByMonth(requestData);
+      console.log(response);
+      if (response.status === 200) {
+        console.log("일기 조회 성공");
+        setDiaries(response.data);
+      } else {
+        console.log("일기 조회 실패");
+      }
+    })();
+  }, [currentDate]);
+
+  // 선택된 날짜가 있을 경우 스크롤 (mount 될 때)
+  useEffect(() => {
+    if (selectedDate && diaryRefs.current[selectedDate]) {
+      diaryRefs.current[selectedDate].scrollIntoView({
+        behavior: "smooth",
+        block: "start",
       });
     }
-  }, [newEntry]);
+  }, []);
 
-  // 선택된 날짜로 스크롤하는 함수
-  const scrollToSelectedDate = () => {
-    if (targetDateRef.current && !hasScrolled) {
-      setTimeout(() => {
-        targetDateRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-        setHasScrolled(true);
-      }, 100);
+  // 수정 버튼 클릭 시
+  const handleEdit = (diary) => {
+    navigate(`/diary/edit/${diary.diaryId}`, {
+      state: {
+        diary,
+      },
+    });
+  };
+
+  // 삭제 버튼 클릭 시
+  const handleDelete = async (diary) => {
+    console.log(diary.diaryId);
+    if (window.confirm("일기를 삭제하시겠습니까?")) {
+      const response = await useDiaryApi.deleteDiary(diary.diaryId);
+      console.log(response);
+      if (response.status === 204) {
+        console.log("일기 삭제 성공");
+        setDiaries(diaries.filter((d) => d.diaryId !== diary.diaryId));
+      } else {
+        console.log("일기 삭제 실패");
+        alert("일기 삭제에 실패하였습니다.");
+      }
     }
   };
 
-  useEffect(() => {
-    scrollToSelectedDate();
-  }, [selectedDate, month, diaryEntries]);
-
-  const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return `${date.getMonth() + 1}월 ${date.getDate()}일`;
-  };
-
-  // month 파라미터에서 년월 추출
-  const year = month.substring(0, 4);
-  const monthNum = month.substring(4, 6);
-
   return (
-    <>
-      <Nav />
-      <div 
-        ref={containerRef} 
-        className="h-screen overflow-y-auto bg-gray-100 px-4 py-6"
-        style={{ scrollBehavior: 'smooth' }}
-      >
-        <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          {year}년 {parseInt(monthNum)}월의 일기
-        </h1>
-
-        <div className="max-w-2xl mx-auto space-y-4">
-          {filteredEntries.length === 0 ? (
-            <div className="text-center py-10 text-gray-500">
-              이번 달에 작성된 일기가 없습니다.
-            </div>
-          ) : (
-            filteredEntries.map((entry) => {
-              const entryDate = new Date(entry.date);
-              const day = entryDate.getDate();
-              const isSelected = day === selectedDay && 
-                               entryDate.getMonth() === new Date(selectedDate).getMonth() &&
-                               entryDate.getFullYear() === new Date(selectedDate).getFullYear();
-              
+    <Layout>
+      <div className="flex flex-col h-[calc(100vh-4rem)]">
+        <DiaryDate currentDate={currentDate} setCurrentDate={setCurrentDate} />
+        <div className="flex-1 flex-col space-y-4 overflow-y-auto bg-neutral-100 rounded-3xl p-4" style={{ scrollbarWidth: "none" }}>
+          {diaries?.length ? (
+            diaries.map((diary, index) => {
+              const diaryDate = new Date(diary.createdAt);
               return (
-                <div
-                  key={entry.id}
-                  ref={isSelected ? targetDateRef : null}
-                  className={`
-                    bg-white rounded-lg p-6 shadow-md
-                    ${isSelected ? 'ring-2 ring-blue-500' : ''}
-                  `}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className={`w-4 h-4 rounded-full ${entry.color}`} 
-                        title="Selected Color"
-                      />
-                      <h2 className="text-xl font-semibold text-gray-800">
-                        {entry.title}
-                      </h2>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-medium text-gray-900">
-                        {formatDate(entry.date)}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {entry.time}
+                <div key={diary.diaryId} ref={(el) => (diaryRefs.current[diary.createdAt.split("T")[0]] = el)} className={`space-y-3 px-5 py-3 bg-white rounded-xl shadow-sm ${selectedDate === diary.createdAt.split("T")[0] ? "animate-[pulse_1s_ease-in-out_1]" : ""}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex space-x-3">
+                      <div className="w-5 h-5 rounded-full" style={{ backgroundColor: GetColor(diary.emotions[0].xValue, diary.emotions[0].yValue) }} />
+                      <div>
+                        <p className="text-gray-600">{diaryDate.toLocaleDateString("ko-KR", { month: "long", day: "numeric" })}</p>
+                        <p className="text-xs text-gray-400">{diaryDate.toLocaleDateString("ko-KR", { weekday: "long" })}</p>
                       </div>
                     </div>
+                    <div className="flex items-center space-x-4">
+                      <button onClick={() => handleEdit(diary)} className="text-gray-400 hover:text-gray-700">
+                        <Edit fontSize="inherit" />
+                      </button>
+                      <button onClick={() => handleDelete(diary)} className="text-gray-400 hover:text-gray-700">
+                        <Delete fontSize="inherit" />
+                      </button>
+                    </div>
                   </div>
-                  
-                  <div className="text-gray-600 whitespace-pre-line">
-                    {entry.content}
+
+                  <p className="text-sm">{diary.content}</p>
+
+                  {diary.imageUrl && (
+                    <div>
+                      <img src={diary.imageUrl} alt="Diary img" className="object-cover rounded-lg" />
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    {diary.hashtags.map((tag, index) => (
+                      <span key={index} className="text-xs text-gray-400">
+                        #{tag}
+                      </span>
+                    ))}
                   </div>
+
+                  <hr className="border-gray-200" />
                 </div>
               );
             })
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              <p>해당 월에 작성한 일기가 없습니다</p>
+            </div>
           )}
         </div>
       </div>
-    </>
+    </Layout>
   );
 };
 
