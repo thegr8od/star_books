@@ -89,10 +89,15 @@ public class DiaryService {
     public List<HashtagStatsResponse> getTop5Hashtags() {
         return hashtagStatsRepository.findTop5ByOrderByUsageCountDesc()
                 .stream()
-                .map(stats -> HashtagStatsResponse.builder()
-                        .hashtagType(stats.getHashtagType().name())
-                        .usageCount(stats.getUsageCount())
-                        .build())
+                .map(stats -> {
+                    EmotionPoint point = emotionService.getTagCoordinate(stats.getHashtagType().name());
+                    return HashtagStatsResponse.builder()
+                            .hashtagType(stats.getHashtagType().name())
+                            .usageCount(stats.getUsageCount())
+                            .xValue((int) point.getxvalue())  // 좌표 추가
+                            .yValue((int) point.getyvalue())  // 좌표 추가
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
