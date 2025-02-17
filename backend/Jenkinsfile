@@ -32,7 +32,11 @@ pipeline {
                         string(credentialsId: 'DOCKER_PORT', variable: 'DOCKER_PORT'),
                         string(credentialsId: 'REDIS_HOST', variable: 'REDIS_HOST'),
                         string(credentialsId: 'OPENAI_REMOVED', variable: 'OPENAI_REMOVED'),
-                        string(credentialsId: 'REDIS_PASSWORD', variable: 'REDIS_PASSWORD')
+                        string(credentialsId: 'REDIS_PASSWORD', variable: 'REDIS_PASSWORD'),
+                        string(credentialsId: 'LIVEKIT_REMOVED', variable: 'LIVEKIT_REMOVED'),
+                        string(credentialsId: 'LIVEKIT_API_SECRET', variable: 'LIVEKIT_API_SECRET'),
+                        string(credentialsId: 'AWS_CLOUD_ACCESS_KEY', variable: 'AWS_CLOUD_ACCESS_KEY'),
+                        string(credentialsId: 'AWS_CLOUD_SECRET_KEY', variable: 'AWS_CLOUD_SECRET_KEY')
                     ]) {
                         env.MATTERMOST_WEBHOOK_URL = MATTERMOST_WEBHOOK_URL
                         env.DB_URL = DB_URL
@@ -49,6 +53,10 @@ pipeline {
                         env.REDIS_HOST = REDIS_HOST
                         env.OPENAI_REMOVED = OPENAI_REMOVED
                         env.REDIS_PASSWORD = REDIS_PASSWORD
+                        env.LIVEKIT_REMOVED = LIVEKIT_REMOVED
+                        env.LIVEKIT_API_SECRET = LIVEKIT_API_SECRET
+                        env.AWS_CLOUD_ACCESS_KEY = AWS_CLOUD_ACCESS_KEY
+                        env.AWS_CLOUD_SECRET_KEY = AWS_CLOUD_SECRET_KEY
                     }
                 }
             }
@@ -80,7 +88,7 @@ pipeline {
                     docker stop ${DOCKER_CONTAINER_NAME} || true
                     docker rm ${DOCKER_CONTAINER_NAME} || true
                     docker run -d --name ${DOCKER_CONTAINER_NAME} --network starbooks \
-                        -p ${DOCKER_PORT}:${DOCKER_PORT} \
+                        -p 9097:9097 \
                         -e "DB_URL=${DB_URL}" \
                         -e "DB_USER=${DB_USER}" \
                         -e "DB_PASSWORD=${DB_PASSWORD}" \
@@ -92,6 +100,10 @@ pipeline {
                         -e "OPENAI_REMOVED=${OPENAI_REMOVED}" \
                         -e "REDIS_HOST=${REDIS_HOST}" \
                         -e "REDIS_PASSWORD=${REDIS_PASSWORD}" \
+                        -e "LIVEKIT_REMOVED=${LIVEKIT_REMOVED}" \
+                        -e "LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}" \
+                        -e "AWS_CLOUD_ACCESS_KEY=${AWS_CLOUD_ACCESS_KEY}" \
+                        -e "AWS_CLOUD_SECRET_KEY=${AWS_CLOUD_SECRET_KEY}" \
                         ${DOCKER_IMAGE_NAME}
                     """
                 }

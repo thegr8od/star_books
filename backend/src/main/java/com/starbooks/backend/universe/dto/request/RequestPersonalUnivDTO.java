@@ -10,7 +10,6 @@ import java.time.LocalDate;
 @Setter
 public class RequestPersonalUnivDTO {
     private Long diaryEmotionId;  // ✅ FK (필수)
-    private LocalDate logMonth;
 
     @JsonProperty("xCoord")
     private Float xCoord;

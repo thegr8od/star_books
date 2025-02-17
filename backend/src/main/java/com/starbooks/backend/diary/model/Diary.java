@@ -36,8 +36,8 @@ public class Diary {
     private List<DiaryHashtag> hashtags = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DiaryImage> images = new ArrayList<>();
+    @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)  // List에서 단일 관계로 변경
+    private DiaryImage image;  // List<DiaryImage>에서 DiaryImage로 변경
 
     private LocalDateTime createdAt;
 
@@ -59,10 +59,11 @@ public class Diary {
     }
 
     // Diary 클래스 내부
-    public void setImages(List<DiaryImage> images) {
-        this.images = images;
-        // 양방향 관계 설정 (선택 사항)
-        images.forEach(image -> image.setDiary(this));
+    public void setImage(DiaryImage image) {  // setImages에서 setImage로 변경
+        this.image = image;
+        if (image != null) {
+            image.setDiary(this);
+        }
     }
 
     public void addHashtag(DiaryHashtag hashtag) {
@@ -71,6 +72,16 @@ public class Diary {
     }
 
     public enum HashtagType {
-        기쁨, 슬픔, 화남, 혼란스러움, 피곤함
+        // 긍정적인 감정 (Positive)
+        행복한, 기쁜, 만족스러운, 신나는, 감동적인,
+        설레는, 평온한, 차분한, 편안한, 후련한,
+
+        // 부정적인 감정 (Negative)
+        불안한, 초조한, 화난, 짜증나는, 답답한,
+        속상한, 슬픈, 우울한, 지친, 무기력한,
+
+        // 중립적인 감정 (Neutral)
+        그저그런, 담담한, 멍한, 고민되는, 조용한,
+        느긋한, 궁금한, 심심한, 무심한, 졸린;
     }
 }
