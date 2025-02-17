@@ -50,7 +50,7 @@ function Diary() {
               className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent"
               onClick={() =>
                 navigate(
-                  `/constellation/detail/${currentDate.getFullYear() - 1}` //현재-1
+                  `/constellation/detail/${currentDate.getFullYear()}` //현재-1
                 )
               }
             />

@@ -8,7 +8,7 @@ const getYearlyStarlineCoords = async (data) => {
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
-      .get(`/starline/monthly/${data.year}`);
+      .get(`/starline/yearly/${data.year}`);
 
     return response.data;
   } catch (e) {
@@ -24,7 +24,7 @@ const getMonthlyStarlineCoords = async (data) => {
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
-      .get(`/starline/yearly/${data.year}/${data.month}`);
+      .get(`/starline/monthly/${data.year}/${data.month}`);
 
     return response.data;
   } catch (e) {
