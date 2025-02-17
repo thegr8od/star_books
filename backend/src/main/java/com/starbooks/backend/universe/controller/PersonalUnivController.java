@@ -3,6 +3,7 @@ package com.starbooks.backend.universe.controller;
 import com.starbooks.backend.common.ApiResponse;
 import com.starbooks.backend.common.ErrorCode;
 import com.starbooks.backend.config.CustomUserDetails;
+import com.starbooks.backend.universe.dto.request.RequestPersonalUnivDTO;
 import com.starbooks.backend.universe.dto.response.ResponsePersonalUnivDTO;
 import com.starbooks.backend.universe.service.PersonalUnivService;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,19 @@ public class PersonalUnivController {
         List<ResponsePersonalUnivDTO> responseList = personalUnivService.getYearlyPersonalUniv(userId, year);
         return ResponseEntity.ok(ApiResponse.createSuccess(responseList, "연도별 개인 유니버스 데이터 조회 성공"));
     }
+
+    // 유저의 별자리 정보 업데이트
+    @PostMapping("/bulk")
+    public ResponseEntity<ApiResponse<List<ResponsePersonalUnivDTO>>> saveOrUpdatePersonalUnivs(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody List<RequestPersonalUnivDTO> requestList) {
+
+        Long userId = userDetails.getUserId();
+        List<ResponsePersonalUnivDTO> responseList = personalUnivService.saveOrUpdatePersonalUnivs(userId, requestList);
+
+        return ResponseEntity.ok(ApiResponse.createSuccess(responseList, "좌표 저장/업데이트 완료"));
+    }
+
 
 
     // 유저의 특정 Personal Univ 조회

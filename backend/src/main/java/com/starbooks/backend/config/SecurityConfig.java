@@ -49,6 +49,8 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    //
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -64,7 +66,8 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/oauth_test.html",
-                                "/index.html"
+                                "/index.html",
+                                "/api/constellation/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/chat/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
