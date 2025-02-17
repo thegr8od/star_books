@@ -86,7 +86,7 @@ const MonthlyDiary = () => {
   // axios (mount 될 때, currentDate가 변경될 때마다 실행)
   useEffect(() => {
     (async () => {
-      const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
+      const requestData = { targetYear: currentDate.getFullYear(), targeMonth: currentDate.getMonth() + 1 };
       const response = await useDiaryApi.getDiariesByMonth(requestData);
       console.log(response);
       if (!response?.status) {
@@ -147,7 +147,7 @@ const MonthlyDiary = () => {
                         <Edit fontSize="inherit" />
                       </button>
                       <button onClick={() => handleDelete(diary)} className="text-gray-400 hover:text-gray-700">
-                        <Delete fontSize="inherit" />
+                      <Delete fontSize="inherit" />
                       </button>
                     </div>
                   </div>
