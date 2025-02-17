@@ -3,7 +3,7 @@ import Button from "../components/Button";
 import { useNavigate } from "react-router-dom";
 import errorImage from "/images/errorImage.png";
 
-function ErrorPage(title = "404 ERROR", message, customStyle) {
+function ErrorPage({ title = "404 ERROR", message, customStyle }) {
   const navigate = useNavigate();
   const goHome = () => {
     navigate("/");

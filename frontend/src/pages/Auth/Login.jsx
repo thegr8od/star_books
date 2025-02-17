@@ -1,21 +1,29 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+//redux
+import { useDispatch } from "react-redux";
+import { setUser } from "../../store/userSlice";
+//api함수
+import memberApi from "@api/useMemberApi";
+//커스텀
 import LoginModal from "./LoginModal";
 import CustomAlert from "../../components/CustomAlert";
+//아이콘
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-  const [showAlert, setShowAlert] = useState(false);
+  const [email, setEmail] = useState(""); //이메일
+  const [password, setPassword] = useState(""); //패스워드
+  const [showPassword, setShowPassword] = useState(false); //패스워드상태
+  const [errors, setErrors] = useState({}); //에러
+  const [isModalOpen, setIsModalOpen] = useState(false); //모달
+  const [alertMessage, setAlertMessage] = useState(""); //알람
+  const [showAlert, setShowAlert] = useState(false); //알람상태
+  const dispatch = useDispatch();
 
+  //에러
   const validateForm = () => {
     const newErrors = {};
 
@@ -36,31 +44,32 @@ const Login = () => {
 
     if (validateForm()) {
       try {
-        const response = await axios.post("/api/member/login", {
+        const response = await memberApi.loginMember({
           email: email,
           password: password,
         });
 
-        if (response.data.statusCode === 200) {
-          localStorage.setItem("accessToken", response.data.data.accessToken);
-          localStorage.setItem("email", response.data.data.user.email);
-          localStorage.setItem("nickname", response.data.data.user.nickname);
+        console.log("로그인 응답:", response);
 
+        // response가 있고 성공적인 응답인 경우
+        if (response && response.user) {
+          // 리덕스에 저장하기
+          dispatch(setUser({ ...response.user, isLogin: true }));
           setAlertMessage("로그인에 성공했습니다!");
           setShowAlert(true);
 
           setTimeout(() => {
-            navigate("/");
+            window.location.href = "/";
           }, 2000);
+        } else {
+          // 실패한 경우
+          setAlertMessage("로그인에 실패했습니다.");
+          setShowAlert(true);
         }
       } catch (error) {
         console.error("로그인 에러:", error);
         setAlertMessage("이메일 또는 비밀번호가 일치하지 않습니다.");
         setShowAlert(true);
-
-        if (error.response && error.response.data) {
-          console.error(error.response.data.message);
-        }
       }
     }
   };

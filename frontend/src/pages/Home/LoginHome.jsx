@@ -11,11 +11,11 @@ function LoginHome() {
 
   // 네비게이션 항목 정의 - 72도 간격으로 배치
   const navItems = [
-    { name: "별자리", angle: 270, path: "/constellation/gallery", delay: 0 },
-    { name: "일기장", angle: 342, path: "/diary/write", delay: 0.2 },
-    { name: "프로필", angle: 54, path: "/mypage/:id", delay: 0.4 },
-    { name: "나의별", angle: 126, path: "/diary/stars", delay: 0.6 },
-    { name: "우리별", angle: 198, path: "/universe", delay: 0.8 },
+    { name: "AI채팅", angle: 270, path: "chat", delay: 0 },
+    { name: "라디오", angle: 342, path: "radio/list", delay: 0.2 },
+    { name: "캘린더", angle: 54, path: "diary/calendar", delay: 0.4 },
+    { name: "나의별", angle: 126, path: "diary/stars", delay: 0.6 },
+    { name: "우리별", angle: 198, path: "universe", delay: 0.8 },
   ];
 
   const radius = 150; // 선과 점의 위치를 동일하게 설정

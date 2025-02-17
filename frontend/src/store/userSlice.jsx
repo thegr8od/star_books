@@ -30,5 +30,13 @@ const user = createSlice({
   },
 });
 
+// Selectors
+export const selectUser = (state) => state.user;
+export const selectUserId = (state) => state.user.userId;
+export const selectUserEmail = (state) => state.user.email;
+export const selectUserNickname = (state) => state.user.nickname;
+export const selectUserProfileImage = (state) => state.user.profileImagePath;
+export const selectUserIsLogin = (state) => state.user.isLogin;
+
 export const { setUser, clearUser, updateUserField } = user.actions;
 export default user.reducer;

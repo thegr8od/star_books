@@ -5,15 +5,20 @@ import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutl
 import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
 import KeyboardVoiceOutlinedIcon from "@mui/icons-material/KeyboardVoiceOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import TurnedInNotOutlinedIcon from "@mui/icons-material/TurnedInNotOutlined";
 import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import useRadioApi from "../../api/useRadioApi";
 
 function RadioList() {
   const categories = ["전체", "일상", "연애", "음악", "취미", "건강", "기타"];
   const scrollContainerRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState("전체");
-  const [sortType, setSortType] = useState("latest");
+  const [sortType, setSortType] = useState("popular"); // 정렬방식
+  const [tracks, setTracks] = useState([]); // 방송 목록
+  const [loading, setLoading] = useState(true); // 로딩 상태
+  const [error, setError] = useState(null); // 에러 상태
+
+  // 카테고리별 색상 설정
   const categoryColors = {
     일상: { bg: "from-amber-100 to-amber-300", border: "border-amber-500" },
     연애: { bg: "from-rose-100 to-rose-300", border: "border-rose-500" },
@@ -25,57 +30,35 @@ function RadioList() {
     건강: { bg: "from-sky-100 to-sky-300", border: "border-sky-500" },
     기타: { bg: "from-gray-50 to-gray-300", border: "border-gray-500" },
   };
-  // 닉네임 길이 제한 두기(7자)
-  const tracks = [
-    {
-      id: 1,
-      title: "라디오? 레이디오!",
-      nickname: "닉네임1",
-      category: "음악",
-      createdAt: "2024-02-11",
-      participantCount: 25,
-    },
-    {
-      id: 2,
-      title: "라디오? 레이디오!",
-      nickname: "닉네임2",
-      category: "일상",
-      createdAt: "2024-02-10",
-      participantCount: 20,
-    },
-    {
-      id: 3,
-      title: "라디오? 레이디오!",
-      nickname: "푸릇푸릇한햄버거",
-      category: "취미",
-      createdAt: "2025-01-11",
-      participantCount: 18,
-    },
-    {
-      id: 4,
-      title: "라디오? 레이디오!",
-      nickname: "닉네임4",
-      category: "건강",
-      createdAt: "2025-02-11",
-      participantCount: 10,
-    },
-    {
-      id: 5,
-      title: "라디오? 레이디오!",
-      nickname: "닉네임5",
-      category: "연애",
-      createdAt: "2025-01-01",
-      participantCount: 30,
-    },
-    {
-      id: 6,
-      title: "라디오? 레이디오!",
-      nickname: "닉네임6",
-      category: "기타",
-      createdAt: "2024-12-25",
-      participantCount: 28,
-    },
-  ];
+
+  // 실시간 방송 목록, 시청자 수 가져오기
+  useEffect(() => {
+    const fetchBroadcasts = () => {
+      setLoading(true);
+      getLiveBroadcasts()
+        .then((response) => {
+          if (response.data) {
+            // 각 방송마다 시청자 수 업데이트
+            const updatePromises = response.data.map((track) =>
+              updateParticipants(track)
+            );
+            return Promise.all(updatePromises);
+          }
+          return []; // response.data가 없다면 빈 배열 반환
+        })
+        .catch((error) => {
+          setError("방송 목록을 불러오는데 실패했습니다.");
+          console.error("방송 목록 조회 중 오류 발생 : ", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    };
+
+    fetchBroadcasts();
+    const interval = setInterval(fetchBroadcasts, 60000); // 1분마다 방송 목록 갱신
+    return () => clearInterval(interval);
+  }, []);
 
   // 트랙 정렬
   const getSortedTracks = (tracks) => {
@@ -101,6 +84,7 @@ function RadioList() {
       : tracks.filter((track) => track.category === selectedCategory)
   );
 
+  // 카테고리 스크롤
   const scroll = (direction) => {
     const container = scrollContainerRef.current;
     if (container) {
@@ -116,6 +100,16 @@ function RadioList() {
       });
     }
   };
+
+  // 로딩 중 표시
+  if (loading) {
+    return <div className="text-white text-center">로딩 중...</div>;
+  }
+
+  // 에러 표시
+  if (error) {
+    return <div className="text-white text-center">{error}</div>;
+  }
 
   return (
     <Layout>

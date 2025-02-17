@@ -1,13 +1,14 @@
 import useAxiosInstance from "./useAxiosInstance";
 
 //월별 나만의 우주 조회
-const getMonthlyPersonalUniv = async (year, month) => {
+//get
+const getMonthlyPersonalUniv = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
         const response = await useAxiosInstance
             .authApiClient(jwt)
-            .get(`/universe/monthly/${year}/${month}`);
+            .get(`/universe/monthly/${data.year}/${data.month}`);
         return response.data; 
     } catch(e) {
         return e.response;
@@ -15,13 +16,14 @@ const getMonthlyPersonalUniv = async (year, month) => {
 };
 
 //연도별 나만의 우주 조회
-const getYearlyPersonalUniv = async (year) => {
+//get
+const getYearlyPersonalUniv = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
         const response = await useAxiosInstance
             .authApiClient(jwt)
-            .get(`/universe/yearly/${year}`);
+            .get(`/universe/yearly/${data.year}`);
         return response.data; 
     } catch(e) {
         return e.response;
@@ -29,13 +31,14 @@ const getYearlyPersonalUniv = async (year) => {
 };
 
 // 특정 나만의 우주 조회
-const getPersonalUniv = async (universeId) => {
+//get
+const getPersonalUniv = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
     try{
         const response = await useAxiosInstance
             .authApiClient(jwt)
-            .get(`/universe/${universeId}`);
+            .get(`/universe/${data.universeId}`);
         return response.data; 
     } catch(e) {
         return e.response;

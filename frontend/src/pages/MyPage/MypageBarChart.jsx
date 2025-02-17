@@ -1,5 +1,6 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
+import GetColor from "../../components/GetColor";
 import {
   Chart as ChartJS,
   BarElement,
@@ -18,11 +19,11 @@ const EmotionChart = () => {
       {
         data: [80, 40, 60, 30, 70],
         backgroundColor: [
-          "#1E40AF", 
-          "#84CC16", 
-          "#EAB308",
-          "#BE185D",
-          "#065F46", 
+          GetColor({ x: 2, y: -2 }),
+          GetColor({ x: 2, y: 3 }),
+          GetColor({ x: -1, y: 3 }),
+          GetColor({ x: -1, y: -5 }),
+          GetColor({ x: 4, y: -1 }),
         ],
         borderRadius: 4,
         borderSkipped: false,
