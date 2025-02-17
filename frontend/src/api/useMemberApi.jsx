@@ -207,4 +207,5 @@ export default {
   refreshToken,
   updateProfileImage,
   updateProfile,
+  getProfileImage,
 };
