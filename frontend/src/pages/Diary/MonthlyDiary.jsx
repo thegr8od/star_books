@@ -6,80 +6,12 @@ import DiaryDate from "./DiaryDate";
 import useDiaryApi from "../../api/useDiaryApi";
 import GetColor from "../../components/GetColor";
 
-const sampleData = [
-  {
-    diaryId: 1,
-    createdAt: "2025-02-02T17:51:33.051547",
-    emotions: [
-      {
-        xValue: 1.91667,
-        yValue: 0.916667,
-      },
-    ],
-    content: "오늘은 뭔든 하트뿅뿅다. 하자면 주만 시작물화 보고 머튿다브니 분이 생겼다.",
-    hashtags: ["즐적인", "감사한", "외로운", "행만한"],
-    imageUrl: null,
-  },
-  {
-    diaryId: 2,
-    createdAt: "2025-02-11T17:51:33.051547",
-    emotions: [
-      {
-        xValue: 2,
-        yValue: 2,
-      },
-    ],
-    content: "재밌던 하루!!! 최애 콘서트를 다녀왔다!! ♥️♥️",
-    hashtags: ["즐거운", "행복한", "재밌는", "차근한"],
-    imageUrl: "https://images.unsplash.com/photo-1519052537078-e6302a4968d4?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fCVFQSVCMyVBMCVFQyU5NiU5MSVFQyU5RCVCNHxlbnwwfHwwfHx8MA%3D%3D",
-  },
-  {
-    diaryId: 3,
-    createdAt: "2025-02-30T17:51:33.051547",
-    emotions: [
-      {
-        xValue: -1.91667,
-        yValue: -0.916667,
-      },
-    ],
-    content: "우울하다~~~~",
-    hashtags: ["울적한", "슬픈", "외로운", "불안한", "울적한", "슬픈", "외로운", "불안한"],
-    imageUrl: null,
-  },
-  {
-    diaryId: 4,
-    createdAt: "2025-02-20T17:51:33.051547",
-    emotions: [
-      {
-        xValue: -1,
-        yValue: -2,
-      },
-    ],
-    content: "재밌던 하루!!! 최애 콘서트를 다녀왔다!! ♥️♥️",
-    hashtags: ["즐거운", "행복한", "재밌는", "차근한"],
-    imageUrl: null,
-  },
-  {
-    diaryId: 5,
-    createdAt: "2025-02-09T17:51:33.051547",
-    emotions: [
-      {
-        xValue: 5,
-        yValue: 4,
-      },
-    ],
-    content: "재밌던 하루!!! 최애 콘서트를 다녀왔다!! ♥️♥️",
-    hashtags: ["즐거운", "행복한", "재밌는", "차근한"],
-    imageUrl: "https://images.unsplash.com/photo-1519052537078-e6302a4968d4?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fCVFQSVCMyVBMCVFQyU5NiU5MSVFQyU5RCVCNHxlbnwwfHwwfHx8MA%3D%3D",
-  },
-];
-
 const MonthlyDiary = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const diaryRefs = useRef({});
 
-  const [diaries, setDiaries] = useState(sampleData);
+  const [diaries, setDiaries] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const selectedDate = location.state?.selectedDate;
 
@@ -89,9 +21,9 @@ const MonthlyDiary = () => {
       const requestData = { targetYear: currentDate.getFullYear(), targeMonth: currentDate.getMonth() + 1 };
       const response = await useDiaryApi.getDiariesByMonth(requestData);
       console.log(response);
-      if (!response?.status) {
+      if (response.status === 200) {
         console.log("일기 조회 성공");
-        setDiaries(response);
+        setDiaries(response.data);
       } else {
         console.log("일기 조회 실패");
       }
@@ -118,9 +50,18 @@ const MonthlyDiary = () => {
   };
 
   // 삭제 버튼 클릭 시
-  const handleDelete = (diary) => {
+  const handleDelete = async (diary) => {
+    console.log(diary.diaryId);
     if (window.confirm("일기를 삭제하시겠습니까?")) {
-      setDiaries(diaries.filter((d) => d.diaryId !== diary.diaryId));
+      const response = await useDiaryApi.deleteDiary(diary.diaryId);
+      console.log(response);
+      if (response.status === 204) {
+        console.log("일기 삭제 성공");
+        setDiaries(diaries.filter((d) => d.diaryId !== diary.diaryId));
+      } else {
+        console.log("일기 삭제 실패");
+        alert("일기 삭제에 실패하였습니다.");
+      }
     }
   };
 
@@ -147,7 +88,7 @@ const MonthlyDiary = () => {
                         <Edit fontSize="inherit" />
                       </button>
                       <button onClick={() => handleDelete(diary)} className="text-gray-400 hover:text-gray-700">
-                      <Delete fontSize="inherit" />
+                        <Delete fontSize="inherit" />
                       </button>
                     </div>
                   </div>
