@@ -34,17 +34,17 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public ResponseRefreshTokenDTO refreshToken(String refreshToken) {
-        String email = jwtTokenProvider.getUserEmail(refreshToken);
+        if (!isRefreshTokenValid(refreshToken)) {
+            throw new RuntimeException("Invalid or blacklisted refresh token");
+        }
 
-        // 이메일로 사용자 정보 조회
+        String email = jwtTokenProvider.getUserEmail(refreshToken);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
-        if (validateRefreshToken(email, refreshToken) && !isRefreshTokenBlacklisted(refreshToken)) {
-            String newAccessToken = generateAccessToken(user);
-            return new ResponseRefreshTokenDTO(newAccessToken, generateRefreshToken(user));
-        }
-        throw new RuntimeException("Invalid or blacklisted refresh token");
+        String newAccessToken = generateAccessToken(user);
+        String newRefreshToken = generateRefreshToken(user);
+        return new ResponseRefreshTokenDTO(newAccessToken, newRefreshToken);
     }
 
     @Override
@@ -60,15 +60,30 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public void invalidateAllUserTokens(String email) {
-        redisTemplate.delete(REFRESH_TOKEN_PREFIX + email);
+        String storedToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + email);
+
+        if (storedToken != null) {
+            blacklistRefreshToken(storedToken);
+            redisTemplate.delete(REFRESH_TOKEN_PREFIX + email);
+        }
+    }
+
+    @Override
+    public boolean isRefreshTokenValid(String refreshToken) {
+        // 1. Refresh Token이 유효한지 검증
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            return false;
+        }
+
+        // 2. 블랙리스트에 포함되어 있는지 확인
+        if (isRefreshTokenBlacklisted(refreshToken)) {
+            return false;
+        }
+
+        return true;
     }
 
     private void saveRefreshToken(String email, String refreshToken, long expirationMillis) {
         redisTemplate.opsForValue().set(REFRESH_TOKEN_PREFIX + email, refreshToken, Duration.ofMillis(expirationMillis));
-    }
-
-    private boolean validateRefreshToken(String email, String refreshToken) {
-        String storedToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + email);
-        return storedToken != null && storedToken.equals(refreshToken);
     }
 }

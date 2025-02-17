@@ -10,4 +10,9 @@ public interface TokenService {
     void blacklistRefreshToken(String refreshToken);
     boolean isRefreshTokenBlacklisted(String refreshToken);
     void invalidateAllUserTokens(String email);
+
+    /**
+     * Refresh Token 유효성 검사
+     */
+    boolean isRefreshTokenValid(String refreshToken);
 }
