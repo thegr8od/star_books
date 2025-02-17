@@ -3,8 +3,10 @@ package com.starbooks.backend.diary.service;
 //import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
+import com.starbooks.backend.diary.dto.response.HashtagStatsResponse;
 import com.starbooks.backend.diary.exception.NotFoundException;
 import com.starbooks.backend.diary.model.*;
+import com.starbooks.backend.diary.repository.HashtagStatsRepository;
 import com.starbooks.backend.emotion.model.EmotionPoint;
 import com.starbooks.backend.emotion.service.EmotionService;
 import com.starbooks.backend.user.model.User;
@@ -24,6 +26,7 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final EmotionService emotionService; // 감정 분석 서비스
+    private final HashtagStatsRepository hashtagStatsRepository;
 
     /**
      * 1️⃣ 빈 다이어리 생성
@@ -39,30 +42,30 @@ public class DiaryService {
     }
 
     /**
-     * 2️⃣ 해시태그 추가
+     * 2️⃣ 해시태그 추가 (수정된 버전)
      */
     @Transactional
     public EmotionPoint addHashtagsAndAnalyzeEmotion(Long diaryId, List<Diary.HashtagType> hashtags) {
         Diary diary = getDiaryEntity(diaryId);
 
-        // 해시태그 등록
+        // 해시태그 등록 및 통계 업데이트
         hashtags.forEach(tag -> {
             DiaryHashtag diaryHashtag = DiaryHashtag.builder()
                     .diary(diary)
                     .hashtag(tag)
                     .build();
             diary.addHashtag(diaryHashtag);
+
+            // 해시태그 통계 업데이트
+            updateHashtagStats(tag, true);
         });
 
-        // Enum 값들을 문자열로 변환 (예: "행복한", "설레는" 등)
         List<String> tagStrings = hashtags.stream()
                 .map(Enum::name)
                 .collect(Collectors.toList());
 
-        // 감정 분석 수행 (가중 평균 좌표 계산)
         EmotionPoint result = emotionService.calculateWeightedPoint(tagStrings);
 
-        // 계산 결과로 DiaryEmotion 생성 및 다이어리에 추가
         DiaryEmotion diaryEmotion = DiaryEmotion.builder()
                 .diary(diary)
                 .xValue((float) result.getxvalue())
@@ -73,6 +76,66 @@ public class DiaryService {
         return result;
     }
 
+    /**
+     * Top 5 해시태그 조회
+     */
+    public List<HashtagStatsResponse> getTop5Hashtags() {
+        return hashtagStatsRepository.findTop5ByOrderByUsageCountDesc()
+                .stream()
+                .map(stats -> HashtagStatsResponse.builder()
+                        .hashtagType(stats.getHashtagType().name())
+                        .usageCount(stats.getUsageCount())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 해시태그 통계 초기화
+     */
+    @Transactional
+    public void initializeHashtagStats() {
+        if (hashtagStatsRepository.count() == 0) {
+            for (Diary.HashtagType type : Diary.HashtagType.values()) {
+                hashtagStatsRepository.save(HashtagStats.builder()
+                        .hashtagType(type)
+                        .build());
+            }
+        }
+    }
+
+    /**
+     * 해시태그 통계 업데이트
+     */
+    private void updateHashtagStats(Diary.HashtagType hashtagType, boolean isIncrement) {
+        HashtagStats stats = hashtagStatsRepository.findById(hashtagType)
+                .orElseGet(() -> HashtagStats.builder()
+                        .hashtagType(hashtagType)
+                        .build());
+
+        if (isIncrement) {
+            stats.incrementCount();
+        } else {
+            stats.decrementCount();
+        }
+
+        hashtagStatsRepository.save(stats);
+    }
+
+    /**
+     * 해시태그 삭제
+     */
+    @Transactional
+    public void removeHashtag(Long diaryId, Diary.HashtagType hashtagType) {
+        Diary diary = getDiaryEntity(diaryId);
+
+        diary.getHashtags().removeIf(tag -> {
+            if (tag.getHashtag() == hashtagType) {
+                updateHashtagStats(hashtagType, false);
+                return true;
+            }
+            return false;
+        });
+    }
 
     /**
      * 4️⃣ 다이어리 내용 입력
