@@ -47,7 +47,7 @@ function ConstellationCreateAi({ constellationData }) {
     const formData = new FormData();
     formData.append("file", fileInput.files[0]);
 
-    const BACKEND_URL = "https://i12d206.p.ssafy.io//api/constellation/generate-lines";
+    const BACKEND_URL = "https://i12d206.p.ssafy.io/api/constellation/generate-lines";
     const token = localStorage.getItem("accessToken"); // ✅ JWT 토큰 가져오기
 
     if (!token) {
