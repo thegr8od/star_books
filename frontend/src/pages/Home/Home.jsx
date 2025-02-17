@@ -16,8 +16,8 @@ const Home = () => {
   const getDetailData = async (jwt) => {
     
     try{
-      const response = useMemberApi.getUserInfo(jwt)
-      console.log(response);
+      const response = await useMemberApi.getUserInfo(jwt)
+      localStorage.setItem(response);
       return response.data;
     } catch(e) {
       console.log(e)
@@ -35,7 +35,7 @@ const Home = () => {
 
       const data = getDetailData(token);
       if(data.gender === 'OTHER'){
-        
+
       } else {
         dispatch(setUser({ ...data, isLogin: true }));
       }
