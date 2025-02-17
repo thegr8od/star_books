@@ -22,7 +22,7 @@ const UniverseAnalysis = () => {
           const analysisData = response.data.map((item) => ({
             label: item.hashtagType,
             value: Number(((item.usageCount / totalCount) * 100).toFixed(1)), // 퍼센트 변환(소수점 1자리까지)
-            color: "#4B56D2",
+            color: GetColor(item.xvalue, item.yvalue),
           }));
           setTransformedData(analysisData);
           console.log(analysisData);
