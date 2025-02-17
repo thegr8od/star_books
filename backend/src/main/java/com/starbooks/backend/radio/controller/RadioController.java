@@ -41,10 +41,16 @@ public class RadioController {
             return ResponseEntity.badRequest().body(Map.of("errorMessage", "roomName and participantName are required"));
         }
 
-        // 기존 호스트 확인
+        // Redis에서 호스트 정보 가져오기
         String existingHost = redisTemplate.opsForValue().get("room:" + roomName + ":host");
         if (existingHost != null && existingHost.equals(participantName)) {
             return ResponseEntity.ok(Map.of("role", "host"));
+        }
+
+        // 방의 상태 확인 (방송 중인지 여부)
+        String status = redisTemplate.opsForValue().get("room:" + roomName + ":status");
+        if (status == null || !status.equals("live")) {
+            return ResponseEntity.ok(Map.of("role", "guest"));
         }
 
         return ResponseEntity.ok(Map.of("role", "guest"));
@@ -71,20 +77,17 @@ public class RadioController {
         if (isHost) {
             // 방의 첫 번째 참가자가 호스트가 됨
             redisTemplate.opsForValue().set("room:" + roomName + ":host", participantName, Duration.ofHours(6));
-
-            // 방송 상태 저장
             redisTemplate.opsForValue().set("room:" + roomName + ":status", "live", Duration.ofHours(6));
-
-            // 참가자 수 초기화
             redisTemplate.opsForValue().set("room:" + roomName + ":participants", "0", Duration.ofHours(6));
         }
 
-        // LiveKit 토큰 생성
+        // LiveKit 토큰 생성 (만료 시간 설정)
         AccessToken token = new AccessToken(LIVEKIT_REMOVED, LIVEKIT_API_SECRET);
         token.setName(participantName);
         token.setIdentity(participantName);
         token.addGrants(new RoomJoin(true), new RoomName(roomName));
         token.setMetadata("{\"role\":\"" + (isHost ? "host" : "guest") + "\"}");
+        token.setTtl(Duration.ofHours(6).toSeconds()); // 토큰 만료 시간 설정
 
         return ResponseEntity.ok(Map.of(
                 "token", token.toJwt(),
