@@ -13,16 +13,7 @@ const Home = () => {
   const location = useLocation(); // 현재 페이지 경로 가져오기
   const dispatch = useDispatch();
 
-  const getDetailData = async (jwt) => {
-    
-    try{
-      const response = await useMemberApi.getUserInfo(jwt)
-      localStorage.setItem(response);
-      return response.data;
-    } catch(e) {
-      console.log(e)
-    }
-  }
+  
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -32,6 +23,17 @@ const Home = () => {
       // 토큰을 로컬 스토리지에 저장
       localStorage.setItem("accessToken", token);
       setIsLoggedIn(true); // 로그인 상태 업데이트
+
+      const getDetailData = async (jwt) => {
+        try{
+          const response = await useMemberApi.getUserInfo(jwt)
+          sessionStorage.setItem(response);
+          return response.data;
+        } catch(e) {
+          console.log(e)
+        }
+      }
+
 
       const data = getDetailData(token);
       if(data.gender === 'OTHER'){
