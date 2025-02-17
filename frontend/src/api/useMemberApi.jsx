@@ -197,6 +197,23 @@ const updateProfile = async (data) => {
   }
 };
 
+//비밀번호 변경
+//post
+const changePassword = async (data) => {
+  const jwt = localStorage.getItem("accessToken");
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .post(`/member/change-password`, data);
+    return response.data;
+  } catch (e) {
+    //오류 체크
+    if (e.response.data.status == 404) {
+      return e.response.data;
+    }
+  }
+};
+
 export default {
   loginMember,
   registerMember,
@@ -208,4 +225,5 @@ export default {
   updateProfileImage,
   updateProfile,
   getProfileImage,
+  changePassword,
 };
