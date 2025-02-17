@@ -4,7 +4,10 @@ import Modal from "../../components/Modal";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
 import MoodSurveyToast from "./MoodSurveyToast";
-import MoodSurveyLoading from "./MoodSurveyLoading";
+import {
+  createEmptyDiary,
+  addHashtagsAndAnalyzeEmotion,
+} from "../../api/useDiaryApi";
 
 const MoodSurvey = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -12,7 +15,8 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
   const [showToast, setShowToast] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastDuration, setToastDuration] = useState(800);
 
   const moods = ["매우 좋음", "좋음", "보통", "좋지 않음", "매우 좋지 않음"];
   const emotions = {
@@ -94,40 +98,71 @@ const MoodSurvey = ({ isOpen, onClose }) => {
     setSelectedEmotions([]);
     onClose();
   };
+
   const text = (
-    <>
+    <div>
       더 자세히 알려주세요
       <br />
       <span className="font-medium text-gray-700 text-[18px]">(최대 5개)</span>
-    </>
+    </div>
   );
   const modalTitle = step === 1 ? "기분을 선택해주세요" : text;
 
   // step2 완료 버튼 클릭 시 다이어리 작성 페이지로 이동
-  // 로딩 화면 추가
-  const handleComplete = async () => {
-    setIsLoading(true);
-    try {
-      handleClose();
-      navigate("../diary/write", {
-        state: {
-          emotions: selectedEmotions,
-        },
+  const handleComplete = () => {
+    saveMoodData();
+  };
+
+  // 감정 분석 토스트 띄우기
+  const showToastMessage = (message, duration = 800) => {
+    setToastMessage(message);
+    setToastDuration(duration);
+    setShowToast(true);
+  };
+
+  // api 호출하여 감정 데이터 저장
+  const saveMoodData = () => {
+    // 로딩 메시지 표시 (나중에 속도 조절 필요!!)
+    showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 3000);
+
+    // 1. 빈 다이어리 생성
+    createEmptyDiary()
+      .then((response) => {
+        if (response.status === 200) {
+          const diaryId = response.data.id;
+
+          // 2. 해시태그 추가 및 감정 분석
+          return addHashtagsAndAnalyzeEmotion(diaryId, selectedEmotions);
+        } else {
+          throw new Error("다이어리 생성 실패");
+        }
+      })
+      .then((response) => {
+        if (response.status === 200) {
+          setShowToast(false);
+          handleClose();
+          navigate("../diary/write", {
+            state: {
+              emotions: selectedEmotions,
+              xvalue: response.data.xvalue,
+              yvalue: response.data.yvalue,
+            },
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("에러 발생 : ", error);
+        showToastMessage("오류가 발생했습니다. 다시 시도해주세요.", 800);
       });
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
-    <>
-      {isLoading && <MoodSurveyLoading />}
+    <div>
       <MoodSurveyToast
-        message={"감정은 5개까지만 선택 가능해요!"}
+        message={toastMessage}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
+        duration={toastDuration}
       />
       <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle}>
         {/* 오늘의 기분 설문 */}
@@ -159,7 +194,9 @@ const MoodSurvey = ({ isOpen, onClose }) => {
         {/* 세부 감정 설문 */}
         {step === 2 && (
           <div className="flex flex-col h-[400px] w-[320px]">
-            <div className="flex-1 overflow-y-auto pr-2">
+            <div
+              className="flex-1 overflow-y-auto pr-2"
+            >
               {/* 감정 카테고리와 버튼들 */}
               {getOrderedCategories().map((category) => (
                 <div key={category} className="mb-8">
@@ -205,7 +242,7 @@ const MoodSurvey = ({ isOpen, onClose }) => {
           </div>
         )}
       </Modal>
-    </>
+    </div>
   );
 };
 
