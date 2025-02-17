@@ -141,11 +141,11 @@ const checkNickname = async (data) => {
 
 //마이페이지 이미지 업데이트
 // post
-const updateProfileImage = async (data) => {
-  const jwt = localStorage.get("accessToken");
+const updateProfileImage = async (data, email) => {
+  const jwt = localStorage.getItem("accessToken");
   const formData = new FormData();
-  formData.append("file", data);
-
+  formData.append("profileImageFile", data);
+  formData.append("email", email);
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
@@ -162,7 +162,7 @@ const updateProfileImage = async (data) => {
 //마이페이지 수정
 //put
 const updateProfile = async (data) => {
-  const jwt = localStorage.get("accessToken");
+  const jwt = localStorage.getItem("accessToken");
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)

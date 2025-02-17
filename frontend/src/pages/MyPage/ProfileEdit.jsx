@@ -6,6 +6,7 @@ import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserField, setUser } from "../../store/userSlice";
+import useMemberApi from "../../api/useMemberApi";
 
 const ProfileEdit = () => {
   const dispatch = useDispatch();
@@ -17,8 +18,7 @@ const ProfileEdit = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    emailDomain: "",
-    gender: ""
+    gender: "",
   }); // 콘솔로 찍어보기
 
   // 초기 데이터 불러오기
@@ -26,11 +26,10 @@ const ProfileEdit = () => {
     if (user) {
       setFormData({
         name: user.nickname || "",
-        email: user.email ? user.email.split("@")[0] : "",
-        emailDomain: user.email ? user.email.split("@")[1] : "",
+        email: user.email || "",
         gender: user.gender || "",
       });
-      setImagePreview(user.profileImagePath);
+      setImagePreview(user.profileImageFile);
     }
   }, [user]);
 
@@ -40,23 +39,6 @@ const ProfileEdit = () => {
       ...data,
       [name]: value,
     }));
-  };
-
-  // 이미지 업로드 함수
-  const handleImageUpload = (file) => {
-    updateProfileImage(file)
-      .then((response) => {
-        dispatch(
-          updateUserField({
-            field: "profileImagePath",
-            value: response.data.profileImagePath,
-          })
-        );
-      })
-      .catch((error) => {
-        console.error("이미지 업로드 실패:", error);
-        alert("이미지 업로드에 실패했습니다.");
-      });
   };
 
   // 이미지 변경 함수
@@ -70,7 +52,20 @@ const ProfileEdit = () => {
       };
       reader.readAsDataURL(file);
 
-      handleImageUpload(file);
+      // memberApi 객체를 통해 이미지 업로드 함수 호출
+      useMemberApi.updateProfileImage(file, user.email).then((response) => {
+        if (response.status === "success") {
+          // 이미지 미리보기 상태만 업데이트
+          dispatch(
+            updateUserField({
+              field: "profileImageFile",
+              value: imagePreview, // 현재 미리보기 URL 사용
+            })
+          );
+        } else {
+          throw new Error(response.message || "이미지 업로드 실패");
+        }
+      });
     }
   };
 
@@ -78,11 +73,12 @@ const ProfileEdit = () => {
   const handleProfileUpdate = () => {
     const profileData = {
       nickname: formData.name,
-      email: `${formData.email}@${formData.emailDomain}`,
+      email: formData.email,
       gender: formData.gender,
     };
 
-    updateProfile(profileData)
+    useMemberApi
+      .updateProfile(profileData)
       .then((response) => {
         dispatch(
           setUser({
@@ -161,38 +157,16 @@ const ProfileEdit = () => {
                 />
               </div>
 
-              {/* 이메일 */}
-              <div className="flex flex-col space-y-[10px]">
+              <div className="flex flex-col space-y-2">
                 <span>이메일</span>
-                <div className="flex w-full items-center space-x-2">
-                  <input
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-[45%] bg-transparent border-b border-gray-400 pb-1 focus:outline-none"
-                  />
-                  <span className="flex-[1]">@</span>
-                  <select
-                    onChange={handleInputChange}
-                    className="w-[45%] bg-transparent border-b border-gray-400 pb-1"
-                  >
-                    <option value="선택" className="text-black">
-                      선택
-                    </option>
-                    <option value="gmail" className="text-black">
-                      gmail.com
-                    </option>
-                    <option value="naver" className="text-black">
-                      naver.com
-                    </option>
-                    <option value="daum" className="text-black">
-                      daum.net
-                    </option>
-                    <option value="nate" className="text-black">
-                      nate.com
-                    </option>
-                  </select>
-                </div>
+                <input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="이메일을 입력하세요."
+                  className="w-full bg-transparent border-b border-gray-400 focus:outline-none pb-1"
+                />
               </div>
 
               {/* 성별 */}
@@ -203,8 +177,8 @@ const ProfileEdit = () => {
                     <input
                       type="radio"
                       name="gender"
-                      value="male"
-                      checked={formData.gender === "male"}
+                      value="MALE"
+                      checked={formData.gender === "MALE"}
                       onChange={handleInputChange}
                     />
                     <span>남자</span>
@@ -213,8 +187,8 @@ const ProfileEdit = () => {
                     <input
                       type="radio"
                       name="gender"
-                      value="female"
-                      checked={formData.gender === "female"}
+                      value="FEMALE"
+                      checked={formData.gender === "FEMALE"}
                       onChange={handleInputChange}
                     />
                     <span>여자</span>

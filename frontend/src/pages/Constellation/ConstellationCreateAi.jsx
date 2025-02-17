@@ -46,7 +46,7 @@ function ConstellationCreateAi({ constellationData }) {
     const formData = new FormData();
     formData.append("file", fileInput.files[0]);
 
-    // 🔹 백엔드의 실제 서버 주소로 변경
+    //  🔹 백엔드의 실제 서버 주소로 변경
     const BACKEND_URL = "https://i12d206.p.ssafy.io/api/constellation/generate-lines";
 
     console.log("📤 [프론트엔드] 백엔드로 이미지 업로드 요청 전송...", BACKEND_URL);
