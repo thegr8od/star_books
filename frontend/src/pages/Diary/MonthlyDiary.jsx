@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Edit, Delete } from "@mui/icons-material";
 import Layout from "../../components/Layout";
 import DiaryDate from "./DiaryDate";
@@ -75,6 +75,7 @@ const sampleData = [
 ];
 
 const MonthlyDiary = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const diaryRefs = useRef({});
 
@@ -108,14 +109,18 @@ const MonthlyDiary = () => {
   }, []);
 
   // 수정 버튼 클릭 시
-  const handleEdit = (id) => {
-    console.log("Edit diary:", id);
+  const handleEdit = (diary) => {
+    navigate(`/diary/edit/${diary.diaryId}`, {
+      state: {
+        diary,
+      },
+    });
   };
 
   // 삭제 버튼 클릭 시
-  const handleDelete = (id) => {
+  const handleDelete = (diary) => {
     if (window.confirm("일기를 삭제하시겠습니까?")) {
-      setDiaries(diaries.filter((diary) => diary.diaryId !== id));
+      setDiaries(diaries.filter((d) => d.diaryId !== diary.diaryId));
     }
   };
 
@@ -138,10 +143,10 @@ const MonthlyDiary = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
-                      <button onClick={() => handleEdit(diary.diaryId)} className="text-gray-400 hover:text-gray-700">
+                      <button onClick={() => handleEdit(diary)} className="text-gray-400 hover:text-gray-700">
                         <Edit fontSize="inherit" />
                       </button>
-                      <button onClick={() => handleDelete(diary.diaryId)} className="text-gray-400 hover:text-gray-700">
+                      <button onClick={() => handleDelete(diary)} className="text-gray-400 hover:text-gray-700">
                         <Delete fontSize="inherit" />
                       </button>
                     </div>
