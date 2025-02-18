@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 import { useSelector } from "react-redux";
+import GetColor from "./GetColor";
 
 const ParticlePlanetGallery = () => {
   const mountRef = useRef(null);
