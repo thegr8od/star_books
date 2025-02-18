@@ -11,12 +11,17 @@ const ParticlePlanetGallery = () => {
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const controlsRef = useRef(null);
+  const particleGroupRef = useRef(null);
+  const starFieldRef = useRef(null);
+  const nebulaRef = useRef(null);
+  const [hovering, setHovering] = useState(false);
+  const hoveredParticleRef = useRef(null);
   const [isMaximized, setIsMaximized] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [diaryEmotions, setDiaryEmotions] = useState([]);
   const user = useSelector((state) => state.user);
 
-  // 토큰에서 유저 정보 추출
+  // 토큰에서 유저 정보 추출 (토큰에 포함된 user_id 사용)
   const token = localStorage.getItem("accessToken");
   let tokenUserId = null;
   if (token) {
@@ -166,7 +171,7 @@ const ParticlePlanetGallery = () => {
     "5,-5": "#00994e",
   };
 
-  // getColor 함수: 소수점 좌표를 반올림하여 Colors 객체에서 강제로 매칭
+  // 소수점 좌표를 반올림하여 Colors 객체에서 HEX 색상 반환
   const getColor = ({ x, y }) => {
     const roundedX = Math.round(x);
     const roundedY = Math.round(y);
@@ -174,7 +179,7 @@ const ParticlePlanetGallery = () => {
     return Colors[key] || "#9a9790";
   };
 
-  // API 호출 함수 (axios 사용)
+  // API 호출 (axios 사용)
   const fetchEmotions = async () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
@@ -184,8 +189,8 @@ const ParticlePlanetGallery = () => {
         return;
       }
       const today = new Date().toISOString().split("T")[0];
-      console.log("API 요청 URL:", `https://starbooks.site/api/diary/emotion?diaryDate=${today}`);
-      const response = await axios.get(`https://starbooks.site/api/diary/emotion`, {
+      console.log("API 요청 URL:", `http://localhost:9090/api/diary/emotion?diaryDate=${today}`);
+      const response = await axios.get(`http://localhost:9090/api/diary/emotion`, {
         params: { diaryDate: today },
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -210,7 +215,7 @@ const ParticlePlanetGallery = () => {
     fetchEmotions();
   }, []);
 
-  // 현재 사용자 감정 로그를 콘솔에 출력 (필요시)
+  // 현재 사용자 감정 로그 출력
   useEffect(() => {
     const currentUserEmotions = diaryEmotions.filter((e) => e.isCurrentUser);
     currentUserEmotions.forEach((e) => {
@@ -219,7 +224,7 @@ const ParticlePlanetGallery = () => {
     });
   }, [diaryEmotions]);
 
-  // resize 핸들러
+  // 창 크기 조정 핸들러
   const handleResize = () => {
     if (!mountRef.current || !cameraRef.current || !rendererRef.current) return;
     const width = mountRef.current.clientWidth;
@@ -235,7 +240,7 @@ const ParticlePlanetGallery = () => {
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // 배경 설정 (그라데이션: 어두운 우주 느낌)
+    // 배경 (그라데이션 처리)
     const bgCanvas = document.createElement("canvas");
     const bgContext = bgCanvas.getContext("2d");
     bgCanvas.width = 2;
@@ -265,7 +270,7 @@ const ParticlePlanetGallery = () => {
     renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
     mountRef.current.appendChild(renderer.domElement);
 
-    // 컨트롤 설정
+    // OrbitControls 설정
     const controls = new OrbitControls(camera, renderer.domElement);
     controlsRef.current = controls;
     controls.enableDamping = true;
@@ -312,16 +317,16 @@ const ParticlePlanetGallery = () => {
     circleTexture.minFilter = THREE.LinearFilter;
     circleTexture.magFilter = THREE.LinearFilter;
 
-    // 파티클 생성 로직 (강제 Colors 매핑 적용, 현재 사용자 감정은 반짝임 효과 및 크기 2배 확대)
+    // 파티클 생성 (현재 사용자 감정은 2배 확대 및 추가 빛 효과)
     const createParticles = () => {
       const particles = new THREE.Group();
       diaryEmotions.forEach((emotion) => {
         const { xvalue, yvalue, isCurrentUser } = emotion;
-        // 강제 매칭: 소수 좌표를 반올림하여 Colors 객체에서 HEX 색상 얻기
+        // 소수 좌표를 반올림하여 Colors 객체에서 색상 얻기
         const hexColor = getColor({ x: xvalue, y: yvalue });
         const color = new THREE.Color(hexColor);
 
-        // 기본 파티클 생성 (2배 확대)
+        // 일반 파티클 생성
         const spriteMaterial = new THREE.SpriteMaterial({
           map: circleTexture,
           color: color,
@@ -331,7 +336,6 @@ const ParticlePlanetGallery = () => {
           depthWrite: false,
         });
         const particle = new THREE.Sprite(spriteMaterial);
-        // 기본 파티클 크기를 2배로 확대
         const size = (Math.random() * 0.8 + 0.5) * 2;
         particle.scale.set(size, size, 1);
 
@@ -344,7 +348,7 @@ const ParticlePlanetGallery = () => {
         particle.position.z = radius * Math.cos(theta);
         particles.add(particle);
 
-        // 현재 사용자 감정이면 "내 감정" 파티클 생성 (기본 파티클보다 2배 확대, 총 4배 크기로 보임)
+        // 현재 사용자 감정이면 별도의 "내 감정" 파티클 생성 (기본 파티클보다 2배 확대 → 총 4배)
         if (isCurrentUser) {
           console.log("현재 사용자 감정:", emotion, "매칭 색상:", hexColor);
           const myEmotionMaterial = new THREE.SpriteMaterial({
@@ -355,10 +359,11 @@ const ParticlePlanetGallery = () => {
             opacity: 1.0,
           });
           const myEmotionParticle = new THREE.Sprite(myEmotionMaterial);
-          // 현재 사용자 파티클은 기본 파티클보다 2배 확대
           myEmotionParticle.scale.set(size * 2, size * 2, 1);
           myEmotionParticle.position.copy(particle.position);
           myEmotionParticle.userData.sparkle = true; // 반짝임 플래그
+          // 원래 위치 저장 (hover 시 원위치 기준으로 움직임)
+          myEmotionParticle.userData.originalPosition = myEmotionParticle.position.clone();
 
           // 추가 빛 효과
           const emotionLight = new THREE.PointLight(color, 2, 15);
@@ -372,6 +377,7 @@ const ParticlePlanetGallery = () => {
     };
 
     const particleGroup = createParticles();
+    particleGroupRef.current = particleGroup;
 
     let animationFrameId;
     const animate = () => {
@@ -382,18 +388,56 @@ const ParticlePlanetGallery = () => {
         if (child.isSprite) {
           child.rotation.y += 0.02;
           if (child.userData.sparkle) {
-            // 반짝임 효과: 현재 사용자 파티클의 opacity가 천천히 변화 (진폭 조정)
+            // 반짝임 효과: 천천히 변화하는 opacity
             child.material.opacity = 0.8 + 0.2 * Math.abs(Math.sin(time * 3));
           }
         }
       });
+
+      // 만약 현재 사용자 파티클에 마우스가 닿아 있다면 수직 방향으로 약간 움직임 (진동 효과)
+      if (hoveredParticleRef.current) {
+        const origPos = hoveredParticleRef.current.userData.originalPosition;
+        // 원래 위치에서 y축으로 sin 함수를 이용한 오프셋을 더함
+        hoveredParticleRef.current.position.copy(
+          origPos.clone().add(new THREE.Vector3(0, Math.sin(time * 3) * 0.5, 0))
+        );
+      }
+
       controls.update();
       renderer.render(scene, camera);
     };
     animate();
     window.addEventListener("resize", handleResize);
+
+    // 마우스 포인터 이벤트: 현재 사용자 감정 파티클 위에 올리면 메시지 표시 및 파티클 움직임 처리
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const handlePointerMove = (event) => {
+      const rect = mountRef.current.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(particleGroup.children, true);
+      let found = false;
+      for (let intersect of intersects) {
+        if (intersect.object.userData && intersect.object.userData.sparkle) {
+          // 현재 사용자 감정 파티클 위에 마우스가 있으면 메시지 표시 및 해당 파티클 참조 저장
+          setHovering(true);
+          hoveredParticleRef.current = intersect.object;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        setHovering(false);
+        hoveredParticleRef.current = null;
+      }
+    };
+    mountRef.current.addEventListener("pointermove", handlePointerMove);
+
     return () => {
       window.removeEventListener("resize", handleResize);
+      mountRef.current.removeEventListener("pointermove", handlePointerMove);
       cancelAnimationFrame(animationFrameId);
       if (mountRef.current && rendererRef.current) {
         mountRef.current.removeChild(rendererRef.current.domElement);
@@ -422,6 +466,14 @@ const ParticlePlanetGallery = () => {
   return (
     <div className="relative w-full h-screen bg-black">
       <div ref={mountRef} className="w-full h-full" />
+      {/* UI 메시지 오버레이 - 배경 없이 자연스럽게 페이드 아웃 */}
+      <div
+        className={`absolute bottom-20 left-1/2 transform -translate-x-1/2 text-white px-4 py-2 rounded shadow-lg text-lg transition-opacity duration-500 ${
+          hovering ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        당신의 감정이 우리의 은하를 빛내고 있습니다
+      </div>
       <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-center text-white">
         <h1 className="text-2xl font-bold mb-2">우리의 우주</h1>
         <p className="text-sm opacity-80">
