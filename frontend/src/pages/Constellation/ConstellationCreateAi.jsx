@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -46,22 +47,32 @@ function ConstellationCreateAi({ constellationData }) {
     const formData = new FormData();
     formData.append("file", fileInput.files[0]);
 
-    //  🔹 백엔드의 실제 서버 주소로 변경
     const BACKEND_URL = "https://i12d206.p.ssafy.io/api/constellation/generate-lines";
+    const token = localStorage.getItem("accessToken"); // ✅ JWT 토큰 가져오기
+
+    if (!token) {
+        console.error("❌ JWT 토큰이 없습니다. 로그인 필요");
+        alert("로그인이 필요합니다.");
+        setIsLoading(false);
+        return;
+    }
 
     console.log("📤 [프론트엔드] 백엔드로 이미지 업로드 요청 전송...", BACKEND_URL);
 
     try {
         const response = await axios.post(BACKEND_URL, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: { 
+                "Content-Type": "multipart/form-data",
+                "Authorization": `Bearer ${token}` // ✅ JWT 포함
+            },
         });
 
         console.log("✅ [프론트엔드] 응답 수신 완료:", response.data);
 
-        if (Array.isArray(response.data)) {
-            setLineData(response.data);
-        } else if (response.data.lines) {
-            setLineData(response.data.lines);
+        if (Array.isArray(response.data.data)) {
+            setLineData(response.data.data);
+        } else if (response.data.data.lines) {
+            setLineData(response.data.data.lines);
         } else {
             console.error("❌ 응답 데이터 형식 오류:", response.data);
             alert("별자리 데이터를 불러오는데 실패했습니다.");
@@ -77,8 +88,8 @@ function ConstellationCreateAi({ constellationData }) {
 };
 
 
-  // 별자리 저장 핸들러 
-  //
+
+  // 별자리 저장 핸들러
   const handleSave = async (visualizationData) => {
     try {
       const dataToSave = {

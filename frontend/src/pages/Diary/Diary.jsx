@@ -5,6 +5,7 @@ import Layout from "../../components/Layout";
 import Button from "../../components/Button";
 import MoodSurvey from "./MoodSurvey";
 import DiaryDate from "./DiaryDate";
+import diaryApi from "../../api/useDiaryApi";
 
 function Diary() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -15,6 +16,37 @@ function Diary() {
   const isStarsMatch = useMatch({ path: "/diary/stars", end: true });
   const isCalendarMatch = useMatch({ path: "/diary/calendar", end: true });
   const currentTab = isStarsMatch ? "stars" : isCalendarMatch ? "calendar" : "";
+  const [modalData, setModalData] = useState(null);
+  const [clickDay, setClickDay] = useState(null); // 클릭한 날짜를 DiaryCalendar(하위)에서 상태 넘겨줌
+  const handleSetShowModal = (show, data) => {
+    setShowModal(show);
+    setModalData(data);
+  };
+
+  // 다이어리 날짜 함수
+  const handleCreateDiary = async (selectedDate) => {
+    if (!selectedDate) {
+      alert("날짜를 선택해주세요");
+      return;
+    }
+    
+    // console.log("API 요청 전 날짜:", selectedDate); // API 요청 전 데이터 확인
+    
+    try {
+      const result = await diaryApi.createEmptyDiary({
+        diaryDate: selectedDate,
+      });
+      // console.log("API 응답:", result); // API 응답 확인
+      
+      if (result) {
+        setShowModal(true);
+        return result;
+      }
+    } catch (error) {
+      console.error("에러 상세 정보:", error.response); // 에러 상세 정보 확인
+      alert("일기 생성에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
 
   return (
     <Layout>
@@ -24,25 +56,66 @@ function Diary() {
 
         {/* 메인 */}
         <main className="flex-1">
-          <Outlet context={{ currentDate }} />
+          <Outlet
+            context={{
+              currentDate,
+              clickDay,
+              setClickDay,
+              handleCreateDiary,
+            }}
+          />
         </main>
 
         {/* 버튼 */}
-        <div className="flex justify-center items-center mt-3 space-x-8">
-          <Button text="나의 별" type={`${currentTab === "stars" ? "NEXT" : "PREV"}`} onClick={() => navigate("/diary/stars")} className="w-24 h-9 text-sm" />
+        <div className="flex justify-between items-center mt-3 px-2 w-full">
+          <Button
+            text="나의 별"
+            type={`${currentTab === "stars" ? "NEXT" : "PREV"}`}
+            onClick={() => navigate("/diary/stars")}
+            className="w-[30%] h-9 text-sm"
+          />
 
           {currentTab === "stars" ? (
-            <Button text="3D" type="DEFAULT" className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent" onClick={() => navigate(`/constellation/detail/${currentDate.getFullYear()}`)} />
+            <Button
+              text="3D"
+              type="DEFAULT"
+              className="h-9 w-[15%] min-w-[40px] rounded-full border border-white bg-transparent hover:bg-white/10 transition-colors duration-200 text-sm"
+              onClick={() =>
+                navigate(`/constellation/detail/${currentDate.getFullYear()}`)
+              }
+            />
           ) : (
-            <Button text={<Add />} type="DEFAULT" className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent" onClick={() => setShowModal(true)} />
+            <Button
+              text={<Add />}
+              type="DEFAULT"
+              className="h-9 w-[15%] min-w-[40px] rounded-full border border-white bg-transparent hover:bg-white/10 transition-colors duration-200"
+              onClick={async () => {
+                // 날짜 선택 여부 확인
+                if (!clickDay) {
+                  alert("날짜를 선택해주세요");
+                  return;
+                }
+                const result = await handleCreateDiary(clickDay);
+                if (result) handleSetShowModal(true, result);
+              }}
+            />
           )}
 
-          <Button text="캘린더" type={`${currentTab === "calendar" ? "NEXT" : "PREV"}`} onClick={() => navigate("/diary/calendar")} className="w-24 h-9 text-sm" />
+          <Button
+            text="캘린더"
+            type={`${currentTab === "calendar" ? "NEXT" : "PREV"}`}
+            onClick={() => navigate("/diary/calendar")}
+            className="w-[30%] h-9 text-sm"
+          />
         </div>
       </div>
 
       {/* 모달 */}
-      <MoodSurvey isOpen={showModal} onClose={() => setShowModal(false)} />
+      <MoodSurvey
+        isOpen={showModal}
+        onClose={() => handleSetShowModal(false, null)}
+        data={modalData}
+      />
     </Layout>
   );
 }

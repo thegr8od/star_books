@@ -4,16 +4,16 @@ import Modal from "../../components/Modal";
 import Button from "../../components/Button";
 import { useNavigate } from "react-router-dom";
 import MoodSurveyToast from "./MoodSurveyToast";
-import MoodSurveyLoading from "./MoodSurveyLoading";
+import useDiaryApi from "../../api/useDiaryApi";
 
-const MoodSurvey = ({ isOpen, onClose }) => {
+const MoodSurvey = ({ isOpen, onClose, data }) => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
   const [showToast, setShowToast] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastDuration, setToastDuration] = useState(800);
   const moods = ["매우 좋음", "좋음", "보통", "좋지 않음", "매우 좋지 않음"];
   const emotions = {
     긍정: [
@@ -31,8 +31,8 @@ const MoodSurvey = ({ isOpen, onClose }) => {
     부정: [
       "불안한",
       "초조한",
-      "화나는",
-      "짜증나는",
+      "화난",
+      "짜증 나는",
       "답답한",
       "속상한",
       "슬픈",
@@ -80,54 +80,86 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   const handleEmotionClick = (emotion) => {
     if (selectedEmotions.includes(emotion)) {
       setSelectedEmotions(selectedEmotions.filter((item) => item !== emotion));
-    } else if (selectedEmotions.length <= 4) {
+    } else if (selectedEmotions.length < 5) {
       setSelectedEmotions([...selectedEmotions, emotion]);
+      console.log(selectedEmotions);
     } else {
+      setToastMessage("감정은 최대 5개까지 선택할 수 있습니다");
       setShowToast(true);
     }
   };
 
-  // 모달 닫힐 때 상태 초기화
-  const handleClose = () => {
+  const handleClose = (closeType) => {
+    // X 버튼으로 닫을 때 일기 삭제
+    if (closeType === "cancel" && data?.diaryId) {
+      useDiaryApi.deleteDiary(data.diaryId).catch((error) => {
+        console.error("일기 삭제 중 오류 발생 : ", error);
+      });
+    }
+
+    // 모달 닫힐 때 상태 초기화
     setStep(1);
     setSelectedMood(null);
     setSelectedEmotions([]);
     onClose();
   };
+
   const text = (
-    <>
+    <div>
       더 자세히 알려주세요
       <br />
       <span className="font-medium text-gray-700 text-[18px]">(최대 5개)</span>
-    </>
+    </div>
   );
   const modalTitle = step === 1 ? "기분을 선택해주세요" : text;
 
   // step2 완료 버튼 클릭 시 다이어리 작성 페이지로 이동
-  // 로딩 화면 추가
-  const handleComplete = async () => {
-    setIsLoading(true);
-    try {
-      handleClose();
-      navigate("../diary/write", {
-        state: {
-          emotions: selectedEmotions,
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleComplete = () => {
+    saveMoodData();
   };
 
+  // 감정 분석 토스트 띄우기
+  const showToastMessage = (message, duration = 800) => {
+    setToastMessage(message);
+    setToastDuration(duration);
+    setShowToast(true);
+  };
+
+  // api 호출하여 감정 데이터 저장
+  const saveMoodData = () => {
+    // 로딩 메시지 표시 (나중에 속도 조절 필요!!)
+    showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 2000);
+
+    // 해시태그 추가 및 감정 분석
+    useDiaryApi
+      .addHashtagsAndAnalyzeEmotion(data.diaryId, {
+        hashtags: selectedEmotions,
+      })
+      .then((response) => {
+        setShowToast(false);
+        handleClose();
+        navigate("../diary/write", {
+          state: {
+            emotions: selectedEmotions,
+            xvalue: response.xvalue,
+            yvalue: response.yvalue,
+            diaryId: data.diaryId,
+            originalData: data,
+          },
+        });
+      })
+      .catch((error) => {
+        console.error("에러 발생:", error);
+        showToastMessage("오류가 발생했습니다. 다시 시도해주세요.", 800);
+      });
+  };
   return (
-    <>
-      {isLoading && <MoodSurveyLoading />}
+    <div>
       <MoodSurveyToast
-        message={"감정은 5개까지만 선택 가능해요!"}
+        message={toastMessage}
         isVisible={showToast}
         onClose={() => setShowToast(false)}
+        duration={toastDuration}
       />
       <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle}>
         {/* 오늘의 기분 설문 */}
@@ -205,7 +237,7 @@ const MoodSurvey = ({ isOpen, onClose }) => {
           </div>
         )}
       </Modal>
-    </>
+    </div>
   );
 };
 

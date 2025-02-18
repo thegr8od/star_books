@@ -1,16 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import Layout from "../../components/Layout";
 import UniverseAnalysisStatsChart from "./UniverseAnalysisStatsChart";
 import GetColor from "../../components/GetColor";
+import useAnalysisApi from "../../api/useAnalysisApi";
 
 const UniverseAnalysis = () => {
-  const emotionData = [
-    { label: "피곤한", value: 34.6, color: GetColor({ x: 3, y: -1 }) },
-    { label: "신나는", value: 26.6, color: GetColor({ x: -4, y: 2 }) },
-    { label: "답답한", value: 20.5, color: GetColor({ x: 4, y: 1 }) },
-    { label: "즐거운", value: 18.3, color: GetColor({ x: 0, y: 3 }) },
-  ];
+  const [transformedData, setTransformedData] = useState([]);
+  useEffect(() => {
+    useAnalysisApi
+      .getTopHashtags()
+      .then((response) => {
+        console.log(response);
+
+        if (response.status === 200) {
+          // 퍼센트에 사용하기 위해 전체 사용 횟수 합계 계산
+          const totalCount = response.data.reduce(
+            (sum, item) => sum + Number(item.usageCount),
+            0
+          );
+          const analysisData = response.data.map((item) => ({
+            label: item.hashtagType,
+            value: Number(((item.usageCount / totalCount) * 100).toFixed(1)), // 퍼센트 변환(소수점 1자리까지)
+            color: GetColor(item.xvalue, item.yvalue),
+          }));
+          setTransformedData(analysisData);
+          console.log(analysisData);
+        }
+      })
+      .catch((error) => {
+        console.error("TOP 해시태그 데이터 업로드 실패 : ", error);
+      });
+  }, []);
 
   const options = {
     chart: {
@@ -19,15 +40,15 @@ const UniverseAnalysis = () => {
       fontFamily: "NotoSansKR-Medium",
       height: 380,
     },
-    labels: emotionData.map((item) => item.label),
-    colors: emotionData.map((item) => item.color),
+    labels: transformedData.map((item) => item.label),
+    colors: transformedData.map((item) => item.color),
     legend: {
       show: true,
       fontSize: "18px",
       fontFamily: "NotoSansKR-Medium",
       formatter: function (seriesName, opts) {
         return `<span style="padding-left: 9px;">${
-          emotionData[opts.seriesIndex].value
+          transformedData[opts.seriesIndex].value
         }%</span>`;
       },
       position: "bottom",
@@ -41,7 +62,7 @@ const UniverseAnalysis = () => {
       style: {
         colors: ["#FFFFFF"],
         fontFamily: "NotoSansKR-Medium",
-        fontSize: "25px",
+        fontSize: "20px",
       },
       background: {
         enabled: false,
@@ -95,7 +116,7 @@ const UniverseAnalysis = () => {
           },
           dataLabels: {
             style: {
-              fontSize: "25px",
+              fontSize: "23px",
             },
           },
         },
@@ -116,7 +137,7 @@ const UniverseAnalysis = () => {
           },
           dataLabels: {
             style: {
-              fontSize: "24px",
+              fontSize: "18px",
             },
           },
         },
@@ -137,7 +158,7 @@ const UniverseAnalysis = () => {
           },
           dataLabels: {
             style: {
-              fontSize: "18px",
+              fontSize: "15px",
             },
           },
         },
@@ -145,7 +166,7 @@ const UniverseAnalysis = () => {
     ],
   };
 
-  const series = emotionData.map((item) => item.value);
+  const series = transformedData.map((item) => item.value);
 
   return (
     <Layout>
@@ -158,14 +179,18 @@ const UniverseAnalysis = () => {
             <div className="text-gray-300 text-sm md:text-md justify-start">
               오늘의 감정 흐름을 한눈에 확인해보세요.
             </div>
-            <div className="w-full max-w-sm md:max-w-md lg:max-w-lg mx-auto mt-[20px]">
-              <ReactApexChart
-                options={options}
-                series={series}
-                type="pie"
-                height={350}
-              />
-            </div>
+            {transformedData.length > 0 ? (
+              <div className="w-full max-w-sm md:max-w-md lg:max-w-lg mx-auto mt-[20px]">
+                <ReactApexChart
+                  options={options}
+                  series={series}
+                  type="pie"
+                  height={350}
+                />
+              </div>
+            ) : (
+              <div className="text-white text-center">데이터가 없습니다.</div>
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-2 pt-8">

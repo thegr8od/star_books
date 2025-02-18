@@ -31,19 +31,19 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Gender gender;  // MALE, FEMALE, OTHER
+    private Gender gender;
 
-    @Column(name = "kakao_id")
-    private String kakaoId;
+    @Builder.Default
+    @Column(name = "sns_account", nullable = false)
+    private Boolean snsAccount = false;  // 변경된 필드 (기본값 false)
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;  // member, manager
+    private Role role;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
-    private String token; // 필요시 사용
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

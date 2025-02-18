@@ -67,7 +67,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .password(null)
                     .nickname(oAuth2Response.getName() != null ? oAuth2Response.getName() : "Unknown User")
                     .gender(Gender.OTHER)
-                    .kakaoId(null)
+                    .snsAccount(true)  // 변경된 필드 (OAuth2 사용자는 snsAccount = true)
                     .role(Role.member)
                     .isActive(true)
                     .build();
