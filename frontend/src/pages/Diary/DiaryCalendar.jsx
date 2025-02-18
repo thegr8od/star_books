@@ -133,16 +133,16 @@ const DiaryCalendar = () => {
 
         if (response && response.data) {
           const diaryDatas = response.data.map((oneday) => {
-            //oneday랑 일치하는 날짜에 color를 적용! style css로 적용.
+            console.log("각 일기 데이터:", oneday); // 데이터 구조 확인
             return {
               id: oneday.diaryId,
-              date: oneday.diaryDate,
-              color: GetColor(
-                oneday.emotions[0].xValue,
-                oneday.emotions[0].yValue
-              ),
+              date: oneday.diaryDate, // diaryDate 사용
+              color: oneday.emotions[0]
+                ? GetColor(oneday.emotions[0].xValue, oneday.emotions[0].yValue)
+                : null,
             };
           });
+          console.log("가공된 데이터:", diaryDatas); // 가공된 데이터 확인
           setDiaryEntries(diaryDatas);
         }
       } catch (error) {
@@ -183,16 +183,32 @@ const DiaryCalendar = () => {
 
   // 특정 날짜의 다이어리 엔트리와 감정 색상을 찾는 함수
   const getColorForDay = (day) => {
+    console.log("현재 확인하는 날짜:", day);
+    console.log("전체 일기 데이터:", diaryEntries);
+
     const entry = diaryEntries.find((entry) => {
-      const entryDay = parseInt(entry.date.split("-")[2]);
+      // entry.date가 배열인지 확인
+      if (!Array.isArray(entry.date)) {
+        console.error("Invalid date format:", entry.date);
+        return false;
+      }
+
+      const [entryYear, entryMonth, entryDay] = entry.date;
+
+      console.log(
+        `비교: ${entryDay} === ${day} && ${entryMonth} === ${
+          currentDate.getMonth() + 1
+        } && ${entryYear} === ${currentDate.getFullYear()}`
+      );
+
       return (
         entryDay === day &&
-        currentDate.getMonth() + 1 === parseInt(entry.date.split("-")[1]) &&
-        currentDate.getFullYear() === parseInt(entry.date.split("-")[0])
+        entryMonth === currentDate.getMonth() + 1 &&
+        entryYear === currentDate.getFullYear()
       );
     });
 
-    return entry ? { color: entry.color } : null;
+    return entry && entry.color ? { color: entry.color } : null;
   };
 
   //참고: diaryEntries는 아래와 같음.
@@ -220,6 +236,7 @@ const DiaryCalendar = () => {
 
     // YYYY-MM-DD 형식으로 변환하여 전달
     const formattedDate = selectedDate.toISOString().split("T")[0];
+    console.log("선택된 날짜:", formattedDate); // 날짜 형식 확인
     setClickDay(formattedDate);
 
     // 해당 날짜에 일기가 있는지 확인
