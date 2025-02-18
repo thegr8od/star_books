@@ -21,6 +21,7 @@ import AiChat from "./pages/AiChat/AiChat";
 import DiaryCalendar from "./pages/Diary/DiaryCalendar";
 import Diary from "./pages/Diary/Diary";
 import ConstellationAi from "./pages/Constellation/ConstellationAi";
+import Radio from "./pages/Radio/Radio";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="universe" element={<Universe />} />
           <Route path="universe/analysis" element={<UniverseAnalysis />} />
           {/* Radio 관련 */}
+          <Route path="radio" element={<Radio />} />
           <Route path="radio/list" element={<RadioList />} />
           <Route path="radio/:id" element={<RadioShow />} />
           {/* Diary 관련 */}

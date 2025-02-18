@@ -64,4 +64,5 @@ export default{
     getMonthlyPersonalUniv,
     getYearlyPersonalUniv,
     getPersonalUniv,
+    updatePersonalUniv,
 };

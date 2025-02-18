@@ -21,7 +21,7 @@ function LoginHome() {
   const radius = 150; // 선과 점의 위치를 동일하게 설정
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-black">
+    <div className="relative h-screen w-full overflow-hidden">
       <video
         autoPlay
         loop
@@ -33,7 +33,7 @@ function LoginHome() {
       </video>
 
       {/* 배경 오버레이 */}
-      <div className="absolute inset-0 bg-black/30 z-10" />
+      <div className="absolu inset-0 bg-black/30" />
 
       {/* 메인 컨텐츠 */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-20">

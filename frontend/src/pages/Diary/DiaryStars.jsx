@@ -36,11 +36,9 @@ function DiaryStars() {
     (async () => {
       const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
       const response = await useUniverseApi.getMonthlyPersonalUniv(requestData);
-      console.log(response);
       if (response.status === "C000") {
         console.log("별 조회 성공");
         setStars(response.data);
-        console.log(stars);
       } else {
         console.log("별 조회 실패");
       }
@@ -48,7 +46,6 @@ function DiaryStars() {
     (async () => {
       const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
       const response = await useStarlineApi.getMonthlyStarlineCoords(requestData);
-      console.log(response);
       if (response.status === "C000") {
         console.log("별선 조회 성공");
         setConnections(response.data);
@@ -83,8 +80,8 @@ function DiaryStars() {
     setModifiedStars((prev) => ({
       ...prev,
       [selectedStar]: {
-        xcoord: newX,
-        ycoord: newY,
+        xCoord: newX,
+        yCoord: newY,
       },
     }));
   };
@@ -159,41 +156,41 @@ function DiaryStars() {
 
   // 변경 저장
   const handleSave = async () => {
-    // // axios 요청
-    // // 별 위치 업데이트 요청
-    // if (Object.keys(modifiedStars).length > 0) {
-    //   const starsRequestData = Object.entries(modifiedStars).map(([diaryEmotionId, coords]) => ({
-    //     diaryEmotionId: Number(diaryEmotionId),
-    //     xcoord: coords.xcoord,
-    //     ycoord: coords.ycoord,
-    //   }));
+    // axios 요청
+    // 별 위치 업데이트 요청
+    if (Object.keys(modifiedStars).length > 0) {
+      const starsRequestData = Object.entries(modifiedStars).map(([diaryEmotionId, coords]) => ({
+        diaryEmotionId: Number(diaryEmotionId),
+        xCoord: coords.xCoord,
+        yCoord: coords.yCoord,
+      }));
 
-    //   const starsResponse = await useUniverseApi.updatePersonalUniv(starsRequestData);
-    //   console.log(starsResponse);
-    //   if (starsResponse.status === "C000") {
-    //     console.log("별 위치 업데이트 성공");
-    //   } else {
-    //     console.log("별 위치 업데이트 실패");
-    //   }
-    // }
+      const starsResponse = await useUniverseApi.updatePersonalUniv(starsRequestData);
+      if (starsResponse.status === "C000") {
+        console.log("별 위치 업데이트 성공");
+      } else {
+        console.log("별 위치 업데이트 실패");
+      }
+    }
 
-    // // 별선 업데이트 요청
-    // if (connections.length > 0) {
-    //   const connectionsRequestData = connections.map((connection) => ({
-    //     startEmotionId: connection.startEmotionId,
-    //     endEmotionId: connection.endEmotionId,
-    //     year: currentDate.getFullYear(),
-    //     month: currentDate.getMonth() + 1,
-    //   }));
+    // 별선 업데이트 요청
+    if (connections.length > 0) {
+      const connectionsRequestData = connections.map((connection) => ({
+        startEmotionId: connection.startEmotionId,
+        endEmotionId: connection.endEmotionId,
+        year: currentDate.getFullYear(),
+        month: currentDate.getMonth() + 1,
+      }));
+      console.log(connectionsRequestData);
 
-    //   const connectionsResponse = await useStarlineApi.updateStarlineCoords(connectionsRequestData);
-    //   console.log(connectionsResponse);
-    //   if (connectionsResponse.status === "C000") {
-    //     console.log("별선 업데이트 성공");
-    //   } else {
-    //     console.log("별선 업데이트 실패");
-    //   }
-    // }
+      const connectionsResponse = await useStarlineApi.updateStarlineCoords(connectionsRequestData);
+      console.log(connectionsResponse);
+      if (connectionsResponse.status === "C000") {
+        console.log("별선 업데이트 성공");
+      } else {
+        console.log("별선 업데이트 실패");
+      }
+    }
 
     setIsEdit(false); // 편집 상태 비활성화
     setOriginalStars([]); // 복사 별 데이터 초기화
