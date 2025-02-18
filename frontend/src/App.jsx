@@ -46,7 +46,7 @@ function App() {
             <Route path="diary/stars" element={<DiaryStars />} />
           </Route>
           {/* 별 보기 추가 */}
-          <Route path="diary/monthly/:year/:month" element={<MonthlyDiary />} />
+          <Route path="diary/monthly" element={<MonthlyDiary />} />
           <Route path="diary/write" element={<DiaryWrite />} />
           <Route path="diary/edit/:id" element={<DiaryWrite />} />
           {/* Constellation 관련 */}
