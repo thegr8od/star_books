@@ -9,6 +9,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useOutletContext } from "react-router-dom";
 import useUniverseApi from "../../api/useUniverseApi";
 import GetColor from "../../components/GetColor";
+import useStarlineApi from "../../api/useStarlineApi";
 
 // 샘플 데이터
 const sampleWorryStars = [
@@ -64,12 +65,36 @@ const sampleWorryStars = [
   },
 ];
 
+const sampleConnections = [
+  {
+    starlineCoordId: 1,
+    startEmotionId: 1,
+    endEmotionId: 3,
+    year: 2024,
+    month: 3,
+  },
+  {
+    starlineCoordId: 2,
+    startEmotionId: 2,
+    endEmotionId: 5,
+    year: 2024,
+    month: 3,
+  },
+  {
+    starlineCoordId: 3,
+    startEmotionId: 3,
+    endEmotionId: 4,
+    year: 2024,
+    month: 3,
+  },
+];
+
 function DiaryStars() {
   // ==================================================== 상태 관리 ====================================================
   const { currentDate } = useOutletContext();
 
   const [stars, setStars] = useState(sampleWorryStars); // 별(초기 axios 응답 데이터)
-  const [connections, setConnections] = useState([]); // 선(초기 axios 응답 데이터, axios 요청 데이터)
+  const [connections, setConnections] = useState(sampleConnections); // 선(초기 axios 응답 데이터, axios 요청 데이터)
 
   const [isEdit, setIsEdit] = useState(false); // 편집 상태
   const [editMode, setEditMode] = useState("move"); // 편집 모드('move' 또는 'connect')
@@ -96,6 +121,17 @@ function DiaryStars() {
     //     console.log(stars);
     //   } else {
     //     console.log("별 조회 실패");
+    //   }
+    // })();
+    // (async () => {
+    //   const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
+    //   const response = await useStarlineApi.getMonthlyStarlineCoords(requestData);
+    //   console.log(response);
+    //   if (response.status === "C000") {
+    //     console.log("별선 조회 성공");
+    //     setConnections(response.data);
+    //   } else {
+    //     console.log("별선 조회 실패");
     //   }
     // })();
   }, [currentDate]);
@@ -125,8 +161,8 @@ function DiaryStars() {
     setModifiedStars((prev) => ({
       ...prev,
       [selectedStar]: {
-        x: newX,
-        y: newY,
+        xCoord: newX,
+        yCoord: newY,
       },
     }));
   };
@@ -156,24 +192,26 @@ function DiaryStars() {
 
   // ==================================================== connect 모드 ====================================================
   // 별 클릭 시 선 연결 함수
-  const handleStarClick = (starId) => {
+  const handleStarClick = (diaryEmotionId) => {
     if (!selectedStar) {
       // 첫 번째 별 선택
-      setSelectedStar(starId);
-    } else if (selectedStar === starId) {
+      setSelectedStar(diaryEmotionId);
+    } else if (selectedStar === diaryEmotionId) {
       // 두 번째 같은 별 선택 -> 선택 취소
       setSelectedStar(null);
-    } else if (selectedStar !== starId) {
+    } else if (selectedStar !== diaryEmotionId) {
       // 두 번째 다른 별 선택
       // 존재하는 연결인지 확인
-      const connectionExists = connections.some((data) => (data.start === selectedStar && data.end === starId) || (data.start === starId && data.end === selectedStar));
+      const connectionExists = connections.some((connection) => (connection.startEmotionId === selectedStar && connection.endEmotionId === diaryEmotionId) || (connection.startEmotionId === diaryEmotionId && connection.endEmotionId === selectedStar));
       // 존재하지 않으면 연결 생성
       if (!connectionExists) {
         setConnections((prev) => [
           ...prev,
           {
-            start: selectedStar,
-            end: starId,
+            startEmotionId: selectedStar,
+            endEmotionId: diaryEmotionId,
+            year: currentDate.getFullYear(),
+            month: currentDate.getMonth(),
           },
         ]);
       }
@@ -184,7 +222,7 @@ function DiaryStars() {
 
   // 선 클릭 시 삭제하는 함수
   const handleConnectionClick = (connection) => {
-    setConnections((prev) => prev.filter((data) => !(data.start === connection.start && data.end === connection.end)));
+    setConnections((prev) => prev.filter((c) => !(c.startEmotionId === connection.startEmotionId && c.endEmotionId === connection.endEmotionId)));
   };
 
   // ==================================================== 편집 함수 ====================================================
@@ -230,22 +268,22 @@ function DiaryStars() {
           </div>
 
           {/* 선 (svg) */}
-          {/* <svg className="absolute w-full h-full pointer-events-none">
+          <svg className="absolute w-full h-full pointer-events-none">
             {(isEdit || showConnections) &&
               connections.map((connection) => {
                 // 연결된 시작과 끝 별 찾기
-                const startStar = stars.find((star) => star.diaryEmotionId === connection.start);
-                const endStar = stars.find((star) => star.diaryEmotionId === connection.end);
+                const startStar = stars.find((star) => star.diaryEmotionId === connection.startEmotionId);
+                const endStar = stars.find((star) => star.diaryEmotionId === connection.endEmotionId);
                 // 연결된 별이 없으면 선 그리지 않음 (별이 삭제된 경우)
                 if (!startStar || !endStar) return null;
 
                 return (
                   <line
-                    key={`${connection.start}-${connection.end}`}
-                    x1={`${startStar.x}%`} // 시작 별 x 좌표
-                    y1={`${startStar.y}%`} // 시작 별 y 좌표
-                    x2={`${endStar.x}%`} // 끝 별 x 좌표
-                    y2={`${endStar.y}%`} // 끝 별 y 좌표
+                    key={`${connection.startEmotionId}-${connection.endEmotionId}`}
+                    x1={`${startStar.xCoord}%`} // 시작 별 x 좌표
+                    y1={`${startStar.yCoord}%`} // 시작 별 y 좌표
+                    x2={`${endStar.xCoord}%`} // 끝 별 x 좌표
+                    y2={`${endStar.yCoord}%`} // 끝 별 y 좌표
                     stroke="rgba(255, 255, 255, 0.5)" // 선 색상
                     strokeWidth="1.5" // 선 두께
                     className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
@@ -261,7 +299,7 @@ function DiaryStars() {
                   />
                 );
               })}
-          </svg> */}
+          </svg>
 
           {/* 별 */}
           {stars.map((star) => (
