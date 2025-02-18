@@ -110,7 +110,8 @@ public class ConstellationController {
         try {
             boolean isUpdated = constellationDBService.updateConstellationLines(userId, constellationId, updatedLines);
             if (!isUpdated) {
-                return ResponseEntity.status(403).body(ApiResponse.createError(ErrorCode.FORBIDDEN, "AI가 생성한 별자리만 수정할 수 있습니다."));
+                return ResponseEntity.status(403).body(ApiResponse.createError(ErrorCode.CONSTELLATION_FORBIDDEN));
+
             }
             return ResponseEntity.ok(ApiResponse.createSuccess(null, "별자리 데이터 수정 완료"));
         } catch (Exception e) {
@@ -133,7 +134,8 @@ public class ConstellationController {
         try {
             boolean isDeleted = constellationDBService.deleteConstellation(userId, constellationId);
             if (!isDeleted) {
-                return ResponseEntity.status(403).body(ApiResponse.createError(ErrorCode.FORBIDDEN, "AI가 생성한 별자리만 삭제할 수 있습니다."));
+                return ResponseEntity.status(403).body(ApiResponse.createError(ErrorCode.CONSTELLATION_FORBIDDEN));
+
             }
             return ResponseEntity.ok(ApiResponse.createSuccess(null, "별자리 삭제 완료"));
         } catch (Exception e) {
