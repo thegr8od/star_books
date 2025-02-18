@@ -5,6 +5,7 @@ import Layout from "../../components/Layout";
 import DiaryDate from "./DiaryDate";
 import useDiaryApi from "../../api/useDiaryApi";
 import GetColor from "../../components/GetColor";
+import ConfirmModal from "../../components/Modal/ConfirmModal";
 
 const MonthlyDiary = () => {
   const navigate = useNavigate();
@@ -14,6 +15,12 @@ const MonthlyDiary = () => {
   const [diaries, setDiaries] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const selectedDate = location.state?.selectedDate;
+
+  // 모달 상태 추가
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    diaryToDelete: null,
+  });
 
   // axios (mount 될 때, currentDate가 변경될 때마다 실행)
   useEffect(() => {
@@ -49,19 +56,18 @@ const MonthlyDiary = () => {
   };
 
   // 삭제 버튼 클릭 시
-  const handleDelete = async (diary) => {
-    console.log(diary.diaryId);
-    if (window.confirm("일기를 삭제하시겠습니까?")) {
-      const response = await useDiaryApi.deleteDiary(diary.diaryId);
-      console.log(response);
-      if (response.status === 204) {
-        console.log("일기 삭제 성공");
-        setDiaries(diaries.filter((d) => d.diaryId !== diary.diaryId));
-      } else {
-        console.log("일기 삭제 실패");
-        alert("일기 삭제에 실패하였습니다.");
-      }
+  const handleDelete = async () => {
+    const diary = deleteModal.diaryToDelete;
+    const response = await useDiaryApi.deleteDiary(diary.diaryId);
+    console.log(response);
+    if (response.status === 204) {
+      console.log("일기 삭제 성공");
+      setDiaries(diaries.filter((d) => d.diaryId !== diary.diaryId));
+    } else {
+      console.log("일기 삭제 실패");
     }
+
+    setDeleteModal({ isOpen: false, diaryToDelete: null });
   };
 
   return (
@@ -91,7 +97,7 @@ const MonthlyDiary = () => {
                       <button onClick={() => handleEdit(diary)} className="text-gray-400 hover:text-gray-700">
                         <Edit fontSize="inherit" />
                       </button>
-                      <button onClick={() => handleDelete(diary)} className="text-gray-400 hover:text-gray-700">
+                      <button onClick={() => setDeleteModal({ isOpen: true, diaryToDelete: diary })} className="text-gray-400 hover:text-gray-700">
                         <Delete fontSize="inherit" />
                       </button>
                     </div>
@@ -124,6 +130,9 @@ const MonthlyDiary = () => {
           )}
         </div>
       </div>
+
+      {/* 모달 추가 */}
+      <ConfirmModal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, diaryToDelete: null })} onConfirm={handleDelete} title="잠시만요" />
     </Layout>
   );
 };
