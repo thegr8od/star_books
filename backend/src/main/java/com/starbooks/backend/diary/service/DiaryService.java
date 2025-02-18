@@ -2,6 +2,7 @@ package com.starbooks.backend.diary.service;
 
 //import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.config.CustomUserDetails;
+import com.starbooks.backend.diary.dto.DiaryEmotionDTO;
 import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
 import com.starbooks.backend.diary.dto.response.HashtagStatsResponse;
@@ -53,6 +54,15 @@ public class DiaryService {
                 .build();
         diaryRepository.save(diary);
         return DiaryResponse.from(diary);
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<DiaryEmotionDTO> getAllDiaryEmotionsByDate(LocalDate diaryDate) {
+        List<DiaryEmotion> emotions = diaryRepository.findAllEmotionsByDate(diaryDate);
+        return emotions.stream()
+                .map(e -> new DiaryEmotionDTO(e.getDiaryEmotionId(), e.getXValue(), e.getYValue()))
+                .collect(Collectors.toList());
     }
 
 
@@ -207,7 +217,7 @@ public class DiaryService {
                     .build();
             diary.setImage(diaryImage);
         }
-        DiaryEmotion emotion = diary.getEmotions().get(0);
+        DiaryEmotion emotion = diary.getEmotions().iterator().next();
         // PersonalUniv 자동 생성
         PersonalUniv personalUniv = PersonalUniv.builder()
                 .diaryEmotion(emotion)
@@ -216,6 +226,8 @@ public class DiaryService {
                 .updatedAt(LocalDateTime.now())
                 .build();
         personalUnivRepository.save(personalUniv);
+
+        return personalUniv;
     }
 
     @Transactional
@@ -260,6 +272,7 @@ public class DiaryService {
         return diaryRepository.findEmotionByUserIdAndDiaryDate(userId, diaryDate)
                 .orElseThrow(() -> new NotFoundException("해당 날짜의 다이어리 감정 데이터가 없습니다."));
     }
+
 
     /**
      * 년도별 다이어리 조회

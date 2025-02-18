@@ -4,6 +4,7 @@ package com.starbooks.backend.diary.controller;
 //import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
 import com.starbooks.backend.common.service.S3Service;
 import com.starbooks.backend.config.CustomUserDetails;
+import com.starbooks.backend.diary.dto.DiaryEmotionDTO;
 import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.request.DiaryCreateRequest;
 import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
@@ -147,10 +148,17 @@ public class DiaryController {
         return ResponseEntity.ok(personalUniv);
     }
 
-    @GetMapping("/emotion")
-    public ResponseEntity<DiaryEmotion> getDiaryEmotion(@RequestParam LocalDate diaryDate, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    @GetMapping("/emotion-my")
+    public ResponseEntity<DiaryEmotionDTO> getDiaryEmotion(@RequestParam LocalDate diaryDate, @AuthenticationPrincipal CustomUserDetails userDetails) {
         DiaryEmotion emotion = diaryService.getDiaryEmotionByDate(userDetails.getUserId(), diaryDate);
-        return ResponseEntity.ok(emotion);
+        DiaryEmotionDTO response = new DiaryEmotionDTO(emotion.getDiaryEmotionId(), emotion.getXValue(), emotion.getYValue());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/emotion")
+    public ResponseEntity<List<DiaryEmotionDTO>> getAllDiaryEmotions(@RequestParam LocalDate diaryDate) {
+        List<DiaryEmotionDTO> emotions = diaryService.getAllDiaryEmotionsByDate(diaryDate);
+        return ResponseEntity.ok(emotions);
     }
 
     /**

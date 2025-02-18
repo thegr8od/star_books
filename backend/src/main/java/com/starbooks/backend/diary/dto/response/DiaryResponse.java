@@ -5,6 +5,7 @@ import com.starbooks.backend.diary.model.DiaryHashtag;
 import com.starbooks.backend.diary.model.Diary.HashtagType;
 import lombok.Getter;
 
+// DiaryResponse 클래스 수정
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,18 +15,14 @@ public record DiaryResponse(
         String title,
         String content,
         List<EmotionResponse> emotions,
-        List<HashtagType> hashtags,
-        String imageUrl,// List<String>에서 String으로 변경
+        List<Diary.HashtagType> hashtags,
+        String imageUrl,
         LocalDate diaryDate,
         LocalDateTime createdAt
 ) {
     public static DiaryResponse from(Diary diary) {
-        String title = "";
-        String content = "";
-        if (diary.getContent() != null) {
-            title = diary.getContent().getTitle();
-            content = diary.getContent().getContent();
-        }
+        String title = diary.getContent() != null ? diary.getContent().getTitle() : "";
+        String content = diary.getContent() != null ? diary.getContent().getContent() : "";
 
         List<EmotionResponse> emotions = diary.getEmotions() != null
                 ? diary.getEmotions().stream()
@@ -33,13 +30,10 @@ public record DiaryResponse(
                 .toList()
                 : List.of();
 
-        List<HashtagType> hashtags = diary.getHashtags() != null
-                ? diary.getHashtags().stream()
-                .map(DiaryHashtag::getHashtag)
-                .toList()
+        List<Diary.HashtagType> hashtags = diary.getHashtags() != null
+                ? diary.getHashtags().stream().map(DiaryHashtag::getHashtag).toList()
                 : List.of();
 
-        // 이미지 URL을 단일 값으로 가져오기
         String imageUrl = diary.getImage() != null ? diary.getImage().getImgurl() : null;
 
         return new DiaryResponse(
