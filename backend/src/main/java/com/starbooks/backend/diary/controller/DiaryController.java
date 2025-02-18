@@ -148,8 +148,7 @@ public class DiaryController {
     }
 
     @GetMapping("/emotion")
-    public ResponseEntity<DiaryEmotion> getDiaryEmotionByDate(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate diaryDate) {
+    public ResponseEntity<DiaryEmotion> getDiaryEmotion(@RequestParam LocalDate diaryDate, @AuthenticationPrincipal CustomUserDetails userDetails) {
         DiaryEmotion emotion = diaryService.getDiaryEmotionByDate(userDetails.getUserId(), diaryDate);
         return ResponseEntity.ok(emotion);
     }

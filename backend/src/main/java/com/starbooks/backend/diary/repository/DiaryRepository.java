@@ -2,6 +2,7 @@ package com.starbooks.backend.diary.repository;
 
 import com.starbooks.backend.config.CustomUserDetails;
 import com.starbooks.backend.diary.model.Diary;
+import com.starbooks.backend.diary.model.DiaryEmotion;
 import com.starbooks.backend.user.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +21,8 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     @EntityGraph(attributePaths = {"content", "diaryEmotion", "hashtags", "images"})
     Optional<Diary> findByDiaryId(Long diaryId);
 
-    @Query("SELECT d FROM Diary d WHERE d.user.userId = :userId AND d.diaryDate = :date")
-    Optional<Diary> findByUserIdAndDiaryDate(@Param("userId") Long userId, @Param("date") LocalDate date);
+    @Query("SELECT e FROM DiaryEmotion e WHERE e.diary.user.userId = :userId AND e.diary.diaryDate = :diaryDate")
+    Optional<DiaryEmotion> findEmotionByUserIdAndDiaryDate(@Param("userId") Long userId, @Param("diaryDate") LocalDate diaryDate);
 
     @Query("SELECT d FROM Diary d WHERE d.user.userId = :userId ORDER BY d.createdAt DESC")
     Page<Diary> findAllByUserId(@Param("userId") Long userId, Pageable pageable);

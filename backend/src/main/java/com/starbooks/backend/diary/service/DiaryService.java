@@ -256,13 +256,9 @@ public class DiaryService {
     }
 
     @Transactional(readOnly = true)
-    public DiaryEmotion getDiaryEmotionByDate(Long userId, LocalDate date) {
-        Diary diary = diaryRepository.findByUserIdAndDiaryDate(userId, date)
-                .orElseThrow(() -> new NotFoundException("Diary not found for the given date"));
-        if (diary.getEmotions().isEmpty()) {
-            throw new NotFoundException("No emotion found for the given date");
-        }
-        return diary.getEmotions().get(0);
+    public DiaryEmotion getDiaryEmotionByDate(Long userId, LocalDate diaryDate) {
+        return diaryRepository.findEmotionByUserIdAndDiaryDate(userId, diaryDate)
+                .orElseThrow(() -> new NotFoundException("해당 날짜의 다이어리 감정 데이터가 없습니다."));
     }
 
     /**
