@@ -99,4 +99,41 @@ public class ConstellationDBService {
                         line.getEndY()))
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public ConstellationDto saveUserConstellation(Long userId, ConstellationDto constellationDto) {
+        log.info("🌟 유저가 직접 입력한 별자리 저장 요청 - userId: {}", userId);
+
+        // Constellation 엔티티 생성 및 저장
+        Constellation newConstellation = Constellation.builder()
+                .userId(userId)
+                .createdAt(LocalDateTime.now())
+                .build();
+        Constellation savedConstellation = constellationRepository.save(newConstellation);
+
+        // 유저가 입력한 선 데이터 저장
+        List<ConstellationLine> lineEntities = constellationDto.getLines().stream()
+                .map(line -> {
+                    ConstellationLine lineEntity = ConstellationLine.builder()
+                            .startX(line.getStartX())
+                            .startY(line.getStartY())
+                            .endX(line.getEndX())
+                            .endY(line.getEndY())
+                            .build();
+                    lineEntity.setConstellation(savedConstellation);
+                    return lineEntity;
+                })
+                .collect(Collectors.toList());
+
+        constellationLineRepository.saveAll(lineEntities);
+
+        log.info("✅ 유저 별자리 저장 완료 - ID: {}", savedConstellation.getConstellationId());
+
+        return ConstellationDto.builder()
+                .constellationId(savedConstellation.getConstellationId())
+                .userId(savedConstellation.getUserId())
+                .createdAt(savedConstellation.getCreatedAt())
+                .lines(constellationDto.getLines())
+                .build();
+    }
 }
