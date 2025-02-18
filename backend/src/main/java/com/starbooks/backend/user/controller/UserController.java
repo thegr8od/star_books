@@ -173,7 +173,7 @@ public class UserController {
     }
 
 
-    // == 토큰 재발급 ==
+    /// == 토큰 재발급 ==
     @Operation(summary = "토큰 재발급", description = "Refresh Token을 이용하여 새로운 Access Token을 발급합니다.")
     @PostMapping("/refresh")
     public ApiResponse<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken,
@@ -203,11 +203,16 @@ public class UserController {
             // 새 AccessToken 헤더 설정
             response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDto.getAccessToken());
 
-            return ApiResponse.createSuccessWithNoContent("Access Token 재발급 성공");
+            // JSON 응답에 accessToken 추가
+            Map<String, Object> data = new HashMap<>();
+            data.put("accessToken", tokenDto.getAccessToken());
+
+            return ApiResponse.createSuccess(data, "Access Token 재발급 성공");
         } catch (Exception e) {
             return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
         }
     }
+
 
     // == 사용자 정보 조회 ==
     @Operation(summary = "사용자 정보 조회", description = "회원 ID를 기반으로 사용자 정보를 조회합니다.")
