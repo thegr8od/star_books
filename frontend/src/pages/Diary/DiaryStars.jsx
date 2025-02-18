@@ -77,14 +77,14 @@ function DiaryStars() {
     const newY = Math.max(0, Math.min(100, y));
 
     // 선택된 별 위치 업데이트
-    setStars((prev) => prev.map((star) => (star.diaryEmotionId === selectedStar ? { ...star, xCoord: newX, yCoord: newY } : star)));
+    setStars((prev) => prev.map((star) => (star.diaryEmotionId === selectedStar ? { ...star, xcoord: newX, ycoord: newY } : star)));
 
     // 수정된 별 위치 저장
     setModifiedStars((prev) => ({
       ...prev,
       [selectedStar]: {
-        xCoord: newX,
-        yCoord: newY,
+        xcoord: newX,
+        ycoord: newY,
       },
     }));
   };
@@ -164,8 +164,8 @@ function DiaryStars() {
     // if (Object.keys(modifiedStars).length > 0) {
     //   const starsRequestData = Object.entries(modifiedStars).map(([diaryEmotionId, coords]) => ({
     //     diaryEmotionId: Number(diaryEmotionId),
-    //     xCoord: coords.xCoord,
-    //     yCoord: coords.yCoord,
+    //     xcoord: coords.xcoord,
+    //     ycoord: coords.ycoord,
     //   }));
 
     //   const starsResponse = await useUniverseApi.updatePersonalUniv(starsRequestData);
@@ -237,10 +237,10 @@ function DiaryStars() {
                 return (
                   <line
                     key={`${connection.startEmotionId}-${connection.endEmotionId}`}
-                    x1={`${startStar.xCoord}%`} // 시작 별 x 좌표
-                    y1={`${startStar.yCoord}%`} // 시작 별 y 좌표
-                    x2={`${endStar.xCoord}%`} // 끝 별 x 좌표
-                    y2={`${endStar.yCoord}%`} // 끝 별 y 좌표
+                    x1={`${startStar.xcoord}%`} // 시작 별 x 좌표
+                    y1={`${startStar.ycoord}%`} // 시작 별 y 좌표
+                    x2={`${endStar.xcoord}%`} // 끝 별 x 좌표
+                    y2={`${endStar.ycoord}%`} // 끝 별 y 좌표
                     stroke="rgba(255, 255, 255, 0.5)" // 선 색상
                     strokeWidth="1.5" // 선 두께
                     className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
@@ -264,8 +264,8 @@ function DiaryStars() {
               key={star.diaryEmotionId}
               className="absolute"
               style={{
-                left: `${star.xCoord}%`,
-                top: `${star.yCoord}%`,
+                left: `${star.xcoord}%`,
+                top: `${star.ycoord}%`,
                 transform: "translate(-50%, -50%)",
               }}
             >
