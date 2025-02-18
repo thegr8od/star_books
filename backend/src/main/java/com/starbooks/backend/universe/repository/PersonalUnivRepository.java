@@ -13,7 +13,9 @@ import java.util.Optional;
 @Repository
 public interface PersonalUnivRepository extends JpaRepository<PersonalUniv, Long> {
 
-    @Query("SELECT p FROM PersonalUniv p WHERE p.diaryEmotion.diary.user.userId = :userId AND p.updatedAt BETWEEN :start AND :end")
+    @Query("SELECT p FROM PersonalUniv p " +
+            "WHERE p.diaryEmotion.diary.user.userId = :userId " +
+            "AND p.updatedAt >= :start AND p.updatedAt < :end") // ✅ BETWEEN 대신 < 사용
     List<PersonalUniv> findByUserIdAndUpdatedAtBetween(@Param("userId") Long userId,
                                                        @Param("start") LocalDateTime start,
                                                        @Param("end") LocalDateTime end);
@@ -21,4 +23,10 @@ public interface PersonalUnivRepository extends JpaRepository<PersonalUniv, Long
     @Query("SELECT p FROM PersonalUniv p WHERE p.universeId = :universeId AND p.diaryEmotion.diary.user.userId = :userId")
     Optional<PersonalUniv> findByUserIdAndUniverseId(@Param("userId") Long userId,
                                                      @Param("universeId") Long universeId);
+
+
+    @Query("SELECT p FROM PersonalUniv p WHERE p.diaryEmotion.diary.user.userId = :userId AND p.diaryEmotion.diaryEmotionId = :diaryEmotionId")
+    Optional<PersonalUniv> findByUserIdAndDiaryEmotionId(@Param("userId") Long userId,
+                                                         @Param("diaryEmotionId") Long diaryEmotionId);
+
 }

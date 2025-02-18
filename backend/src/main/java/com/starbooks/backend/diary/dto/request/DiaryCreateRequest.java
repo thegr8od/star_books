@@ -1,26 +1,15 @@
 package com.starbooks.backend.diary.dto.request;
 
-
-import com.starbooks.backend.diary.model.Diary;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.SecondaryTable;
 import lombok.Getter;
-import org.springframework.web.multipart.MultipartFile;
+import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.List;
+import java.time.LocalDate;
 
-public record DiaryCreateRequest(
-        @NotBlank
-        String title,
-
-        @NotBlank
-        String content,
-
-        @NotEmpty
-        List<EmotionRequest> emotions,
-        @NotNull
-        List<Diary.HashtagType> hashtags,
-        List<MultipartFile> images
-) {}
-
+@Getter
+@Setter
+public class DiaryCreateRequest {
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate diaryDate;
+}
