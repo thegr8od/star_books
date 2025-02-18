@@ -149,11 +149,36 @@ const updateProfileImage = async (data, email) => {
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
-      .post(`/member/profile/image`, formData);
+      .post("/member/profile/image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
     return response.data;
   } catch (e) {
     //오류 체크
     if (e.response.data.stauts == 404) {
+      return e.response.data;
+    }
+  }
+};
+
+// 프로필 이미지 조회
+// get
+const getProfileImage = async (email) => {
+  const jwt = localStorage.getItem("accessToken");
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .get(`/member/profile/image`, {
+        params: {
+          email: email,
+        },
+      });
+    return response.data;
+  } catch (e) {
+    // 오류 체크
+    if (e.response.stauts == 404) {
       return e.response.data;
     }
   }
@@ -176,6 +201,42 @@ const updateProfile = async (data) => {
   }
 };
 
+//비밀번호 변경
+//post
+const changePassword = async (data) => {
+  const jwt = localStorage.getItem("accessToken");
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .post(`/member/change-password`, data);
+    return response.data;
+  } catch (e) {
+    //오류 체크
+    if (e.response.data.status == 404) {
+      return e.response.data;
+    }
+  }
+};
+
+// 회원 탈퇴
+// delete
+const withdrawMember = async (email) => {
+  const jwt = localStorage.getItem("accessToken");
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .delete(`/member/withdraw`, {
+        params: { email },
+      });
+    return response.data;
+  } catch (e) {
+    //오류 체크
+    if (e.response.data.status === 404) {
+      return e.response.data;
+    }
+  }
+};
+
 export default {
   loginMember,
   registerMember,
@@ -186,4 +247,7 @@ export default {
   refreshToken,
   updateProfileImage,
   updateProfile,
+  getProfileImage,
+  changePassword,
+  withdrawMember,
 };
