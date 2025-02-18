@@ -9,7 +9,9 @@ import com.starbooks.backend.diary.dto.request.DiaryCreateRequest;
 import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
 import com.starbooks.backend.diary.dto.response.HashtagStatsResponse;
+import com.starbooks.backend.diary.model.DiaryEmotion;
 import com.starbooks.backend.emotion.model.EmotionPoint;
+import com.starbooks.backend.universe.model.PersonalUniv;
 import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.diary.service.DiaryService;
 import com.starbooks.backend.diary.model.Diary;
@@ -139,13 +141,18 @@ public class DiaryController {
      * 4️⃣ 내용 입력 및 저장
      */
     @PostMapping("/{diaryId}/content")
-    public ResponseEntity<Void> addContent(
-            @PathVariable Long diaryId,
-            @RequestBody @Valid DiaryContentRequest request) {
-        diaryService.addContentAndImages(diaryId, request, request.getImageUrl());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<PersonalUniv> addContent(@PathVariable Long diaryId,
+                                                   @RequestBody @Valid DiaryContentRequest request) {
+        PersonalUniv personalUniv = diaryService.addContentAndImages(diaryId, request, request.getImageUrl());
+        return ResponseEntity.ok(personalUniv);
     }
 
+    @GetMapping("/emotion")
+    public ResponseEntity<DiaryEmotion> getDiaryEmotionByDate(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate diaryDate) {
+        DiaryEmotion emotion = diaryService.getDiaryEmotionByDate(userDetails.getUserId(), diaryDate);
+        return ResponseEntity.ok(emotion);
+    }
 
     /**
      * 5. 내용 및 제목 수정

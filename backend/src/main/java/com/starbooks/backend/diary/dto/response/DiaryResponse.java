@@ -5,6 +5,7 @@ import com.starbooks.backend.diary.model.DiaryHashtag;
 import com.starbooks.backend.diary.model.Diary.HashtagType;
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,7 +15,8 @@ public record DiaryResponse(
         String content,
         List<EmotionResponse> emotions,
         List<HashtagType> hashtags,
-        String imageUrl,         // List<String>에서 String으로 변경
+        String imageUrl,// List<String>에서 String으로 변경
+        LocalDate diaryDate,
         LocalDateTime createdAt
 ) {
     public static DiaryResponse from(Diary diary) {
@@ -47,6 +49,7 @@ public record DiaryResponse(
                 emotions,
                 hashtags,
                 imageUrl,
+                diary.getDiaryDate(),
                 diary.getCreatedAt()
         );
     }
