@@ -60,15 +60,6 @@ const RadioShow = ({ title = "라디오? 레디오!", nickname = "닉네임", pr
   const [currentTime, setCurrentTime] = useState("00:00:00");
   const [likeCount, setLikeCount] = useState(likes);
   const [emojis, setEmojis] = useState([]);
-  const { room, role } = useRoomContext();
-
-  useEffect(() => {
-    if (role === "host") {
-      room.localParticipant.setMicrophoneEnabled(true);
-    } else {
-      room.localParticipant.setMicrophoneEnabled(false);
-    }
-  }, [room, role]);
 
   useEffect(() => {
     let seconds = 0;
