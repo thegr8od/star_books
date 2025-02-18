@@ -48,8 +48,7 @@ pipeline {
                     rm -rf /home/ubuntu/forntend-assets
                     mkdir /home/ubuntu/frontend
                     mkdir /home/ubuntu/frontend-assets
-                    docker cp frontend-container:/dist/. /home/ubuntu/frontend/
-                    docker cp /home/ubuntu/frontend/. /usr/share/nginx/html/
+                    docker cp frontend-container:/dist/. /usr/share/nginx/html/
                     docker restart "$NGINX_CONTAINER_NAME"
                     docker rm -f frontend-container || true
                     '''
