@@ -17,9 +17,31 @@ function Diary() {
   const isCalendarMatch = useMatch({ path: "/diary/calendar", end: true });
   const currentTab = isStarsMatch ? "stars" : isCalendarMatch ? "calendar" : "";
   const [modalData, setModalData] = useState(null);
+  const [clickDay, setClickDay] = useState(null); // 클릭한 날짜를 DiaryCalendar(하위)에서 상태 넘겨줌
   const handleSetShowModal = (show, data) => {
     setShowModal(show);
     setModalData(data);
+  };
+
+  // 다이어리 날짜 함수
+  const handleCreateDiary = async (selectedDate) => {
+    if (!selectedDate) {
+      alert("날짜를 선택해주세요");
+      return;
+    }
+
+    try {
+      const result = await diaryApi.createEmptyDiary({
+        diaryDate: selectedDate, // 이미 형식이 맞춰져 있으므로 그대로 사용
+      });
+      if (result) {
+        setShowModal(true);
+        return result;
+      }
+    } catch (error) {
+      console.error("일기 생성 중 오류 발생:", error);
+      alert("일기 생성에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   return (
@@ -30,7 +52,14 @@ function Diary() {
 
         {/* 메인 */}
         <main className="flex-1">
-          <Outlet context={{ currentDate }} />
+          <Outlet
+            context={{
+              currentDate,
+              clickDay,
+              setClickDay,
+              handleCreateDiary,
+            }}
+          />
         </main>
 
         {/* 버튼 */}
@@ -57,10 +86,13 @@ function Diary() {
               type="DEFAULT"
               className="h-9 w-[15%] min-w-[40px] rounded-full border border-white bg-transparent hover:bg-white/10 transition-colors duration-200"
               onClick={async () => {
-                // try {
-                const result = await diaryApi.createEmptyDiary(); // 수정된 부분
-                // console.log(result);
-                handleSetShowModal(true, result);
+                // 날짜 선택 여부 확인
+                if (!clickDay) {
+                  alert("날짜를 선택해주세요");
+                  return;
+                }
+                const result = await handleCreateDiary(clickDay);
+                if (result) handleSetShowModal(true, result);
               }}
             />
           )}
