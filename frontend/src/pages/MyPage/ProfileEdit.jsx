@@ -7,8 +7,10 @@ import Modal from "../../components/Modal";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserField, setUser } from "../../store/userSlice";
 import useMemberApi from "../../api/useMemberApi";
+import { useNavigate } from "react-router-dom";
 
 const ProfileEdit = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
 
@@ -34,6 +36,7 @@ const ProfileEdit = () => {
     confirmPassword: "",
   });
 
+  ////// 프로필 변경 //////
   // 닉네임 유효성 검사 상태
   const [validationStatus, setValidationStatus] = useState({
     isValid: true,
@@ -192,6 +195,7 @@ const ProfileEdit = () => {
       });
   };
 
+  /////// 비밀번호 ///////
   // 비밀번호 유효성 검사를 위한 정규식
   const PASSWORD_REGEX =
     /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$/;
@@ -267,6 +271,28 @@ const ProfileEdit = () => {
       console.error("비밀번호 변경 오류:", error);
       alert("비밀번호 변경 중 오류가 발생했습니다.");
     }
+  };
+
+  // 회원탈퇴
+  const handleWithdraw = () => {
+    useMemberApi
+      .withdrawMember(user.email)
+      .then((response) => {
+        console.log(response);
+
+        if (response?.status === "C000") {
+          alert("회원 탈퇴가 완료되었습니다.");
+          localStorage.removeItem("accessToken");
+          dispatch(setUser(null));
+          navigate("/");
+        } else {
+          alert("회원 탈퇴 처리 중 오류가 발생했습니다.");
+        }
+      })
+      .catch((error) => {
+        console.error("회원 탈퇴 오류 :", error);
+        alert("회원 탈퇴 처리 중 오류가 발생했습니다.");
+      });
   };
 
   return (
@@ -512,7 +538,7 @@ const ProfileEdit = () => {
             <Button
               text="확인"
               type={"DEFAULT"}
-              onClick={() => setIsWithdrawModalOpen(false)}
+              onClick={handleWithdraw}
               className="px-[30px] py-2"
             />
           </div>

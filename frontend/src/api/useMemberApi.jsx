@@ -218,6 +218,25 @@ const changePassword = async (data) => {
   }
 };
 
+// 회원 탈퇴
+// delete
+const withdrawMember = async (email) => {
+  const jwt = localStorage.getItem("accessToken");
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .delete(`/member/withdraw`, {
+        params: { email },
+      });
+    return response.data;
+  } catch (e) {
+    //오류 체크
+    if (e.response.data.status === 404) {
+      return e.response.data;
+    }
+  }
+};
+
 export default {
   loginMember,
   registerMember,
@@ -230,4 +249,5 @@ export default {
   updateProfile,
   getProfileImage,
   changePassword,
+  withdrawMember,
 };
