@@ -27,32 +27,50 @@ public class ConstellationController {
     private final ConstellationDBService constellationDBService;
 
     /**
-     * 📌 별자리 저장 (AI 생성 & 유저 직접 업로드 통합)
+     * 📌 AI가 생성한 별자리 데이터 저장
      */
-    @PostMapping("/save")
-    public ResponseEntity<?> saveConstellation(
+    @PostMapping("/generate-lines")
+    public ResponseEntity<?> generateConstellation(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestBody(required = false) ConstellationDto constellationDto) {
+            @RequestParam("file") MultipartFile file) {
 
         Long userId = userDetails.getUserId();
-        log.info("📌 [ConstellationController] 별자리 저장 요청 - userId: {}", userId);
+        log.info("📌 [ConstellationController] AI 별자리 생성 요청 - userId: {}", userId);
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.createError(ErrorCode.CONSTELLATION_INVALID_REQUEST));
+        }
 
         try {
-            if (file != null && !file.isEmpty()) {
-                log.info("📌 AI 별자리 생성 요청 - userId: {}", userId);
-                String base64Image = constellationService.encodeFileToBase64(file);
-                List<Map<String, Object>> linesData = constellationService.generateLinesFromAI(base64Image, userId);
-                return ResponseEntity.ok(ApiResponse.createSuccess(linesData, "별자리 생성 및 저장 완료"));
-            } else if (constellationDto != null && !constellationDto.getLines().isEmpty()) {
-                log.info("📌 유저가 직접 별자리 업로드 - userId: {}", userId);
-                ConstellationDto savedConstellation = constellationDBService.saveConstellation(userId, constellationDto.getLines());
-                return ResponseEntity.ok(ApiResponse.createSuccess(savedConstellation, "별자리 저장 완료"));
-            } else {
-                return ResponseEntity.badRequest().body(ApiResponse.createError(ErrorCode.CONSTELLATION_INVALID_REQUEST));
-            }
+            String base64Image = constellationService.encodeFileToBase64(file);
+            List<Map<String, Object>> linesData = constellationService.generateLinesFromAI(base64Image, userId);
+            return ResponseEntity.ok(ApiResponse.createSuccess(linesData, "별자리 생성 및 저장 완료"));
         } catch (Exception e) {
-            log.error("❌ 별자리 저장 중 오류 발생", e);
+            log.error("❌ AI 별자리 생성 중 오류 발생", e);
+            return ResponseEntity.status(500).body(ApiResponse.createError(ErrorCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    /**
+     * 📌 유저가 직접 별자리 데이터를 업로드
+     */
+    @PostMapping("/user-upload")
+    public ResponseEntity<?> uploadConstellation(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody ConstellationDto constellationDto) {
+
+        Long userId = userDetails.getUserId();
+        log.info("📌 [ConstellationController] 유저 별자리 업로드 요청 - userId: {}", userId);
+
+        if (constellationDto == null || constellationDto.getLines().isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.createError(ErrorCode.CONSTELLATION_INVALID_REQUEST));
+        }
+
+        try {
+            ConstellationDto savedConstellation = constellationDBService.saveConstellation(userId, constellationDto.getLines());
+            return ResponseEntity.ok(ApiResponse.createSuccess(savedConstellation, "유저 별자리 저장 완료"));
+        } catch (Exception e) {
+            log.error("❌ 유저 별자리 업로드 중 오류 발생", e);
             return ResponseEntity.status(500).body(ApiResponse.createError(ErrorCode.INTERNAL_SERVER_ERROR));
         }
     }
