@@ -29,17 +29,21 @@ function Diary() {
       alert("날짜를 선택해주세요");
       return;
     }
-
+    
+    console.log("API 요청 전 날짜:", selectedDate); // API 요청 전 데이터 확인
+    
     try {
       const result = await diaryApi.createEmptyDiary({
-        diaryDate: selectedDate, // 이미 형식이 맞춰져 있으므로 그대로 사용
+        diaryDate: selectedDate,
       });
+      console.log("API 응답:", result); // API 응답 확인
+      
       if (result) {
         setShowModal(true);
         return result;
       }
     } catch (error) {
-      console.error("일기 생성 중 오류 발생:", error);
+      console.error("에러 상세 정보:", error.response); // 에러 상세 정보 확인
       alert("일기 생성에 실패했습니다. 다시 시도해주세요.");
     }
   };
