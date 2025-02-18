@@ -15,7 +15,7 @@ function RadioList() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [sortType, setSortType] = useState("popular"); // 정렬방식
   const [tracks, setTracks] = useState([]); // 방송 목록
-  const [loading, setLoading] = useState(true); // 로딩 상태
+  const [loading, setLoading] = useState(false); // 로딩 상태
   const [error, setError] = useState(null); // 에러 상태
 
   // 카테고리별 색상 설정
@@ -31,34 +31,34 @@ function RadioList() {
     기타: { bg: "from-gray-50 to-gray-300", border: "border-gray-500" },
   };
 
-  // 실시간 방송 목록, 시청자 수 가져오기
-  useEffect(() => {
-    const fetchBroadcasts = () => {
-      setLoading(true);
-      getLiveBroadcasts()
-        .then((response) => {
-          if (response.data) {
-            // 각 방송마다 시청자 수 업데이트
-            const updatePromises = response.data.map((track) =>
-              updateParticipants(track)
-            );
-            return Promise.all(updatePromises);
-          }
-          return []; // response.data가 없다면 빈 배열 반환
-        })
-        .catch((error) => {
-          setError("방송 목록을 불러오는데 실패했습니다.");
-          console.error("방송 목록 조회 중 오류 발생 : ", error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    };
+  // // 실시간 방송 목록, 시청자 수 가져오기
+  // useEffect(() => {
+  //   const fetchBroadcasts = () => {
+  //     setLoading(true);
+  //     getLiveBroadcasts()
+  //       .then((response) => {
+  //         if (response.data) {
+  //           // 각 방송마다 시청자 수 업데이트
+  //           const updatePromises = response.data.map((track) =>
+  //             updateParticipants(track)
+  //           );
+  //           return Promise.all(updatePromises);
+  //         }
+  //         return []; // response.data가 없다면 빈 배열 반환
+  //       })
+  //       .catch((error) => {
+  //         setError("방송 목록을 불러오는데 실패했습니다.");
+  //         console.error("방송 목록 조회 중 오류 발생 : ", error);
+  //       })
+  //       .finally(() => {
+  //         setLoading(false);
+  //       });
+  //   };
 
-    fetchBroadcasts();
-    const interval = setInterval(fetchBroadcasts, 60000); // 1분마다 방송 목록 갱신
-    return () => clearInterval(interval);
-  }, []);
+  //   fetchBroadcasts();
+  //   const interval = setInterval(fetchBroadcasts, 60000); // 1분마다 방송 목록 갱신
+  //   return () => clearInterval(interval);
+  // }, []);
 
   // 트랙 정렬
   const getSortedTracks = (tracks) => {
@@ -112,7 +112,7 @@ function RadioList() {
   }
 
   return (
-    <Layout>
+    <>
       <div className=" text-white">
         <div className="mb-8">
           <h1 className="text-xl font-bold mb-6 text-center">별들의 속삭임</h1>
@@ -243,7 +243,7 @@ function RadioList() {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }
 
