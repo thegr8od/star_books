@@ -26,7 +26,7 @@ const DiaryDate = ({ currentDate, setCurrentDate }) => {
     <Header
       className="mb-4"
       title={formatDate.toDiary(currentDate)}
-      titleClassName="text-base md:text-lg font-semibold"
+      titleClassName="text-lg font-semibold"
       leftChild={
         <button onClick={handlePrevMonth}>
           <KeyboardArrowLeft />
