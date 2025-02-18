@@ -9,25 +9,12 @@ import { useSelector } from "react-redux";
 function Mypage() {
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
-  const [selectedPeriod, setSelectedPeriod] = useState("월");
 
   // 수정 페이지로 이동
   const handleEditClick = () => {
     navigate("/mypage/edit");
   };
 
-  const handleMyUniverseClick = () => {
-    navigate("/diary/calendar");
-  };
-
-  const handleGalleryClick = () => {
-    navigate("/constellation/gallery");
-  };
-
-  // 통계 그래프 기간 선택
-  const handlePeriodClick = (period) => {
-    setSelectedPeriod(period);
-  };
   return (
     <>
       <Layout>
@@ -81,49 +68,9 @@ function Mypage() {
             </div>
           </div>
 
-          {/* 나의 글 */}
-          <div className="mt-12">
-            <h1 className="text-xl font-bold mb-6">나의 글</h1>
-            <div className="bg-white bg-opacity-70 hover:bg-opacity-90 rounded-xl shadow-lg px-6 py-12 border border-white/70">
-              <div className="flex justify-between items-center">
-                <div
-                  className="text-center flex-1"
-                  onClick={handleMyUniverseClick}
-                >
-                  <p className="text-4xl font-bold text-black mb-4">10</p>
-                  <p className="text-sm text-gray-600">나의 우주</p>
-                </div>
-                <div className="w-px h-20 bg-gray-300"></div>
-                <div
-                  className="text-center flex-1"
-                  onClick={handleGalleryClick}
-                >
-                  <p className="text-4xl font-bold text-black mb-4">1</p>
-                  <p className="text-sm text-gray-600">나의 별자리</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* 내 감정 통계 */}
-          <hr className="mt-12 border-gray-500" />
-          <div className="mt-12">
+          <div className="mt-10">
             <h1 className="text-xl font-bold mb-6">내 감정 통계</h1>
-            <div className="flex gap-2 justify-end mb-3">
-              {["월", "년", "전체"].map((period) => (
-                <button
-                  key={period}
-                  onClick={() => handlePeriodClick(period)}
-                  className={`px-1 py-1 transition-colors ${
-                    selectedPeriod === period
-                      ? "text-white font-semibold"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {period}
-                </button>
-              ))}
-            </div>
             <MypageBarChart />
           </div>
         </div>

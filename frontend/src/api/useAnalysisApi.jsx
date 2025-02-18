@@ -16,6 +16,22 @@ const getTopHashtags = async () => {
   }
 };
 
+// 나의 해시태그 통계
+const getMyHashtagStats = async () => {
+  const jwt = localStorage.getItem("accessToken");
+
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .get("/diary/my-hashtags");
+
+    return response;
+  } catch (e) {
+    return e.response;
+  }
+};
+
 export default {
   getTopHashtags,
+  getMyHashtagStats,
 };
