@@ -208,7 +208,7 @@ public class DiaryService {
     public PersonalUniv addContentAndImages(Long diaryId, DiaryContentRequest contentRequest, String Imgurl) {
         Diary diary = getDiaryEntity(diaryId);
 
-        // DiaryContent가 이미 존재하는지 확인
+        // DiaryContent 처리
         DiaryContent content = diary.getContent();
         if (content == null) {
             content = DiaryContent.builder()
@@ -222,14 +222,11 @@ public class DiaryService {
         }
         diary.setContent(content);
 
-        // 이미지 처리
+        // DiaryImage 처리
         if (Imgurl != null) {
             DiaryImage diaryImage = diary.getImage();
             if (diaryImage == null) {
-                diaryImage = DiaryImage.builder()
-                        .diary(diary)
-                        .Imgurl(Imgurl)
-                        .build();
+                diaryImage = DiaryImage.builder().diary(diary).Imgurl(Imgurl).build();
             } else {
                 diaryImage.setImgurl(Imgurl);
             }
@@ -238,18 +235,29 @@ public class DiaryService {
 
         DiaryEmotion emotion = diary.getEmotions().iterator().next();
 
-        // PersonalUniv 자동 생성
-        PersonalUniv personalUniv = personalUnivRepository.findByDiaryEmotion(emotion)
-                .orElse(PersonalUniv.builder()
-                        .diaryEmotion(emotion)
-                        .xCoord(50f)
-                        .yCoord(50f)
-                        .updatedAt(LocalDateTime.now())
-                        .build());
+        // PersonalUniv 중복 확인
+        Optional<PersonalUniv> existingUniv = personalUnivRepository.findByDiaryEmotion(emotion);
+        PersonalUniv personalUniv;
+        if (existingUniv.isPresent()) {
+            // 이미 존재하면 업데이트
+            personalUniv = existingUniv.get();
+            personalUniv.setXCoord(50f);
+            personalUniv.setYCoord(50f);
+            personalUniv.setUpdatedAt(LocalDateTime.now());
+        } else {
+            // 존재하지 않으면 새로 생성
+            personalUniv = PersonalUniv.builder()
+                    .diaryEmotion(emotion)
+                    .xCoord(50f)
+                    .yCoord(50f)
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+        }
 
         personalUnivRepository.save(personalUniv);
         return personalUniv;
     }
+
 
 
 
