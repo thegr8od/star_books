@@ -67,10 +67,13 @@ public class UserServiceImpl implements UserService {
         // 사용자의 모든 Refresh Token 블랙리스트 처리
         tokenService.invalidateAllUserTokens(email);
 
-        // 사용자 삭제
+        // 사용자 조회
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
-        userRepository.delete(user);
+
+        // 논리 삭제: 실제 삭제 대신 is_active 값을 false로 변경
+        user.setIsActive(false);
+        userRepository.save(user);
 
         // Refresh Token 쿠키 삭제
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
@@ -83,8 +86,9 @@ public class UserServiceImpl implements UserService {
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
 
-        log.info("회원 탈퇴 완료: 이메일={} | 모든 Refresh Token 블랙리스트 처리됨", email);
+        log.info("회원 탈퇴 완료(논리삭제): 이메일={} | 모든 Refresh Token 블랙리스트 처리됨", email);
     }
+
 
     // == 회원가입 ==
     @Override
