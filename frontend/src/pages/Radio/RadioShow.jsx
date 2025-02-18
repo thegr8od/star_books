@@ -50,7 +50,7 @@ const PlanetDisplay = () => (
 
 const RadioShow = ({ currentTime = "01:17:59", title = "라디오? 레디오!", nickname = "닉네임", profileImage = "", viewers = 127, likes = 52 }) => {
   return (
-    <Layout>
+    <>
       <div className="flex flex-col h-full relative">
         <UserState nickname={nickname} profileImage={profileImage} viewers={viewers} likes={likes} />
         <LiveState currentTime={currentTime} />
@@ -59,7 +59,7 @@ const RadioShow = ({ currentTime = "01:17:59", title = "라디오? 레디오!", 
         <img src="/images/radio1.png" alt="character" className="h-11 mx-auto" />
         <img src="/images/horizon.png" alt="horizon" className="w-full" />
       </div>
-    </Layout>
+    </>
   );
 };
 
