@@ -122,47 +122,39 @@ const ProfileEdit = () => {
     if (!file) return;
 
     setIsUploading(true);
-    const reader = new FileReader();
 
-    reader.onloadend = () => {
-      const previewUrl = reader.result;
-      setImagePreview(previewUrl);
-      console.log(setImagePreview(previewUrl));
+    // const reader = new FileReader();
 
-      useMemberApi
-        .updateProfileImage(file, user.email)
-        .then((response) => {
-          if (
-            response?.status === "C000" ||
-            response?.data?.status === "C000"
-          ) {
-            dispatch(
-              updateUserField({
-                field: "profileImageFile",
-                value: previewUrl,
-              })
-            );
-          } else {
-            throw new Error("이미지 업로드 실패");
-          }
-        })
-        .catch((error) => {
-          console.error("이미지 업로드 실패:", error);
-          alert("이미지 업로드에 실패했습니다.");
-          setImagePreview(user.profileImagePath);
-        })
-        .finally(() => {
-          setIsUploading(false);
-        });
-    };
+    // reader.onloadend = () => {
+    //   const previewUrl = reader.result;
+    //   setImagePreview(previewUrl);
 
-    reader.onerror = () => {
-      console.error("파일 읽기 실패");
-      setIsUploading(false);
-      alert("이미지 파일을 읽는데 실패했습니다.");
-    };
-
-    reader.readAsDataURL(file);
+    useMemberApi
+      .updateProfileImage(file, user.email)
+      .then(() => useMemberApi.getProfileImage(user.email))
+      .then((response) => {
+        if (response?.status === "C000") {
+          const newImageUrl = response.data;
+          console.log("New image URL:", newImageUrl); // 디버깅용
+          setImagePreview(newImageUrl);
+          dispatch(
+            updateUserField({
+              field: "profileImagePath",
+              value: newImageUrl,
+            })
+          );
+        } else {
+          throw new Error("이미지 업로드 실패");
+        }
+      })
+      .catch((error) => {
+        console.error("이미지 업로드 실패:", error);
+        alert("이미지 업로드에 실패했습니다.");
+        setImagePreview(user.profileImagePath);
+      })
+      .finally(() => {
+        setIsUploading(false);
+      });
   };
 
   // 프로필 업데이트 함수

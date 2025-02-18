@@ -149,7 +149,11 @@ const updateProfileImage = async (data, email) => {
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
-      .post(`/member/profile/image`, formData);
+      .post("/member/profile/image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
     return response.data;
   } catch (e) {
     //오류 체크
@@ -174,7 +178,7 @@ const getProfileImage = async (email) => {
     return response.data;
   } catch (e) {
     // 오류 체크
-    if (e.response.data.stauts == 404) {
+    if (e.response.stauts == 404) {
       return e.response.data;
     }
   }
