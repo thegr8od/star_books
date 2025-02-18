@@ -10,6 +10,7 @@ import diaryApi from "../../api/useDiaryApi";
 function Diary() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showModal, setShowModal] = useState(false);
+  const [diaryEntries, setDiaryEntries] = useState([]);
 
   const navigate = useNavigate();
 
@@ -23,21 +24,32 @@ function Diary() {
     setModalData(data);
   };
 
+  // 날짜 비교 함수
+  const isSameDay = (date1, date2) => {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    return (
+      d1.getDate() === d2.getDate() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getFullYear() === d2.getFullYear()
+    );
+  };
+
   // 다이어리 날짜 함수
   const handleCreateDiary = async (selectedDate) => {
     if (!selectedDate) {
       alert("날짜를 선택해주세요");
       return;
     }
-    
+
     // console.log("API 요청 전 날짜:", selectedDate); // API 요청 전 데이터 확인
-    
+
     try {
       const result = await diaryApi.createEmptyDiary({
         diaryDate: selectedDate,
       });
       // console.log("API 응답:", result); // API 응답 확인
-      
+
       if (result) {
         setShowModal(true);
         return result;
@@ -62,6 +74,8 @@ function Diary() {
               clickDay,
               setClickDay,
               handleCreateDiary,
+              diaryEntries,
+              setDiaryEntries,
             }}
           />
         </main>
@@ -88,9 +102,19 @@ function Diary() {
             <Button
               text={<Add />}
               type="DEFAULT"
-              className="h-9 w-[15%] min-w-[40px] rounded-full border border-white bg-transparent hover:bg-white/10 transition-colors duration-200"
+              disabled={diaryEntries.some(
+                (entry) => entry.date && isSameDay(entry.date, clickDay)
+              )}
+              className={`h-9 w-[15%] min-w-[40px] rounded-full border border-white 
+                ${
+                  diaryEntries.some(
+                    (entry) => entry.date && isSameDay(entry.date, clickDay)
+                  )
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-transparent hover:bg-white/10"
+                } 
+                transition-colors duration-200`}
               onClick={async () => {
-                // 날짜 선택 여부 확인
                 if (!clickDay) {
                   alert("날짜를 선택해주세요");
                   return;

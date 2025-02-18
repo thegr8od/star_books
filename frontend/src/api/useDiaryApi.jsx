@@ -44,7 +44,12 @@ const addDiaryContent = async (diaryId, data) => {
       .post(`/diary/${diaryId}/content`, data);
     return response.data;
   } catch (e) {
-    return e.response.status;
+    console.error("일기 저장 실패 : ", e);
+    if (e.response) {
+      return e.response;
+    } else {
+      throw new Error("네트워크 에러 또는 서버 연결 실패");
+    }
   }
 };
 
