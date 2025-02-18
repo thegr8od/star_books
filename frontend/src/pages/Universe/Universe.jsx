@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 const ParticlePlanetGallery = () => {
   const mountRef = useRef(null);
@@ -13,110 +14,238 @@ const ParticlePlanetGallery = () => {
   const [isMaximized, setIsMaximized] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [diaryEmotions, setDiaryEmotions] = useState([]);
-  const [allEmotions, setAllEmotions] = useState([]);
   const user = useSelector((state) => state.user);
 
-  // 감정별 행성 데이터
-  const emotionGroups = [
-    { emotion: "#기쁜", color: 0x00ffff, particleCount: 50 },
-    { emotion: "#행복한", color: 0xffff00, particleCount: 50 },
-    { emotion: "#편안한", color: 0x00ff80, particleCount: 50 },
-    { emotion: "#지루한", color: 0xff6b6b, particleCount: 50 },
-    { emotion: "#지친", color: 0xffa500, particleCount: 50 },
-    { emotion: "#슬픈", color: 0xffd700, particleCount: 50 },
-    { emotion: "#짜증난", color: 0x40e0d0, particleCount: 50 },
-    { emotion: "#화난", color: 0x6495ed, particleCount: 50 },
-  ];
+  // 토큰에서 유저 정보 추출
+  const token = localStorage.getItem("accessToken");
+  let tokenUserId = null;
+  if (token) {
+    try {
+      const tokenPayload = JSON.parse(atob(token.split(".")[1]));
+      tokenUserId = tokenPayload.user_id;
+      console.log("토큰에서 추출한 유저 ID:", tokenUserId);
+    } catch (error) {
+      console.error("토큰 디코딩 오류:", error);
+    }
+  } else {
+    console.log("토큰이 존재하지 않습니다.");
+  }
 
-  // API 호출 함수 추가
+  // Colors 매핑 (제공해주신 매핑 그대로)
+  const Colors = {
+    "-5,5": "#cc0002",
+    "-4,5": "#d31002",
+    "-3,5": "#d92305",
+    "-2,5": "#de3c07",
+    "-1,5": "#e05808",
+    "0,5": "#e17509",
+    "1,5": "#e08d08",
+    "2,5": "#dea507",
+    "3,5": "#d9b805",
+    "4,5": "#d3c203",
+    "5,5": "#d3c203",
+
+    "-5,4": "#a30219",
+    "-4,4": "#db0608",
+    "-3,4": "#e11a09",
+    "-2,4": "#e6370b",
+    "-1,4": "#ea560d",
+    "0,4": "#eb7a0d",
+    "1,4": "#ea9d0d",
+    "2,4": "#e6b90b",
+    "3,4": "#e1cb09",
+    "4,4": "#dbd906",
+    "5,4": "#bdd303",
+
+    "-5,3": "#ab053a",
+    "-4,3": "#b60829",
+    "-3,3": "#e90c0d",
+    "-2,3": "#ee2910",
+    "-1,3": "#ee5417",
+    "0,3": "#ed831a",
+    "1,3": "#eeab17",
+    "2,3": "#eed010",
+    "3,3": "#e9e70c",
+    "4,3": "#c4e109",
+    "5,3": "#a6d905",
+
+    "-5,2": "#b1075f",
+    "-4,2": "#bd0b54",
+    "-3,2": "#c81040",
+    "-2,2": "#ed1d1e",
+    "-1,2": "#eb4f27",
+    "0,2": "#ea882b",
+    "1,2": "#ebc127",
+    "2,2": "#edec1d",
+    "3,2": "#c4ee10",
+    "4,2": "#a2e60b",
+    "5,2": "#88de07",
+
+    "-5,1": "#b5088c",
+    "-4,1": "#c10d8b",
+    "-3,1": "#cd1382",
+    "-2,1": "#d81967",
+    "-1,1": "#e93537",
+    "0,1": "#e8913c",
+    "1,1": "#e9e835",
+    "2,1": "#aeeb27",
+    "3,1": "#8dee17",
+    "4,1": "#75ea0d",
+    "5,1": "#67e008",
+
+    "-5,0": "#b508b6",
+    "-4,0": "#c20ec3",
+    "-3,0": "#cc14cf",
+    "-2,0": "#d81ada",
+    "-1,0": "#de27df",
+    "0,0": "#9a9790",
+    "1,0": "#66e83c",
+    "2,0": "#59ea2b",
+    "3,0": "#4bed1a",
+    "4,0": "#44eb0d",
+    "5,0": "#3de109",
+
+    "-5,-1": "#8808b4",
+    "-4,-1": "#870dc1",
+    "-3,-1": "#7f13cd",
+    "-2,-1": "#6619d8",
+    "-1,-1": "#1f1fdf",
+    "0,-1": "#2dadda",
+    "1,-1": "#24da81",
+    "2,-1": "#27eb4d",
+    "3,-1": "#17ee24",
+    "4,-1": "#0eea0d",
+    "5,-1": "#0ee80d",
+
+    "-5,-2": "#5c07b1",
+    "-4,-2": "#530bbd",
+    "-3,-2": "#3e10c8",
+    "-2,-2": "#1515d1",
+    "-1,-2": "#1d53d3",
+    "0,-2": "#1fa6d6",
+    "1,-2": "#1dd3b1",
+    "2,-2": "#18cd74",
+    "3,-2": "#10ee58",
+    "4,-2": "#0be635",
+    "5,-2": "#07de20",
+
+    "-5,-3": "#3805ab",
+    "-4,-3": "#2808b6",
+    "-3,-3": "#0d0cc0",
+    "-2,-3": "#1232c5",
+    "-1,-3": "#1663ca",
+    "0,-3": "#179ecc",
+    "1,-3": "#16cac1",
+    "2,-3": "#12c590",
+    "3,-3": "#0ebe66",
+    "4,-3": "#09e159",
+    "5,-3": "#05d940",
+
+    "-5,-4": "#1902a3",
+    "-4,-4": "#0605ad",
+    "-3,-4": "#0a1fb5",
+    "-2,-4": "#0d42bb",
+    "-1,-4": "#0f69bf",
+    "0,-4": "#1093c1",
+    "1,-4": "#0fbabf",
+    "2,-4": "#0dbb9a",
+    "3,-4": "#0ab578",
+    "4,-4": "#06ac5b",
+    "5,-4": "#03d355",
+
+    "-5,-5": "#010099",
+    "-4,-5": "#0311a2",
+    "-3,-5": "#052caa",
+    "-2,-5": "#0848b0",
+    "-1,-5": "#0967b3",
+    "0,-5": "#0a8ab5",
+    "1,-5": "#09a8b3",
+    "2,-5": "#08b09e",
+    "3,-5": "#05aa81",
+    "4,-5": "#03a264",
+    "5,-5": "#00994e",
+  };
+
+  // getColor 함수: 소수점 좌표를 반올림하여 Colors 객체에서 강제로 매칭
+  const getColor = ({ x, y }) => {
+    const roundedX = Math.round(x);
+    const roundedY = Math.round(y);
+    const key = `${roundedX},${roundedY}`;
+    return Colors[key] || "#9a9790";
+  };
+
+  // API 호출 함수 (axios 사용)
   const fetchEmotions = async () => {
     try {
-        const accessToken = localStorage.getItem("accessToken"); // ✅ 로컬스토리지에서 토큰 가져오기
-        console.log("Access Token:", accessToken);
-
-        if (!accessToken) {
-            console.error("인증 토큰이 없습니다.");
-            return;
-        }
-
-        const today = new Date().toISOString().split("T")[0];
-        console.log("API 요청 URL:", `https://starbooks.site/api/diary/emotion?diaryDate=${today}`);
-        console.log("요청 헤더:", {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-        });
-
-        const response = await fetch(`https://starbooks.site/api/diary/emotion?diaryDate=${today}`, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-        });
-
-        console.log("API 응답 상태:", response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("응답 에러 내용:", errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("받아온 데이터:", data);
-
-        if (Array.isArray(data)) {
-            setDiaryEmotions(data);
-        } else {
-            console.error("예상치 못한 데이터 형식:", data);
-        }
+      const accessToken = localStorage.getItem("accessToken");
+      console.log("Access Token:", accessToken);
+      if (!accessToken) {
+        console.error("인증 토큰이 없습니다.");
+        return;
+      }
+      const today = new Date().toISOString().split("T")[0];
+      console.log("API 요청 URL:", `http://localhost:9090/api/diary/emotion?diaryDate=${today}`);
+      const response = await axios.get(`http://localhost:9090/api/diary/emotion`, {
+        params: { diaryDate: today },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("서버 응답:", response.data);
+      // 토큰의 user_id와 비교하여 isCurrentUser 플래그 추가
+      setDiaryEmotions(
+        response.data.map((emotion) => ({
+          ...emotion,
+          isCurrentUser: emotion.userId === tokenUserId,
+        }))
+      );
     } catch (error) {
-        console.error("감정 데이터 조회 실패:", error);
-        setDiaryEmotions([]);
+      console.error("감정 데이터 조회 실패:", error);
+      setDiaryEmotions([]);
     }
-};
-
+  };
 
   useEffect(() => {
     fetchEmotions();
   }, []);
 
-  // resize 핸들러 함수
+  // 현재 사용자 감정 로그를 콘솔에 출력 (필요시)
+  useEffect(() => {
+    const currentUserEmotions = diaryEmotions.filter((e) => e.isCurrentUser);
+    currentUserEmotions.forEach((e) => {
+      const hexColor = getColor({ x: e.xvalue, y: e.yvalue });
+      console.log(`현재 사용자 감정 - ID: ${e.id}, userId: ${e.userId}, x: ${e.xvalue}, y: ${e.yvalue}, 색상: ${hexColor}`);
+    });
+  }, [diaryEmotions]);
+
+  // resize 핸들러
   const handleResize = () => {
     if (!mountRef.current || !cameraRef.current || !rendererRef.current) return;
-
     const width = mountRef.current.clientWidth;
     const height = mountRef.current.clientHeight;
-
     cameraRef.current.aspect = width / height;
     cameraRef.current.updateProjectionMatrix();
-
     rendererRef.current.setSize(width, height);
     rendererRef.current.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
   };
 
   useEffect(() => {
     if (!mountRef.current) return;
-
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // 배경 설정
+    // 배경 설정 (그라데이션: 어두운 우주 느낌)
     const bgCanvas = document.createElement("canvas");
     const bgContext = bgCanvas.getContext("2d");
     bgCanvas.width = 2;
     bgCanvas.height = 512;
-
     const gradient = bgContext.createLinearGradient(0, 0, 0, 512);
     gradient.addColorStop(0, "#00001B");
     gradient.addColorStop(1, "#000000");
     bgContext.fillStyle = gradient;
     bgContext.fillRect(0, 0, 2, 512);
-
-    const texture = new THREE.CanvasTexture(bgCanvas);
-    scene.background = texture;
+    scene.background = new THREE.CanvasTexture(bgCanvas);
 
     // 카메라 설정
     const camera = new THREE.PerspectiveCamera(
@@ -132,10 +261,7 @@ const ParticlePlanetGallery = () => {
     // 렌더러 설정
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     rendererRef.current = renderer;
-    renderer.setSize(
-      mountRef.current.clientWidth,
-      mountRef.current.clientHeight
-    );
+    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
     mountRef.current.appendChild(renderer.domElement);
 
@@ -150,55 +276,52 @@ const ParticlePlanetGallery = () => {
     // 조명 설정
     const ambientLight = new THREE.AmbientLight("white", 1.0);
     scene.add(ambientLight);
-
     const directionalLight = new THREE.DirectionalLight("white", 2.0);
     directionalLight.position.set(1, 1, 2);
     scene.add(directionalLight);
-
     const pointLight = new THREE.PointLight(0xffffff, 1.0);
     pointLight.position.set(-10, 10, 10);
     scene.add(pointLight);
 
-    // 더 선명한 별 텍스처 생성
-    const circleCanvas = document.createElement('canvas');
-    circleCanvas.width = 128;
-    circleCanvas.height = 128;
-    const circleContext = circleCanvas.getContext('2d');
-    
+    // 원형 텍스처 생성 (별 모양)
+    const circleCanvas = document.createElement("canvas");
+    circleCanvas.width = 256;
+    circleCanvas.height = 256;
+    const circleContext = circleCanvas.getContext("2d");
     const centerX = circleCanvas.width / 2;
     const centerY = circleCanvas.height / 2;
-    
-    // 더 선명한 그라데이션
-    const mainGradient = circleContext.createRadialGradient(
-      centerX, centerY, 0,
-      centerX, centerY, centerX * 0.7
-    );
-    mainGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');     // 중심부 완전 불투명
-    mainGradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)'); // 더 천천히 페이드
-    mainGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.6)');
-    mainGradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.2)');
-    mainGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-
-    // 더 선명한 원형
+    // 중심부 밝은 영역
+    const coreGradient = circleContext.createRadialGradient(centerX, centerY, 0, centerX, centerY, centerX * 0.3);
+    coreGradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+    coreGradient.addColorStop(0.3, "rgba(255, 255, 255, 0.8)");
+    coreGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+    // 외부 글로우 효과
+    const outerGradient = circleContext.createRadialGradient(centerX, centerY, centerX * 0.3, centerX, centerY, centerX);
+    outerGradient.addColorStop(0, "rgba(255, 255, 255, 0.4)");
+    outerGradient.addColorStop(0.5, "rgba(255, 255, 255, 0.1)");
+    outerGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
     circleContext.beginPath();
-    circleContext.arc(centerX, centerY, centerX * 0.7, 0, Math.PI * 2);
-    circleContext.fillStyle = mainGradient;
+    circleContext.arc(centerX, centerY, centerX, 0, Math.PI * 2);
+    circleContext.fillStyle = outerGradient;
     circleContext.fill();
-
+    circleContext.beginPath();
+    circleContext.arc(centerX, centerY, centerX * 0.3, 0, Math.PI * 2);
+    circleContext.fillStyle = coreGradient;
+    circleContext.fill();
     const circleTexture = new THREE.CanvasTexture(circleCanvas);
     circleTexture.minFilter = THREE.LinearFilter;
     circleTexture.magFilter = THREE.LinearFilter;
 
-    // 파티클 생성 로직 수정
+    // 파티클 생성 로직 (강제 Colors 매핑 적용, 현재 사용자 감정은 반짝임 효과 및 크기 2배 확대)
     const createParticles = () => {
       const particles = new THREE.Group();
-      
-      // 전체 감정 파티클 생성
-      diaryEmotions.forEach(emotion => {
-        const { xvalue, yvalue } = emotion;
-        const color = new THREE.Color(GetColor({ x: xvalue, y: yvalue }));
-        
-        // 일반 파티클 생성
+      diaryEmotions.forEach((emotion) => {
+        const { xvalue, yvalue, isCurrentUser } = emotion;
+        // 강제 매칭: 소수 좌표를 반올림하여 Colors 객체에서 HEX 색상 얻기
+        const hexColor = getColor({ x: xvalue, y: yvalue });
+        const color = new THREE.Color(hexColor);
+
+        // 기본 파티클 생성 (2배 확대)
         const spriteMaterial = new THREE.SpriteMaterial({
           map: circleTexture,
           color: color,
@@ -207,89 +330,80 @@ const ParticlePlanetGallery = () => {
           opacity: 0.7,
           depthWrite: false,
         });
-
         const particle = new THREE.Sprite(spriteMaterial);
-        const size = Math.random() * 0.8 + 0.5; // 일반 파티클 크기
+        // 기본 파티클 크기를 2배로 확대
+        const size = (Math.random() * 0.8 + 0.5) * 2;
         particle.scale.set(size, size, 1);
 
-        // 파티클 위치 설정
+        // 파티클 위치 (랜덤 분포)
         const radius = 30 + Math.random() * 10;
         const phi = Math.random() * Math.PI * 2;
         const theta = Math.random() * Math.PI;
-
         particle.position.x = radius * Math.sin(theta) * Math.cos(phi);
         particle.position.y = radius * Math.sin(theta) * Math.sin(phi);
         particle.position.z = radius * Math.cos(theta);
-
         particles.add(particle);
 
-        // 내 감정 파티클은 더 크고 밝게 생성 (각 감정 위치에 추가 파티클)
-        const myEmotionMaterial = new THREE.SpriteMaterial({
-          map: circleTexture,
-          color: color,
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          opacity: 1.0,
-        });
+        // 현재 사용자 감정이면 "내 감정" 파티클 생성 (기본 파티클보다 2배 확대, 총 4배 크기로 보임)
+        if (isCurrentUser) {
+          console.log("현재 사용자 감정:", emotion, "매칭 색상:", hexColor);
+          const myEmotionMaterial = new THREE.SpriteMaterial({
+            map: circleTexture,
+            color: color,
+            transparent: true,
+            blending: THREE.AdditiveBlending,
+            opacity: 1.0,
+          });
+          const myEmotionParticle = new THREE.Sprite(myEmotionMaterial);
+          // 현재 사용자 파티클은 기본 파티클보다 2배 확대
+          myEmotionParticle.scale.set(size * 2, size * 2, 1);
+          myEmotionParticle.position.copy(particle.position);
+          myEmotionParticle.userData.sparkle = true; // 반짝임 플래그
 
-        const myEmotionParticle = new THREE.Sprite(myEmotionMaterial);
-        const myEmotionSize = size * 2; // 더 큰 크기
-        myEmotionParticle.scale.set(myEmotionSize, myEmotionSize, 1);
-        myEmotionParticle.position.copy(particle.position);
-
-        // 빛나는 효과를 위한 PointLight 추가
-        const emotionLight = new THREE.PointLight(color, 1, 10);
-        emotionLight.position.copy(particle.position);
-        particles.add(emotionLight);
-        particles.add(myEmotionParticle);
+          // 추가 빛 효과
+          const emotionLight = new THREE.PointLight(color, 2, 15);
+          emotionLight.position.copy(particle.position);
+          particles.add(emotionLight);
+          particles.add(myEmotionParticle);
+        }
       });
-
       scene.add(particles);
       return particles;
     };
 
     const particleGroup = createParticles();
 
-    // 애니메이션
     let animationFrameId;
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-
+      const time = performance.now() * 0.001;
       particleGroup.rotation.y += 0.001;
-      particleGroup.children.forEach(particle => {
-        if (particle.isSprite) {
-          particle.rotation.y += 0.03;
+      particleGroup.children.forEach((child) => {
+        if (child.isSprite) {
+          child.rotation.y += 0.02;
+          if (child.userData.sparkle) {
+            // 반짝임 효과: 현재 사용자 파티클의 opacity가 천천히 변화 (진폭 조정)
+            child.material.opacity = 0.8 + 0.2 * Math.abs(Math.sin(time * 3));
+          }
         }
       });
-
       controls.update();
       renderer.render(scene, camera);
     };
-
     animate();
-
-    // resize 이벤트 리스너 추가
     window.addEventListener("resize", handleResize);
-
-    // cleanup
     return () => {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationFrameId);
-
       if (mountRef.current && rendererRef.current) {
         mountRef.current.removeChild(rendererRef.current.domElement);
       }
-
-      // 메모리 정리
-      particleGroup.children.forEach((particle) => {
-        particle.geometry.dispose();
-        particle.material.dispose();
+      particleGroup.children.forEach((child) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) child.material.dispose();
       });
       scene.remove(particleGroup);
-
       renderer.dispose();
-
-      // ref 초기화
       sceneRef.current = null;
       cameraRef.current = null;
       rendererRef.current = null;
@@ -298,49 +412,35 @@ const ParticlePlanetGallery = () => {
   }, [isMaximized, currentIndex, diaryEmotions]);
 
   const handlePrevious = () => {
-    setCurrentIndex((prev) =>
-      prev === 0 ? emotionGroups.length - 1 : prev - 1
-    );
+    setCurrentIndex((prev) => (prev === 0 ? 7 : prev - 1));
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) =>
-      prev === emotionGroups.length - 1 ? 0 : prev + 1
-    );
+    setCurrentIndex((prev) => (prev === 7 ? 0 : prev + 1));
   };
 
   return (
     <div className="relative w-full h-screen bg-black">
       <div ref={mountRef} className="w-full h-full" />
-
-      {!isMaximized && (
-        <>
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
-            <button
-              onClick={handlePrevious}
-              className="bg-white/30 p-2 rounded-full hover:bg-white/40 transition-colors"
-            >
-              <ChevronLeft className="text-white w-5 h-5" />
-            </button>
-            <button
-              onClick={handleNext}
-              className="bg-white/30 p-2 rounded-full hover:bg-white/40 transition-colors"
-            >
-              <ChevronRight className="text-white w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-white/30 px-3 py-1 rounded-full text-white">
-            {emotionGroups[currentIndex].emotion}
-          </div>
-        </>
-      )}
-
       <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-center text-white">
         <h1 className="text-2xl font-bold mb-2">우리의 우주</h1>
         <p className="text-sm opacity-80">
           "오늘, 당신의 마음은 어떤 별에 머무르고 있나요?"
         </p>
+      </div>
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
+        <button
+          onClick={handlePrevious}
+          className="bg-white/30 p-2 rounded-full hover:bg-white/40 transition-colors"
+        >
+          <ChevronLeft className="text-white w-5 h-5" />
+        </button>
+        <button
+          onClick={handleNext}
+          className="bg-white/30 p-2 rounded-full hover:bg-white/40 transition-colors"
+        >
+          <ChevronRight className="text-white w-5 h-5" />
+        </button>
       </div>
     </div>
   );
