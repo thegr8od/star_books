@@ -25,6 +25,7 @@ public enum ErrorCode {
     ALREADY_EXIST_PHONE_NUMBER("U009", HttpStatus.BAD_REQUEST, "이미 존재하는 전화번호입니다."),
     USER_UPDATE_FAILED("U010", HttpStatus.BAD_REQUEST, "사용자 정보 업데이트에 실패했습니다."),
     EMAIL_ALREADY_EXIST("U011", HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
+    NICKNAME_ALREADY_EXIST("U012", HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."), // 닉네임 중복 체크 추가
 
     // Email Error
     EMAIL_SEND_FAIL("E001", HttpStatus.BAD_REQUEST, "이메일 전송에 실패했습니다."),

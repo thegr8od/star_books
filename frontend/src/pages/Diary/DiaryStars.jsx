@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -6,43 +6,95 @@ import TimelineIcon from "@mui/icons-material/Timeline";
 import OpenWithIcon from "@mui/icons-material/OpenWith";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
-import ConstellationCreateModal from "../../components/Modal/ConstellationCreateModal";
 import { useOutletContext } from "react-router-dom";
+import useUniverseApi from "../../api/useUniverseApi";
+import GetColor from "../../components/GetColor";
+import useStarlineApi from "../../api/useStarlineApi";
 
 // 샘플 데이터
 const sampleWorryStars = [
   {
-    id: 1,
-    color: "#9370DB",
-    x: 25,
-    y: 35,
+    universeId: 10,
+    diaryEmotionId: 1,
+    diaryId: 1,
+    xCoord: 25.7,
+    yCoord: 45.3,
+    xvalue: 3,
+    yvalue: -2,
+    updatedAt: "2024-02-13T10:15:30",
   },
   {
-    id: 2,
-    color: "#4682B4",
-    x: 45,
-    y: 65,
+    universeId: 10,
+    diaryEmotionId: 2,
+    diaryId: 2,
+    xCoord: 78.4,
+    yCoord: 12.9,
+    xvalue: -4,
+    yvalue: 2,
+    updatedAt: "2024-02-13T10:15:30",
   },
   {
-    id: 3,
-    color: "#FF6B6B",
-    x: 75,
-    y: 15,
+    universeId: 10,
+    diaryEmotionId: 3,
+    diaryId: 3,
+    xCoord: 45.2,
+    yCoord: 67.8,
+    xvalue: 1,
+    yvalue: 4,
+    updatedAt: "2024-02-13T10:15:30",
+  },
+  {
+    universeId: 10,
+    diaryEmotionId: 4,
+    diaryId: 4,
+    xCoord: 92.1,
+    yCoord: 89.4,
+    xvalue: -2,
+    yvalue: -3,
+    updatedAt: "2024-02-13T10:15:30",
+  },
+  {
+    universeId: 10,
+    diaryEmotionId: 5,
+    diaryId: 5,
+    xCoord: 12.3,
+    yCoord: 34.8,
+    xvalue: 4,
+    yvalue: -1,
+    updatedAt: "2024-02-13T10:15:30",
   },
 ];
 
-const dummyConstellationData = {
-  color: ["#FFD700", "#FF69B4", "#4169E1", "#32CD32", "#FF4500"],
-  count: 5,
-};
+const sampleConnections = [
+  {
+    starlineCoordId: 1,
+    startEmotionId: 1,
+    endEmotionId: 3,
+    year: 2024,
+    month: 3,
+  },
+  {
+    starlineCoordId: 2,
+    startEmotionId: 2,
+    endEmotionId: 5,
+    year: 2024,
+    month: 3,
+  },
+  {
+    starlineCoordId: 3,
+    startEmotionId: 3,
+    endEmotionId: 4,
+    year: 2024,
+    month: 3,
+  },
+];
 
 function DiaryStars() {
   // ==================================================== 상태 관리 ====================================================
   const { currentDate } = useOutletContext();
 
   const [stars, setStars] = useState(sampleWorryStars); // 별(초기 axios 응답 데이터)
-  const [connections, setConnections] = useState([]); // 선(초기 axios 응답 데이터, axios 요청 데이터)
+  const [connections, setConnections] = useState(sampleConnections); // 선(초기 axios 응답 데이터, axios 요청 데이터)
 
   const [isEdit, setIsEdit] = useState(false); // 편집 상태
   const [editMode, setEditMode] = useState("move"); // 편집 모드('move' 또는 'connect')
@@ -52,12 +104,37 @@ function DiaryStars() {
   const [selectedStar, setSelectedStar] = useState(null); // 편집시 선택된 별
   const [modifiedStars, setModifiedStars] = useState({}); // 편집시 이동된 별(axios 요청 데이터)
 
-  const [showCreateAiModal, setShowCreateAiModal] = useState(false); // AI 별자리 생성 모달 표시
   const [showConnections, setShowConnections] = useState(true); // 선 표시
   const BUTTON_STYLES = {
     base: "bg-white/25 text-white size-6 rounded-full flex items-center justify-center",
     active: "ring-2 ring-white",
   };
+
+  useEffect(() => {
+    // (async () => {
+    //   const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
+    //   const response = await useUniverseApi.getMonthlyPersonalUniv(requestData);
+    //   console.log(response);
+    //   if (response.status === "C000") {
+    //     console.log("별 조회 성공");
+    //     setStars(response.data);
+    //     console.log(stars);
+    //   } else {
+    //     console.log("별 조회 실패");
+    //   }
+    // })();
+    // (async () => {
+    //   const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
+    //   const response = await useStarlineApi.getMonthlyStarlineCoords(requestData);
+    //   console.log(response);
+    //   if (response.status === "C000") {
+    //     console.log("별선 조회 성공");
+    //     setConnections(response.data);
+    //   } else {
+    //     console.log("별선 조회 실패");
+    //   }
+    // })();
+  }, [currentDate]);
 
   // ==================================================== move 모드 ====================================================
   // 드래그 앤 드롭 (별 위치 업데이트)
@@ -78,14 +155,14 @@ function DiaryStars() {
     const newY = Math.max(0, Math.min(100, y));
 
     // 선택된 별 위치 업데이트
-    setStars((prev) => prev.map((star) => (star.id === selectedStar ? { ...star, x: newX, y: newY } : star)));
+    setStars((prev) => prev.map((star) => (star.diaryEmotionId === selectedStar ? { ...star, xCoord: newX, yCoord: newY } : star)));
 
     // 수정된 별 위치 저장
     setModifiedStars((prev) => ({
       ...prev,
       [selectedStar]: {
-        x: newX,
-        y: newY,
+        xCoord: newX,
+        yCoord: newY,
       },
     }));
   };
@@ -115,24 +192,26 @@ function DiaryStars() {
 
   // ==================================================== connect 모드 ====================================================
   // 별 클릭 시 선 연결 함수
-  const handleStarClick = (starId) => {
+  const handleStarClick = (diaryEmotionId) => {
     if (!selectedStar) {
       // 첫 번째 별 선택
-      setSelectedStar(starId);
-    } else if (selectedStar === starId) {
+      setSelectedStar(diaryEmotionId);
+    } else if (selectedStar === diaryEmotionId) {
       // 두 번째 같은 별 선택 -> 선택 취소
       setSelectedStar(null);
-    } else if (selectedStar !== starId) {
+    } else if (selectedStar !== diaryEmotionId) {
       // 두 번째 다른 별 선택
       // 존재하는 연결인지 확인
-      const connectionExists = connections.some((data) => (data.start === selectedStar && data.end === starId) || (data.start === starId && data.end === selectedStar));
+      const connectionExists = connections.some((connection) => (connection.startEmotionId === selectedStar && connection.endEmotionId === diaryEmotionId) || (connection.startEmotionId === diaryEmotionId && connection.endEmotionId === selectedStar));
       // 존재하지 않으면 연결 생성
       if (!connectionExists) {
         setConnections((prev) => [
           ...prev,
           {
-            start: selectedStar,
-            end: starId,
+            startEmotionId: selectedStar,
+            endEmotionId: diaryEmotionId,
+            year: currentDate.getFullYear(),
+            month: currentDate.getMonth() + 1,
           },
         ]);
       }
@@ -143,7 +222,7 @@ function DiaryStars() {
 
   // 선 클릭 시 삭제하는 함수
   const handleConnectionClick = (connection) => {
-    setConnections((prev) => prev.filter((data) => !(data.start === connection.start && data.end === connection.end)));
+    setConnections((prev) => prev.filter((c) => !((c.startEmotionId === connection.startEmotionId && c.endEmotionId === connection.endEmotionId) || (c.startEmotionId === connection.endEmotionId && c.endEmotionId === connection.startEmotionId))));
   };
 
   // ==================================================== 편집 함수 ====================================================
@@ -157,8 +236,43 @@ function DiaryStars() {
   };
 
   // 변경 저장
-  const handleSave = () => {
-    // axios 요청
+  const handleSave = async () => {
+    // // axios 요청
+    // // 별 위치 업데이트 요청
+    // if (Object.keys(modifiedStars).length > 0) {
+    //   const starsRequestData = Object.entries(modifiedStars).map(([diaryEmotionId, coords]) => ({
+    //     diaryEmotionId: Number(diaryEmotionId),
+    //     xCoord: coords.xCoord,
+    //     yCoord: coords.yCoord,
+    //   }));
+
+    //   const starsResponse = await useUniverseApi.updatePersonalUniv(starsRequestData);
+    //   console.log(starsResponse);
+    //   if (starsResponse.status === "C000") {
+    //     console.log("별 위치 업데이트 성공");
+    //   } else {
+    //     console.log("별 위치 업데이트 실패");
+    //   }
+    // }
+
+    // // 별선 업데이트 요청
+    // if (connections.length > 0) {
+    //   const connectionsRequestData = connections.map((connection) => ({
+    //     startEmotionId: connection.startEmotionId,
+    //     endEmotionId: connection.endEmotionId,
+    //     year: currentDate.getFullYear(),
+    //     month: currentDate.getMonth() + 1,
+    //   }));
+
+    //   const connectionsResponse = await useStarlineApi.updateStarlineCoords(connectionsRequestData);
+    //   console.log(connectionsResponse);
+    //   if (connectionsResponse.status === "C000") {
+    //     console.log("별선 업데이트 성공");
+    //   } else {
+    //     console.log("별선 업데이트 실패");
+    //   }
+    // }
+
     setIsEdit(false); // 편집 상태 비활성화
     setOriginalStars([]); // 복사 별 데이터 초기화
     setOriginalConnections([]); // 복사 선 데이터 초기화
@@ -184,8 +298,12 @@ function DiaryStars() {
         {/* ========== 별 영역 ========== */}
         <div className="flex-1 relative star-container border border-gray-700">
           <div className="absolute left-1/2 -translate-x-1/2 text-center mt-3">
-            <div className="text-white/60 text-xs">별들의 이야기가 시작되는 곳.</div>
-            <div className="text-white/60 text-xs">당신의 별은 어떤 빛을 띄나요?</div>
+            <div className="text-white/60 text-xs">
+              별들의 이야기가 시작되는 곳.
+            </div>
+            <div className="text-white/60 text-xs">
+              당신의 별은 어떤 빛을 띄나요?
+            </div>
           </div>
 
           {/* 선 (svg) */}
@@ -193,23 +311,26 @@ function DiaryStars() {
             {(isEdit || showConnections) &&
               connections.map((connection) => {
                 // 연결된 시작과 끝 별 찾기
-                const startStar = stars.find((star) => star.id === connection.start);
-                const endStar = stars.find((star) => star.id === connection.end);
+                const startStar = stars.find((star) => star.diaryEmotionId === connection.startEmotionId);
+                const endStar = stars.find((star) => star.diaryEmotionId === connection.endEmotionId);
                 // 연결된 별이 없으면 선 그리지 않음 (별이 삭제된 경우)
                 if (!startStar || !endStar) return null;
 
                 return (
                   <line
-                    key={`${connection.start}-${connection.end}`}
-                    x1={`${startStar.x}%`} // 시작 별 x 좌표
-                    y1={`${startStar.y}%`} // 시작 별 y 좌표
-                    x2={`${endStar.x}%`} // 끝 별 x 좌표
-                    y2={`${endStar.y}%`} // 끝 별 y 좌표
+                    key={`${connection.startEmotionId}-${connection.endEmotionId}`}
+                    x1={`${startStar.xCoord}%`} // 시작 별 x 좌표
+                    y1={`${startStar.yCoord}%`} // 시작 별 y 좌표
+                    x2={`${endStar.xCoord}%`} // 끝 별 x 좌표
+                    y2={`${endStar.yCoord}%`} // 끝 별 y 좌표
                     stroke="rgba(255, 255, 255, 0.5)" // 선 색상
                     strokeWidth="1.5" // 선 두께
-                    className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
+                    className={`${
+                      isEdit && editMode === "connect" ? "cursor-pointer" : ""
+                    }`} // 커서 스타일
                     style={{
-                      pointerEvents: isEdit && editMode === "connect" ? "auto" : "none",
+                      pointerEvents:
+                        isEdit && editMode === "connect" ? "auto" : "none",
                     }} // 편집 모드에서만 클릭 가능
                     onClick={() => {
                       // 편집 상태이거나 connect 모드일 경우 -> 선 삭제 함수
@@ -225,31 +346,31 @@ function DiaryStars() {
           {/* 별 */}
           {stars.map((star) => (
             <div
-              key={star.id}
+              key={star.diaryEmotionId}
               className="absolute"
               style={{
-                left: `${star.x}%`,
-                top: `${star.y}%`,
+                left: `${star.xCoord}%`,
+                top: `${star.yCoord}%`,
                 transform: "translate(-50%, -50%)",
               }}
             >
               <div
-                className={`size-3 rounded-full animate-pulse ${selectedStar === star.id ? "outline outline-2 outline-white" : ""}  ${isEdit ? (editMode === "move" ? "cursor-move" : "cursor-pointer") : ""}`}
+                className={`size-3 rounded-full animate-pulse ${selectedStar === star.diaryEmotionId ? "outline outline-2 outline-white" : ""}  ${isEdit ? (editMode === "move" ? "cursor-move" : "cursor-pointer") : ""}`}
                 style={{
-                  background: `radial-gradient(circle at center, white 0%, ${star.color} 50%, transparent 100%)`,
-                  boxShadow: `0 0 5px ${star.color}, 0 0 10px white`,
+                  background: `radial-gradient(circle at center, white 0%, ${GetColor(star.xvalue, star.yvalue)} 50%, transparent 100%)`,
+                  boxShadow: `0 0 5px ${GetColor(star.xvalue, star.yvalue)}, 0 0 10px white`,
                 }}
                 onMouseDown={(e) => {
                   // 편집 상태 이면서 move 모드일 경우 -> 별 이동(드래그 앤 드롭)
                   if (isEdit && editMode === "move") {
                     e.preventDefault();
-                    setSelectedStar(star.id);
+                    setSelectedStar(star.diaryEmotionId);
                   }
                 }}
                 onClick={() => {
                   // 편집 상태 이면서 connect 모드일 경우 -> 선 연결 함수
                   if (isEdit && editMode === "connect") {
-                    handleStarClick(star.id);
+                    handleStarClick(star.diaryEmotionId);
                   }
                 }}
               />
@@ -257,22 +378,20 @@ function DiaryStars() {
           ))}
         </div>
 
-        {/* ========== AI 별자리 생성 모달 ========== */}
-        <ConstellationCreateModal isOpen={showCreateAiModal} onClose={() => setShowCreateAiModal(false)} constellationData={dummyConstellationData} />
-
         {/* ========== 편집 버튼 영역 ========== */}
         <div className="flex justify-end mt-1.5">
           {!isEdit ? (
             <div className="flex space-x-1.5">
-              {/* AI 생성 버튼 */}
-              <button onClick={() => setShowCreateAiModal(true)} className={`${BUTTON_STYLES.base} w-auto p-1.5 text-xs`}>
-                <ImageOutlinedIcon fontSize="small" />
-                <p>AI 만들기</p>
-              </button>
-
               {/* 선 표시 버튼 */}
-              <button onClick={() => setShowConnections((prev) => !prev)} className={BUTTON_STYLES.base}>
-                {showConnections ? <VisibilityIcon fontSize="inherit" /> : <VisibilityOffIcon fontSize="inherit" />}
+              <button
+                onClick={() => setShowConnections((prev) => !prev)}
+                className={BUTTON_STYLES.base}
+              >
+                {showConnections ? (
+                  <VisibilityIcon fontSize="inherit" />
+                ) : (
+                  <VisibilityOffIcon fontSize="inherit" />
+                )}
               </button>
 
               {/* 편집 시작 버튼 */}
@@ -288,7 +407,9 @@ function DiaryStars() {
                   setEditMode("move"); // 편집 모드 move 전환
                   setSelectedStar(null); // 선택된 별 초기화
                 }}
-                className={`${BUTTON_STYLES.base} ${editMode === "move" ? BUTTON_STYLES.active : ""}`}
+                className={`${BUTTON_STYLES.base} ${
+                  editMode === "move" ? BUTTON_STYLES.active : ""
+                }`}
               >
                 <OpenWithIcon fontSize="inherit" />
               </button>
@@ -299,7 +420,9 @@ function DiaryStars() {
                   setEditMode("connect"); // 편집 모드 connect 전환
                   setSelectedStar(null); // 선택된 별 초기화
                 }}
-                className={`${BUTTON_STYLES.base} ${editMode === "connect" ? BUTTON_STYLES.active : ""}`}
+                className={`${BUTTON_STYLES.base} ${
+                  editMode === "connect" ? BUTTON_STYLES.active : ""
+                }`}
               >
                 <TimelineIcon fontSize="inherit" />
               </button>
