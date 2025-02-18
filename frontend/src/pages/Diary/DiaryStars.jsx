@@ -6,8 +6,6 @@ import TimelineIcon from "@mui/icons-material/Timeline";
 import OpenWithIcon from "@mui/icons-material/OpenWith";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
-import ConstellationCreateModal from "../../components/Modal/ConstellationCreateModal";
 import { useOutletContext } from "react-router-dom";
 
 // 샘플 데이터
@@ -31,11 +29,6 @@ const sampleWorryStars = [
     y: 15,
   },
 ];
-
-const dummyConstellationData = {
-  color: ["#FFD700", "#FF69B4", "#4169E1", "#32CD32", "#FF4500"],
-  count: 5,
-};
 
 function DiaryStars() {
   // ==================================================== 상태 관리 ====================================================
@@ -257,19 +250,11 @@ function DiaryStars() {
           ))}
         </div>
 
-        {/* ========== AI 별자리 생성 모달 ========== */}
-        <ConstellationCreateModal isOpen={showCreateAiModal} onClose={() => setShowCreateAiModal(false)} constellationData={dummyConstellationData} />
 
         {/* ========== 편집 버튼 영역 ========== */}
         <div className="flex justify-end mt-1.5">
           {!isEdit ? (
             <div className="flex space-x-1.5">
-              {/* AI 생성 버튼 */}
-              <button onClick={() => setShowCreateAiModal(true)} className={`${BUTTON_STYLES.base} w-auto p-1.5 text-xs`}>
-                <ImageOutlinedIcon fontSize="small" />
-                <p>AI 만들기</p>
-              </button>
-
               {/* 선 표시 버튼 */}
               <button onClick={() => setShowConnections((prev) => !prev)} className={BUTTON_STYLES.base}>
                 {showConnections ? <VisibilityIcon fontSize="inherit" /> : <VisibilityOffIcon fontSize="inherit" />}
