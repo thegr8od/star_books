@@ -20,11 +20,10 @@ const DiaryWrite = () => {
   const [uploadedImageUrl, setUploadedImageUrl] = useState(null); // 업로드된 이미지 URL 저장
   const [imageUploadError, setImageUploadError] = useState(""); // 이미지 업로드 에러 메시지
 
+  console.log(originalData);
+
   // URL로 접근해서 해당 일기에 대한 데이터가 없을 때 에러페이지로 이동
-  if (
-    !location.state?.emotions ||
-    !location.state?.diaryId
-  ) {
+  if (!location.state?.emotions || !location.state?.diaryId) {
     return (
       <ErrorPage
         title="잘못된 접근입니다."
@@ -35,12 +34,21 @@ const DiaryWrite = () => {
 
   // 일기 작성 날짜, 요일
   const getDayInfo = () => {
-    const days = ["일", "월", "화", "수", "목", "금", "토", "일"];
-    const date = originalData?.created_at
-      ? new Date(originalData.created_at)
-      : isEditMode
-      ? new Date(diaryData.created_at)
-      : new Date();
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+
+    let date;
+    if (originalData.diaryDate) {
+      // diaryDate 배열을 사용하여 날짜 생성 [년, 월, 일]
+      date = new Date(
+        originalData.diaryDate[0],
+        originalData.diaryDate[1] - 1,
+        originalData.diaryDate[2]
+      );
+    } else {
+      // diaryDate가 없는 경우 현재 날짜 사용
+      date = new Date();
+    }
+
     const month = date.getMonth() + 1;
     const dayNum = date.getDate();
     const dayName = days[date.getDay()];

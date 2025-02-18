@@ -3,16 +3,16 @@ import useAxiosInstance from "./useAxiosInstance";
 //다이러리 생성
 //post
 const createEmptyDiary = async (data) => {
-    const jwt = localStorage.getItem("accessToken");
+  const jwt = localStorage.getItem("accessToken");
 
-    try {
-        const response = await useAxiosInstance
-            .authApiClient(jwt)
-            .post("/diary/create", data);
-        return response.data;
-    } catch (e) {
-        throw e;
-    }
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .post("/diary/create", data);
+    return response.data;
+  } catch (e) {
+    throw e;
+  }
 };
 
 /**
@@ -21,31 +21,31 @@ const createEmptyDiary = async (data) => {
  * post
  */
 const addHashtagsAndAnalyzeEmotion = async (diaryId, data) => {
-    const jwt = localStorage.getItem("accessToken");
+  const jwt = localStorage.getItem("accessToken");
 
   try {
-        const response = await useAxiosInstance
-            .authApiClient(jwt)
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
       .post(`/diary/${diaryId}/hashtag`, data);
-        return response.data;
-    } catch (e) {
-        return e.response.status;
-    }
+    return response.data;
+  } catch (e) {
+    return e.response.status;
+  }
 };
 
 //다이어리 내용 입력
 //post
 const addDiaryContent = async (diaryId, data) => {
-    const jwt = localStorage.getItem("accessToken");
+  const jwt = localStorage.getItem("accessToken");
 
   try {
-        const response = await useAxiosInstance
-            .authApiClient(jwt)
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
       .post(`/diary/${diaryId}/content`, data);
-        return response.data;
-    } catch (e) {
-        return e.response.status;
-    }
+    return response.data;
+  } catch (e) {
+    return e.response.status;
+  }
 };
 
 // 이미지 업로드
@@ -79,89 +79,89 @@ const uploadImage = async (file) => {
 //다이어리 수정
 //put
 const updateContent = async (diaryId, data) => {
-    const jwt = localStorage.getItem("accessToken");
+  const jwt = localStorage.getItem("accessToken");
 
   try {
-        const response = await useAxiosInstance
-            .authApiClient(jwt)
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
       .put(`/diary/${diaryId}/content`, data);
-        return response.data;
-    } catch (e) {
-        return e.response.status;
-    }
+    return response.data;
+  } catch (e) {
+    return e.response.status;
+  }
 };
 
 //다이어리 조회
 //get
 const getDiary = async (diaryId) => {
-    const jwt = localStorage.getItem("accessToken");
+  const jwt = localStorage.getItem("accessToken");
 
   try {
-        const response = await useAxiosInstance
-            .authApiClient(jwt)
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
       .get(`/diary/${diaryId}`);
-        return response.data;
-    } catch (e) {
-        return e.response.status;
-    }
+    return response.data;
+  } catch (e) {
+    return e.response.status;
+  }
 };
 
 //다이어리 삭제
 //delete
 const deleteDiary = async (diaryId) => {
-    const jwt = localStorage.getItem("accessToken");
+  const jwt = localStorage.getItem("accessToken");
 
-    try {
-        const response = await useAxiosInstance
-            .authApiClient(jwt)
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
       .delete(`/diary/${diaryId}`);
 
-        return response;
-    } catch(e) {
-        return e.response;
-    }
+    return response;
+  } catch (e) {
+    return e.response;
+  }
 };
 
 //연도별 다이어리 조회
 //get
 const getDiariesByYear = async (data) => {
-    const jwt = localStorage.getItem("accessToken");
+  const jwt = localStorage.getItem("accessToken");
 
-    try {
-        const response = await useAxiosInstance
-            .authApiClient(jwt)
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
       .get(`/diary/year/${data.targetYear}`);
 
-        return response.data;
+    return response.data;
   } catch (e) {
-        return e.response;
-    }
+    return e.response;
+  }
 };
 
 //해당연도의 해당 달의 diary 데이터 받기
 //get
 const getDiariesByMonth = async (data) => {
-    const jwt = localStorage.getItem("accessToken");
+  const jwt = localStorage.getItem("accessToken");
 
-    try {
-        const response = await useAxiosInstance
-            .authApiClient(jwt)
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
       .get(`/diary/year/${data.targetYear}/month/${data.targetMonth}`);
 
-        return response;
-    } catch(e) {
-        return e.response;
-    }
-}
+    return response;
+  } catch (e) {
+    return e.response;
+  }
+};
 
 export default {
-    createEmptyDiary,
-    addHashtagsAndAnalyzeEmotion,
-    addDiaryContent,
+  createEmptyDiary,
+  addHashtagsAndAnalyzeEmotion,
+  addDiaryContent,
   uploadImage,
-    updateContent,
-    getDiary,
-    deleteDiary,
+  updateContent,
+  getDiary,
+  deleteDiary,
   getDiariesByYear,
-    getDiariesByMonth,
+  getDiariesByMonth,
 };
