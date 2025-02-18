@@ -31,54 +31,53 @@ const ParticlePlanetGallery = () => {
   // API 호출 함수 추가
   const fetchEmotions = async () => {
     try {
-      console.log("Redux user state:", user); // Redux 상태 확인
-      console.log("Access Token:", user.accessToken); // 토큰 값 확인
-      
-      const accessToken = user.accessToken;
-      if (!accessToken) {
-        console.error('인증 토큰이 없습니다.');
-        return;
-      }
+        const accessToken = localStorage.getItem("accessToken"); // ✅ 로컬스토리지에서 토큰 가져오기
+        console.log("Access Token:", accessToken);
 
-      //
-      const today = new Date().toISOString().split('T')[0];
-      console.log("API 요청 URL:", `https://starbooks.site/api/diary/emotion?diaryDate=${today}`);
-      console.log("요청 헤더:", {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      });
-
-      const response = await fetch(`https://starbooks.site/api/diary/emotion?diaryDate=${today}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+        if (!accessToken) {
+            console.error("인증 토큰이 없습니다.");
+            return;
         }
-      });
 
-      console.log("API 응답 상태:", response.status); // 응답 상태 확인
+        const today = new Date().toISOString().split("T")[0];
+        console.log("API 요청 URL:", `https://starbooks.site/api/diary/emotion?diaryDate=${today}`);
+        console.log("요청 헤더:", {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('응답 에러 내용:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+        const response = await fetch(`https://starbooks.site/api/diary/emotion?diaryDate=${today}`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+        });
 
-      const data = await response.json();
-      console.log("받아온 데이터:", data); // 받아온 데이터 확인
-      
-      if (Array.isArray(data)) {
-        setDiaryEmotions(data);
-      } else {
-        console.error('예상치 못한 데이터 형식:', data);
-      }
+        console.log("API 응답 상태:", response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("응답 에러 내용:", errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("받아온 데이터:", data);
+
+        if (Array.isArray(data)) {
+            setDiaryEmotions(data);
+        } else {
+            console.error("예상치 못한 데이터 형식:", data);
+        }
     } catch (error) {
-      console.error('감정 데이터 조회 실패:', error);
-      setDiaryEmotions([]); 
+        console.error("감정 데이터 조회 실패:", error);
+        setDiaryEmotions([]);
     }
-  };
+};
+
 
   useEffect(() => {
     fetchEmotions();
