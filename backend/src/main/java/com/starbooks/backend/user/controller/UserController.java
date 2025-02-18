@@ -99,6 +99,11 @@ public class UserController {
             }
             User user = userOpt.get();
 
+            // 탈퇴(논리삭제)된 회원은 로그인 불가
+            if (!user.getIsActive()) {
+                return ApiResponse.createError(ErrorCode.USER_INACTIVE); // 새로운 에러코드 추가 필요
+            }
+
             // JWT 생성 (user_id 포함)
             String accessToken = tokenService.generateAccessToken(user);
             String refreshToken = tokenService.generateRefreshToken(user);
@@ -129,6 +134,7 @@ public class UserController {
         }
         return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
     }
+
 
     // == 로그아웃 ==
     @Operation(summary = "로그아웃", description = "Refresh Token을 사용하여 로그아웃합니다.")
