@@ -24,6 +24,7 @@ const authApiClient = (token) => {
         response => response,
         async error => {
           const originalRequest = error.config;
+          console.log(originalRequest)
     
           if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
@@ -37,7 +38,7 @@ const authApiClient = (token) => {
                 });
                 const refreshResponse = await refreshInstance.post("/member/refresh");
     
-                const newAccessToken = refreshResponse.data.data.accessToken;
+                const newAccessToken = refreshResponse.data.accessToken;
                 localStorage.setItem('accessToken', newAccessToken);
     
                 return instance(originalRequest); // 요청 재시도
