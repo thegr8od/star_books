@@ -14,7 +14,7 @@ public record DiaryResponse(
         Long diaryId,
         String title,
         String content,
-        List<EmotionResponse> emotions,
+        EmotionResponse DiaryEmotion,
         List<Diary.HashtagType> hashtags,
         String imageUrl,
         LocalDate diaryDate,
@@ -24,11 +24,9 @@ public record DiaryResponse(
         String title = diary.getContent() != null ? diary.getContent().getTitle() : "";
         String content = diary.getContent() != null ? diary.getContent().getContent() : "";
 
-        List<EmotionResponse> emotions = diary.getEmotions() != null
-                ? diary.getEmotions().stream()
-                .map(e -> new EmotionResponse(e.getXValue(), e.getYValue()))
-                .toList()
-                : List.of();
+        EmotionResponse diaryEmotion = diary.getDiaryEmotion() != null
+                ? new EmotionResponse(diary.getDiaryEmotion().getXValue(), diary.getDiaryEmotion().getYValue())
+                : null;
 
         List<Diary.HashtagType> hashtags = diary.getHashtags() != null
                 ? diary.getHashtags().stream().map(DiaryHashtag::getHashtag).toList()
@@ -40,7 +38,7 @@ public record DiaryResponse(
                 diary.getDiaryId(),
                 title,
                 content,
-                emotions,
+                diaryEmotion,
                 hashtags,
                 imageUrl,
                 diary.getDiaryDate(),

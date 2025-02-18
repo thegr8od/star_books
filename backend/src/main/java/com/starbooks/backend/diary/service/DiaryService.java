@@ -233,7 +233,7 @@ public class DiaryService {
             diary.setImage(diaryImage);
         }
 
-        DiaryEmotion emotion = diary.getEmotions().iterator().next();
+        DiaryEmotion emotion = diary.getDiaryEmotion();
 
         // PersonalUniv 중복 확인
         Optional<PersonalUniv> existingUniv = personalUnivRepository.findByDiaryEmotion(emotion);
