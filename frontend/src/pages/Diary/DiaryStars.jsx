@@ -174,23 +174,23 @@ function DiaryStars() {
     }
 
     // 별선 업데이트 요청
-    // if (connections.length > 0) {
-    //   console.log(connections)
-    //   const connectionsRequestData = connections.map((connection) => ({
-    //     startEmotionId: connection.startEmotionId,
-    //     endEmotionId: connection.endEmotionId,
-    //     year: currentDate.getFullYear(),
-    //     month: currentDate.getMonth() + 1,
-    //   }));
+    if (connections.length > 0) {
+      const connectionsRequestData = connections.map((connection) => ({
+        startEmotionId: connection.startEmotionId,
+        endEmotionId: connection.endEmotionId,
+        year: currentDate.getFullYear(),
+        month: currentDate.getMonth() + 1,
+      }));
+      console.log(connectionsRequestData);
 
-    //   const connectionsResponse = await useStarlineApi.updateStarlineCoords(connectionsRequestData);
-    //   console.log(connectionsResponse);
-    //   if (connectionsResponse.status === "C000") {
-    //     console.log("별선 업데이트 성공");
-    //   } else {
-    //     console.log("별선 업데이트 실패");
-    //   }
-    // }
+      const connectionsResponse = await useStarlineApi.updateStarlineCoords(connectionsRequestData);
+      console.log(connectionsResponse);
+      if (connectionsResponse.status === "C000") {
+        console.log("별선 업데이트 성공");
+      } else {
+        console.log("별선 업데이트 실패");
+      }
+    }
 
     setIsEdit(false); // 편집 상태 비활성화
     setOriginalStars([]); // 복사 별 데이터 초기화
