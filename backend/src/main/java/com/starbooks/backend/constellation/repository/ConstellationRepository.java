@@ -11,9 +11,6 @@ public interface ConstellationRepository extends JpaRepository<Constellation, Lo
     // 특정 유저의 모든 별자리 조회
     List<Constellation> findByUserId(Long userId);
 
-    // 특정 유저의 AI가 생성한 별자리만 조회
-    List<Constellation> findByUserIdAndGeneratedByAI(Long userId, Boolean generatedByAI);
-
-    // 특정 ID의 별자리 조회 (AI 생성 여부 확인용)
-    Optional<Constellation> findByConstellationIdAndGeneratedByAI(Long constellationId, Boolean generatedByAI);
+    // ✅ 대신 기본 메서드 사용
+    Optional<Constellation> findById(Long constellationId);
 }
