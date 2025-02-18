@@ -5,8 +5,7 @@ import Layout from "../../components/Layout";
 import Button from "../../components/Button";
 import MoodSurvey from "./MoodSurvey";
 import DiaryDate from "./DiaryDate";
-import diaryApi from "../../api/useDiaryApi"; // 수정된 부분
-import useAxiosInstance from "../../api/useAxiosInstance"; // 수정된 부분
+import diaryApi from "../../api/useDiaryApi";
 
 function Diary() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -35,46 +34,33 @@ function Diary() {
         </main>
 
         {/* 버튼 */}
-        <div className="flex justify-center items-center mt-3 space-x-8">
+        <div className="flex justify-between items-center mt-3 px-2 w-full">
           <Button
             text="나의 별"
             type={`${currentTab === "stars" ? "NEXT" : "PREV"}`}
             onClick={() => navigate("/diary/stars")}
-            className="w-24 h-9 text-sm"
+            className="w-[30%] h-9 text-sm"
           />
 
           {currentTab === "stars" ? (
             <Button
               text="3D"
               type="DEFAULT"
-              className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent"
+              className="h-9 w-[15%] min-w-[40px] rounded-full border border-white bg-transparent hover:bg-white/10 transition-colors duration-200 text-sm"
               onClick={() =>
-                navigate(
-                  `/constellation/detail/${currentDate.getFullYear()}` //현재-1
-                )
+                navigate(`/constellation/detail/${currentDate.getFullYear()}`)
               }
             />
           ) : (
             <Button
               text={<Add />}
               type="DEFAULT"
-              className="h-10 w-10 rounded-full border border-white bg-transparent hover:bg-transparent"
+              className="h-9 w-[15%] min-w-[40px] rounded-full border border-white bg-transparent hover:bg-white/10 transition-colors duration-200"
               onClick={async () => {
                 // try {
                 const result = await diaryApi.createEmptyDiary(); // 수정된 부분
-                console.log(result);
+                // console.log(result);
                 handleSetShowModal(true, result);
-
-                //   if (result && result !== 401 && result !== 400) {
-                //     console.log("성공");
-                //     console.log();
-                //
-                //   } else {
-                //     console.error("Failed to create diary:", result);
-                //   }
-                // } catch (error) {
-                //   console.error("Error creating diary:", error);
-                // }
               }}
             />
           )}
@@ -83,7 +69,7 @@ function Diary() {
             text="캘린더"
             type={`${currentTab === "calendar" ? "NEXT" : "PREV"}`}
             onClick={() => navigate("/diary/calendar")}
-            className="w-24 h-9 text-sm"
+            className="w-[30%] h-9 text-sm"
           />
         </div>
       </div>

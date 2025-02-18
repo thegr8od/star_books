@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import MoodSurveyToast from "./MoodSurveyToast";
 import useDiaryApi from "../../api/useDiaryApi";
 
-const MoodSurvey = ({ isOpen, onClose }) => {
+const MoodSurvey = ({ isOpen, onClose, data }) => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedMood, setSelectedMood] = useState(null);
@@ -14,7 +14,6 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastDuration, setToastDuration] = useState(800);
-
   const moods = ["매우 좋음", "좋음", "보통", "좋지 않음", "매우 좋지 않음"];
   const emotions = {
     긍정: [
@@ -32,8 +31,8 @@ const MoodSurvey = ({ isOpen, onClose }) => {
     부정: [
       "불안한",
       "초조한",
-      "화나는",
-      "짜증나는",
+      "화난",
+      "짜증 나는",
       "답답한",
       "속상한",
       "슬픈",
@@ -83,13 +82,21 @@ const MoodSurvey = ({ isOpen, onClose }) => {
       setSelectedEmotions(selectedEmotions.filter((item) => item !== emotion));
     } else if (selectedEmotions.length <= 4) {
       setSelectedEmotions([...selectedEmotions, emotion]);
+      console.log(selectedEmotions);
     } else {
       setShowToast(true);
     }
   };
 
-  // 모달 닫힐 때 상태 초기화
-  const handleClose = () => {
+  const handleClose = (closeType) => {
+    // X 버튼으로 닫을 때 일기 삭제
+    if (closeType === "cancel" && data?.diaryId) {
+      useDiaryApi.deleteDiary(data.diaryId).catch((error) => {
+        console.error("일기 삭제 중 오류 발생 : ", error);
+      });
+    }
+
+    // 모달 닫힐 때 상태 초기화
     setStep(1);
     setSelectedMood(null);
     setSelectedEmotions([]);
@@ -120,12 +127,11 @@ const MoodSurvey = ({ isOpen, onClose }) => {
   // api 호출하여 감정 데이터 저장
   const saveMoodData = () => {
     // 로딩 메시지 표시 (나중에 속도 조절 필요!!)
-    showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 3000);
+    showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 2000);
 
     // 해시태그 추가 및 감정 분석
     useDiaryApi
-      .addHashtagsAndAnalyzeEmotion(diaryId, {
-        // 아직 다이어리아이디 어디서 끌어올지 안함
+      .addHashtagsAndAnalyzeEmotion(data.diaryId, {
         hashtags: selectedEmotions,
       })
       .then((response) => {
@@ -136,7 +142,8 @@ const MoodSurvey = ({ isOpen, onClose }) => {
             emotions: selectedEmotions,
             xvalue: response.xvalue,
             yvalue: response.yvalue,
-            diaryId: diaryId,
+            diaryId: data.diaryId,
+            originalData: data,
           },
         });
       })
