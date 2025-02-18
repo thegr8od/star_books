@@ -61,9 +61,15 @@ public class DiaryService {
     public List<DiaryEmotionDTO> getAllDiaryEmotionsByDate(LocalDate diaryDate) {
         List<DiaryEmotion> emotions = diaryRepository.findAllEmotionsByDate(diaryDate);
         return emotions.stream()
-                .map(e -> new DiaryEmotionDTO(e.getDiaryEmotionId(), e.getXValue(), e.getYValue()))
+                .map(e -> new DiaryEmotionDTO(
+                        e.getDiaryEmotionId(),
+                        e.getXValue(),
+                        e.getYValue(),
+                        e.getDiary().getUser().getUserId()  // userId 추가
+                ))
                 .collect(Collectors.toList());
     }
+
 
 
 
