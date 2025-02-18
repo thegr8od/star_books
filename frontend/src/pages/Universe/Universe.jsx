@@ -262,7 +262,7 @@ const ParticlePlanetGallery = () => {
 
     // 카메라 설정
     const camera = new THREE.PerspectiveCamera(
-      75,
+      50,
       mountRef.current.clientWidth / mountRef.current.clientHeight,
       0.1,
       1000
@@ -358,7 +358,7 @@ const ParticlePlanetGallery = () => {
           depthWrite: false,
         });
         const particle = new THREE.Sprite(spriteMaterial);
-        const size = (Math.random() * 0.8 + 0.5) * 2;
+        const size = (Math.random() * 1.5 + 0.5) * 2;
         particle.scale.set(size, size, 1);
 
         // 파티클 위치 (랜덤 분포)
