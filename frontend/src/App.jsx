@@ -20,6 +20,7 @@ import SocialRedirect from "./pages/Auth/SocialRedirect";
 import AiChat from "./pages/AiChat/AiChat";
 import DiaryCalendar from "./pages/Diary/DiaryCalendar";
 import Diary from "./pages/Diary/Diary";
+import ConstellationAi from "./pages/Constellation/ConstellationAi";
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
           <Route path="diary/edit/:id" element={<DiaryWrite />} />
           {/* Constellation 관련 */}
           <Route path="constellation/detail/:year" element={<ConstellationDetail />} />
+          <Route path="constellation/ai/gallery" element={<ConstellationAi />} />
           {/* AI 채팅 관련 */}
           <Route path="chat" element={<AiChat />} />
           {/* TEST용 */}
