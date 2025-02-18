@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSelector } from "react-redux";
+import useUniverseApi from "../../api/useUniverseApi";
 import axios from "axios";
 
 const ParticlePlanetGallery = () => {
@@ -186,20 +187,22 @@ const ParticlePlanetGallery = () => {
   // API 호출: 선택된 날짜에 따라 URL에 쿼리스트링을 붙여 요청
   const fetchEmotions = async () => {
     try {
-      const accessToken = localStorage.getItem("accessToken");
-      console.log("Access Token:", accessToken);
-      if (!accessToken) {
-        console.error("인증 토큰이 없습니다.");
-        return;
-      }
-      const url = `https://starbooks.site/api/diary/emotion?diaryDate=${selectedDate}`;
-      console.log("API 요청 URL:", url);
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+
+      const response = await useUniverseApi.getDiaryEmotion(selectedDate);
+      // const accessToken = localStorage.getItem("accessToken");
+      // console.log("Access Token:", accessToken);
+      // if (!accessToken) {
+      //   console.error("인증 토큰이 없습니다.");
+      //   return;
+      // }
+      // const url = `https://starbooks.site/api/diary/emotion?diaryDate=${selectedDate}`;
+      // console.log("API 요청 URL:", url);
+      // const response = await axios.get(url, {
+      //   headers: {
+      //     Authorization: `Bearer ${accessToken}`,
+      //     "Content-Type": "application/json",
+      //   },
+      // });
       console.log("서버 응답:", response.data);
       // 응답 데이터에 대해 tokenUserId와 비교하여 isCurrentUser 플래그 추가
       setDiaryEmotions(
