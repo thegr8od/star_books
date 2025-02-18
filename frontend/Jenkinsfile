@@ -42,6 +42,8 @@ pipeline {
             steps {
                 script {
                     sh '''#!/bin/bash
+                    docker stop frontend | true
+                    docker rm frontend | true
                     docker run -d --name frontend -p 3002:3001 "$FRONTEND_IMAGE_NAME"
                     '''
                 }
