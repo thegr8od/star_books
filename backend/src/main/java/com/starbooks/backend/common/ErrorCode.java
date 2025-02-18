@@ -50,6 +50,8 @@ public enum ErrorCode {
     CONSTELLATION_FORBIDDEN("C103", HttpStatus.FORBIDDEN, "AI가 생성한 별자리만 수정 또는 삭제할 수 있습니다."),
     CONSTELLATION_INVALID_REQUEST("C104", HttpStatus.BAD_REQUEST, "별자리 요청이 유효하지 않습니다.");
 
+
+
     private final String code;
     private final HttpStatus httpStatus;
     private final String message;
