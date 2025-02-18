@@ -74,4 +74,74 @@ public class ConstellationController {
         List<ConstellationLineDto> lines = constellationDBService.getLinesByConstellationId(constellationId);
         return ResponseEntity.ok(ApiResponse.createSuccess(lines, "별자리 선 데이터 조회 성공"));
     }
+
+    /**
+     * 🌟 유저가 직접 별자리 데이터 업로드 (JWT 토큰에서 userId 자동 추출)
+     */
+    @PostMapping("/user-upload")
+    public ResponseEntity<?> uploadConstellation(
+            @AuthenticationPrincipal CustomUserDetails userDetails,  // ✅ 토큰에서 userId 가져오기
+            @RequestBody ConstellationDto constellationDto) {  // ✅ 유저가 보낸 별자리 데이터
+
+        Long userId = userDetails.getUserId(); // ✅ userId 추출
+        log.info("📌 [ConstellationController] 유저 별자리 업로드 요청 - userId: {}", userId);
+
+        try {
+            ConstellationDto savedConstellation = constellationDBService.saveUserConstellation(userId, constellationDto);
+            return ResponseEntity.ok(ApiResponse.createSuccess(savedConstellation, "유저 별자리 저장 완료"));
+        } catch (Exception e) {
+            log.error("❌ 유저 별자리 업로드 중 오류 발생", e);
+            return ResponseEntity.status(500).body(ApiResponse.createError(ErrorCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    /**
+     * 📌 AI가 생성한 별자리 데이터 수정 (JWT 토큰에서 userId 자동 추출)
+     */
+    @PutMapping("/{constellationId}/update-lines")
+    public ResponseEntity<?> updateConstellationLines(
+            @AuthenticationPrincipal CustomUserDetails userDetails,  // ✅ 토큰에서 userId 가져오기
+            @PathVariable Long constellationId,  // ✅ 수정할 별자리 ID
+            @RequestBody List<ConstellationLineDto> updatedLines) {  // ✅ 수정할 선 데이터
+
+        Long userId = userDetails.getUserId(); // ✅ userId 추출
+        log.info("📌 [ConstellationController] 별자리 데이터 수정 요청 - userId: {}, constellationId: {}", userId, constellationId);
+
+        try {
+            boolean isUpdated = constellationDBService.updateConstellationLines(userId, constellationId, updatedLines);
+            if (!isUpdated) {
+                return ResponseEntity.status(403).body(ApiResponse.createError(ErrorCode.FORBIDDEN, "AI가 생성한 별자리만 수정할 수 있습니다."));
+            }
+            return ResponseEntity.ok(ApiResponse.createSuccess(null, "별자리 데이터 수정 완료"));
+        } catch (Exception e) {
+            log.error("❌ 별자리 데이터 수정 중 오류 발생", e);
+            return ResponseEntity.status(500).body(ApiResponse.createError(ErrorCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    /**
+     * ❌ AI가 생성한 별자리 삭제 (JWT 토큰에서 userId 자동 추출)
+     */
+    @DeleteMapping("/{constellationId}")
+    public ResponseEntity<?> deleteConstellation(
+            @AuthenticationPrincipal CustomUserDetails userDetails,  // ✅ 토큰에서 userId 가져오기
+            @PathVariable Long constellationId) {  // ✅ 삭제할 별자리 ID
+
+        Long userId = userDetails.getUserId(); // ✅ userId 추출
+        log.info("❌ [ConstellationController] 별자리 삭제 요청 - userId: {}, constellationId: {}", userId, constellationId);
+
+        try {
+            boolean isDeleted = constellationDBService.deleteConstellation(userId, constellationId);
+            if (!isDeleted) {
+                return ResponseEntity.status(403).body(ApiResponse.createError(ErrorCode.FORBIDDEN, "AI가 생성한 별자리만 삭제할 수 있습니다."));
+            }
+            return ResponseEntity.ok(ApiResponse.createSuccess(null, "별자리 삭제 완료"));
+        } catch (Exception e) {
+            log.error("❌ 별자리 삭제 중 오류 발생", e);
+            return ResponseEntity.status(500).body(ApiResponse.createError(ErrorCode.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+
+
 }
