@@ -27,21 +27,26 @@ function ConstellationAi() {
   const createConstellationObject = (constellation) => {
     const group = new THREE.Group();
 
-    // 선 그리기 - 더 부드럽고 은은하게
+    // 선 그리기 - 더 밝고 선명하게
     const material = new THREE.LineBasicMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.8, // 불투명도 증가
+      depthWrite: false,
+      depthTest: false,
+      blending: THREE.AdditiveBlending,
     });
 
-    // 별 그리기 - 크기 조정
+    // 별 그리기 - 크기와 밝기 증가
     const starMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
-      size: 1.2,
+      size: 2, // 별 크기 증가
       transparent: true,
-      opacity: 0.8,
+      opacity: 1.0, // 완전 불투명
       map: generateStarTexture(),
       blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      depthTest: false,
     });
 
     // 빛나는 효과를 위한 색상
@@ -175,7 +180,7 @@ function ConstellationAi() {
     constellationGroup.name = "constellationGroup";
 
     // 구면 배치를 위한 설정
-    const radius = 300; // 구의 반지름 증가
+    const radius = 400; // 반지름 증가
     const phi = Math.PI * (3 - Math.sqrt(5));
 
     // 화면 영역 설정
@@ -191,6 +196,18 @@ function ConstellationAi() {
 
     data.forEach((constellation, index) => {
       const constellationObject = createConstellationObject(constellation);
+
+      // 각 별자리 객체에 렌더링 설정
+      constellationObject.traverse((child) => {
+        if (child.material) {
+          child.material = child.material.clone();
+          child.material.transparent = true;
+          child.material.depthWrite = false;
+          child.material.depthTest = false;
+          child.material.blending = THREE.AdditiveBlending;
+          child.renderOrder = data.length - index; // 렌더링 순서를 인덱스 기반으로 설정
+        }
+      });
 
       // 그리드 위치 계산
       const col = index % cols;
@@ -348,12 +365,12 @@ function ConstellationAi() {
 
     // Camera
     const camera = new THREE.PerspectiveCamera(
-      45,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
-      0.1,
-      1000
+      45, // FOV 감소
+      window.innerWidth / window.innerHeight,
+      1,
+      2000 // far 평면 증가
     );
-    camera.position.set(0, 100, 1000); // 초기 거리를 더 멀리 설정
+    camera.position.set(0, 100, 1200); // 카메라를 더 멀리 이동
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
