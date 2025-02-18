@@ -148,12 +148,6 @@ public class DiaryController {
         return ResponseEntity.ok(personalUniv);
     }
 
-    @GetMapping("/emotion-my")
-    public ResponseEntity<DiaryEmotionDTO> getDiaryEmotion(@RequestParam LocalDate diaryDate, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        DiaryEmotion emotion = diaryService.getDiaryEmotionByDate(userDetails.getUserId(), diaryDate);
-        DiaryEmotionDTO response = new DiaryEmotionDTO(emotion.getDiaryEmotionId(), emotion.getXValue(), emotion.getYValue());
-        return ResponseEntity.ok(response);
-    }
 
     @GetMapping("/emotion")
     public ResponseEntity<List<DiaryEmotionDTO>> getAllDiaryEmotions(@RequestParam LocalDate diaryDate) {
