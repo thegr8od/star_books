@@ -158,6 +158,21 @@ public class UserController {
         return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
     }
 
+
+    // == 회원 탈퇴 (논리 삭제) ==
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴(논리 삭제)를 수행합니다.")
+    @DeleteMapping("/withdraw")
+    public ApiResponse<?> withdrawUser(@RequestParam String email, HttpServletResponse response) {
+        try {
+            userService.withdrawUser(email, response);
+            return ApiResponse.createSuccessWithNoContent("회원 탈퇴(논리 삭제)가 완료되었습니다.");
+        } catch (Exception e) {
+            log.error("회원 탈퇴 실패: {}", e.getMessage());
+            return ApiResponse.createError(ErrorCode.USER_DELETE_FAILED);
+        }
+    }
+
+
     // == 토큰 재발급 ==
     @Operation(summary = "토큰 재발급", description = "Refresh Token을 이용하여 새로운 Access Token을 발급합니다.")
     @PostMapping("/refresh")
