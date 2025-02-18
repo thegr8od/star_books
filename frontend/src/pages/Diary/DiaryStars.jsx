@@ -8,26 +8,59 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useOutletContext } from "react-router-dom";
 import useUniverseApi from "../../api/useUniverseApi";
+import GetColor from "../../components/GetColor";
 
 // 샘플 데이터
 const sampleWorryStars = [
   {
-    id: 1,
-    color: "#9370DB",
-    x: 25,
-    y: 35,
+    universeId: 10,
+    diaryEmotionId: 1,
+    diaryId: 1,
+    xCoord: 25.7,
+    yCoord: 45.3,
+    xvalue: 3,
+    yvalue: -2,
+    updatedAt: "2024-02-13T10:15:30",
   },
   {
-    id: 2,
-    color: "#4682B4",
-    x: 45,
-    y: 65,
+    universeId: 10,
+    diaryEmotionId: 2,
+    diaryId: 2,
+    xCoord: 78.4,
+    yCoord: 12.9,
+    xvalue: -4,
+    yvalue: 2,
+    updatedAt: "2024-02-13T10:15:30",
   },
   {
-    id: 3,
-    color: "#FF6B6B",
-    x: 75,
-    y: 15,
+    universeId: 10,
+    diaryEmotionId: 3,
+    diaryId: 3,
+    xCoord: 45.2,
+    yCoord: 67.8,
+    xvalue: 1,
+    yvalue: 4,
+    updatedAt: "2024-02-13T10:15:30",
+  },
+  {
+    universeId: 10,
+    diaryEmotionId: 4,
+    diaryId: 4,
+    xCoord: 92.1,
+    yCoord: 89.4,
+    xvalue: -2,
+    yvalue: -3,
+    updatedAt: "2024-02-13T10:15:30",
+  },
+  {
+    universeId: 10,
+    diaryEmotionId: 5,
+    diaryId: 5,
+    xCoord: 12.3,
+    yCoord: 34.8,
+    xvalue: 4,
+    yvalue: -1,
+    updatedAt: "2024-02-13T10:15:30",
   },
 ];
 
@@ -35,7 +68,7 @@ function DiaryStars() {
   // ==================================================== 상태 관리 ====================================================
   const { currentDate } = useOutletContext();
 
-  const [stars, setStars] = useState([]); // 별(초기 axios 응답 데이터)
+  const [stars, setStars] = useState(sampleWorryStars); // 별(초기 axios 응답 데이터)
   const [connections, setConnections] = useState([]); // 선(초기 axios 응답 데이터, axios 요청 데이터)
 
   const [isEdit, setIsEdit] = useState(false); // 편집 상태
@@ -53,18 +86,18 @@ function DiaryStars() {
   };
 
   useEffect(() => {
-    (async () => {
-      const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
-      const response = await useUniverseApi.getMonthlyPersonalUniv(requestData);
-      console.log(response);
-      if (response.status === "C000") {
-        console.log("별 조회 성공");
-        setStars(response.data);
-        console.log(stars);
-      } else {
-        console.log("별 조회 실패");
-      }
-    })();
+    // (async () => {
+    //   const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
+    //   const response = await useUniverseApi.getMonthlyPersonalUniv(requestData);
+    //   console.log(response);
+    //   if (response.status === "C000") {
+    //     console.log("별 조회 성공");
+    //     setStars(response.data);
+    //     console.log(stars);
+    //   } else {
+    //     console.log("별 조회 실패");
+    //   }
+    // })();
   }, [currentDate]);
 
   // ==================================================== move 모드 ====================================================
@@ -86,7 +119,7 @@ function DiaryStars() {
     const newY = Math.max(0, Math.min(100, y));
 
     // 선택된 별 위치 업데이트
-    setStars((prev) => prev.map((star) => (star.id === selectedStar ? { ...star, x: newX, y: newY } : star)));
+    setStars((prev) => prev.map((star) => (star.diaryEmotionId === selectedStar ? { ...star, xCoord: newX, yCoord: newY } : star)));
 
     // 수정된 별 위치 저장
     setModifiedStars((prev) => ({
@@ -197,12 +230,12 @@ function DiaryStars() {
           </div>
 
           {/* 선 (svg) */}
-          <svg className="absolute w-full h-full pointer-events-none">
+          {/* <svg className="absolute w-full h-full pointer-events-none">
             {(isEdit || showConnections) &&
               connections.map((connection) => {
                 // 연결된 시작과 끝 별 찾기
-                const startStar = stars.find((star) => star.id === connection.start);
-                const endStar = stars.find((star) => star.id === connection.end);
+                const startStar = stars.find((star) => star.diaryEmotionId === connection.start);
+                const endStar = stars.find((star) => star.diaryEmotionId === connection.end);
                 // 연결된 별이 없으면 선 그리지 않음 (별이 삭제된 경우)
                 if (!startStar || !endStar) return null;
 
@@ -228,36 +261,36 @@ function DiaryStars() {
                   />
                 );
               })}
-          </svg>
+          </svg> */}
 
           {/* 별 */}
           {stars.map((star) => (
             <div
-              key={star.id}
+              key={star.diaryEmotionId}
               className="absolute"
               style={{
-                left: `${star.x}%`,
-                top: `${star.y}%`,
+                left: `${star.xCoord}%`,
+                top: `${star.yCoord}%`,
                 transform: "translate(-50%, -50%)",
               }}
             >
               <div
-                className={`size-3 rounded-full animate-pulse ${selectedStar === star.id ? "outline outline-2 outline-white" : ""}  ${isEdit ? (editMode === "move" ? "cursor-move" : "cursor-pointer") : ""}`}
+                className={`size-3 rounded-full animate-pulse ${selectedStar === star.diaryEmotionId ? "outline outline-2 outline-white" : ""}  ${isEdit ? (editMode === "move" ? "cursor-move" : "cursor-pointer") : ""}`}
                 style={{
-                  background: `radial-gradient(circle at center, white 0%, ${star.color} 50%, transparent 100%)`,
-                  boxShadow: `0 0 5px ${star.color}, 0 0 10px white`,
+                  background: `radial-gradient(circle at center, white 0%, ${GetColor(star.xvalue, star.yvalue)} 50%, transparent 100%)`,
+                  boxShadow: `0 0 5px ${GetColor(star.xvalue, star.yvalue)}, 0 0 10px white`,
                 }}
                 onMouseDown={(e) => {
                   // 편집 상태 이면서 move 모드일 경우 -> 별 이동(드래그 앤 드롭)
                   if (isEdit && editMode === "move") {
                     e.preventDefault();
-                    setSelectedStar(star.id);
+                    setSelectedStar(star.diaryEmotionId);
                   }
                 }}
                 onClick={() => {
                   // 편집 상태 이면서 connect 모드일 경우 -> 선 연결 함수
                   if (isEdit && editMode === "connect") {
-                    handleStarClick(star.id);
+                    handleStarClick(star.diaryEmotionId);
                   }
                 }}
               />
