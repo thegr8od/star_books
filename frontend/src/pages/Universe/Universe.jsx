@@ -12,17 +12,20 @@ const ParticlePlanetGallery = () => {
   const rendererRef = useRef(null);
   const controlsRef = useRef(null);
   const particleGroupRef = useRef(null);
-  // 마우스가 현재 사용자 감정 파티클 위에 있는지 상태로 관리
+
+  // 마우스가 현재 사용자 감정 파티클 위에 있는지 관리
   const [hovering, setHovering] = useState(false);
-  // 현재 hover 중인 파티클을 참조 (움직임 처리에 사용)
   const hoveredParticleRef = useRef(null);
 
   const [isMaximized, setIsMaximized] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // 현재 선택된 날짜 (YYYY-MM-DD 형식; 기본값은 오늘)
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [diaryEmotions, setDiaryEmotions] = useState([]);
   const user = useSelector((state) => state.user);
 
-  // 토큰에서 유저 정보 추출 (토큰에 포함된 user_id 사용)
+  // 토큰에서 user_id 추출
   const token = localStorage.getItem("accessToken");
   let tokenUserId = null;
   if (token) {
@@ -180,7 +183,7 @@ const ParticlePlanetGallery = () => {
     return Colors[key] || "#9a9790";
   };
 
-  // API 호출 (axios 사용)
+  // API 호출: 선택된 날짜에 따라 URL에 쿼리스트링을 붙여 요청
   const fetchEmotions = async () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
@@ -189,17 +192,16 @@ const ParticlePlanetGallery = () => {
         console.error("인증 토큰이 없습니다.");
         return;
       }
-      const today = new Date().toISOString().split("T")[0];
-      console.log("API 요청 URL:", `https://starbooks.site/api/diary/emotion?diaryDate=${today}`);
-      const response = await axios.get(`https://starbooks.site/api/diary/emotion`, {
-        params: { diaryDate: today },
+      const url = `https://starbooks.site/api/diary/emotion?diaryDate=${selectedDate}`;
+      console.log("API 요청 URL:", url);
+      const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       });
       console.log("서버 응답:", response.data);
-      // 토큰의 user_id와 비교하여 isCurrentUser 플래그 추가
+      // 응답 데이터에 대해 tokenUserId와 비교하여 isCurrentUser 플래그 추가
       setDiaryEmotions(
         response.data.map((emotion) => ({
           ...emotion,
@@ -212,20 +214,24 @@ const ParticlePlanetGallery = () => {
     }
   };
 
+  // 선택된 날짜가 변경될 때마다 감정 데이터를 다시 요청
   useEffect(() => {
     fetchEmotions();
-  }, []);
+  }, [selectedDate]);
 
-  // 현재 사용자 감정 로그 출력
+  // (디버그용) 현재 사용자 감정 로그 출력
   useEffect(() => {
-    const currentUserEmotions = diaryEmotions.filter((e) => e.isCurrentUser);
-    currentUserEmotions.forEach((e) => {
-      const hexColor = getColor({ x: e.xvalue, y: e.yvalue });
-      console.log(`현재 사용자 감정 - ID: ${e.id}, userId: ${e.userId}, x: ${e.xvalue}, y: ${e.yvalue}, 색상: ${hexColor}`);
-    });
+    diaryEmotions
+      .filter((e) => e.isCurrentUser)
+      .forEach((e) => {
+        const hexColor = getColor({ x: e.xvalue, y: e.yvalue });
+        console.log(
+          `현재 사용자 감정: ${JSON.stringify(e)} 매칭 색상: ${hexColor}`
+        );
+      });
   }, [diaryEmotions]);
 
-  // 창 크기 조정 핸들러
+  // 창 크기 변경 핸들러
   const handleResize = () => {
     if (!mountRef.current || !cameraRef.current || !rendererRef.current) return;
     const width = mountRef.current.clientWidth;
@@ -236,12 +242,13 @@ const ParticlePlanetGallery = () => {
     rendererRef.current.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
   };
 
+  // Three.js 씬 초기화 및 파티클 생성
   useEffect(() => {
     if (!mountRef.current) return;
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // 배경 (그라데이션 처리)
+    // 배경 그라데이션 설정
     const bgCanvas = document.createElement("canvas");
     const bgContext = bgCanvas.getContext("2d");
     bgCanvas.width = 2;
@@ -289,7 +296,7 @@ const ParticlePlanetGallery = () => {
     pointLight.position.set(-10, 10, 10);
     scene.add(pointLight);
 
-    // 원형 텍스처 생성 (별 모양)
+    // 원형 텍스처 (별 모양) 생성
     const circleCanvas = document.createElement("canvas");
     circleCanvas.width = 256;
     circleCanvas.height = 256;
@@ -297,12 +304,26 @@ const ParticlePlanetGallery = () => {
     const centerX = circleCanvas.width / 2;
     const centerY = circleCanvas.height / 2;
     // 중심부 밝은 영역
-    const coreGradient = circleContext.createRadialGradient(centerX, centerY, 0, centerX, centerY, centerX * 0.3);
+    const coreGradient = circleContext.createRadialGradient(
+      centerX,
+      centerY,
+      0,
+      centerX,
+      centerY,
+      centerX * 0.3
+    );
     coreGradient.addColorStop(0, "rgba(255, 255, 255, 1)");
     coreGradient.addColorStop(0.3, "rgba(255, 255, 255, 0.8)");
     coreGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
     // 외부 글로우 효과
-    const outerGradient = circleContext.createRadialGradient(centerX, centerY, centerX * 0.3, centerX, centerY, centerX);
+    const outerGradient = circleContext.createRadialGradient(
+      centerX,
+      centerY,
+      centerX * 0.3,
+      centerX,
+      centerY,
+      centerX
+    );
     outerGradient.addColorStop(0, "rgba(255, 255, 255, 0.4)");
     outerGradient.addColorStop(0.5, "rgba(255, 255, 255, 0.1)");
     outerGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
@@ -318,16 +339,16 @@ const ParticlePlanetGallery = () => {
     circleTexture.minFilter = THREE.LinearFilter;
     circleTexture.magFilter = THREE.LinearFilter;
 
-    // 파티클 생성 (현재 사용자 감정은 2배 확대 및 추가 빛 효과)
+    // 파티클 생성 (diaryEmotions 배열에 따라)
     const createParticles = () => {
       const particles = new THREE.Group();
       diaryEmotions.forEach((emotion) => {
         const { xvalue, yvalue, isCurrentUser } = emotion;
-        // 소수 좌표를 반올림하여 Colors 객체에서 색상 얻기
+        // Colors 매핑을 통해 HEX 색상 얻기
         const hexColor = getColor({ x: xvalue, y: yvalue });
         const color = new THREE.Color(hexColor);
 
-        // 일반 파티클 생성
+        // 기본 파티클 생성
         const spriteMaterial = new THREE.SpriteMaterial({
           map: circleTexture,
           color: color,
@@ -349,7 +370,7 @@ const ParticlePlanetGallery = () => {
         particle.position.z = radius * Math.cos(theta);
         particles.add(particle);
 
-        // 현재 사용자 감정이면 별도의 "내 감정" 파티클 생성 (기본 파티클보다 2배 확대 → 총 4배)
+        // 현재 사용자 감정인 경우 별도 파티클 생성 및 빛 효과 적용
         if (isCurrentUser) {
           console.log("현재 사용자 감정:", emotion, "매칭 색상:", hexColor);
           const myEmotionMaterial = new THREE.SpriteMaterial({
@@ -362,8 +383,7 @@ const ParticlePlanetGallery = () => {
           const myEmotionParticle = new THREE.Sprite(myEmotionMaterial);
           myEmotionParticle.scale.set(size * 2, size * 2, 1);
           myEmotionParticle.position.copy(particle.position);
-          myEmotionParticle.userData.sparkle = true; // 반짝임 플래그
-          // 원래 위치 저장 (hover 시 원위치 기준으로 움직임)
+          myEmotionParticle.userData.sparkle = true;
           myEmotionParticle.userData.originalPosition = myEmotionParticle.position.clone();
 
           // 추가 빛 효과
@@ -389,16 +409,13 @@ const ParticlePlanetGallery = () => {
         if (child.isSprite) {
           child.rotation.y += 0.02;
           if (child.userData.sparkle) {
-            // 반짝임 효과: 천천히 변화하는 opacity
             child.material.opacity = 0.8 + 0.2 * Math.abs(Math.sin(time * 3));
           }
         }
       });
 
-      // 만약 현재 사용자 파티클에 마우스가 닿아 있다면 수직 방향으로 약간 움직임 (진동 효과)
       if (hoveredParticleRef.current) {
         const origPos = hoveredParticleRef.current.userData.originalPosition;
-        // 원래 위치에서 y축으로 sin 함수를 이용한 오프셋을 더함
         hoveredParticleRef.current.position.copy(
           origPos.clone().add(new THREE.Vector3(0, Math.sin(time * 3) * 0.5, 0))
         );
@@ -410,7 +427,7 @@ const ParticlePlanetGallery = () => {
     animate();
     window.addEventListener("resize", handleResize);
 
-    // 마우스 포인터 이벤트: 현재 사용자 감정 파티클 위에 올리면 메시지 표시 및 파티클 움직임 처리
+    // 마우스 포인터 이벤트 처리 (현재 사용자 감정 파티클 위에서 효과)
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const handlePointerMove = (event) => {
@@ -422,7 +439,6 @@ const ParticlePlanetGallery = () => {
       let found = false;
       for (let intersect of intersects) {
         if (intersect.object.userData && intersect.object.userData.sparkle) {
-          // 현재 사용자 감정 파티클 위에 마우스가 있으면 메시지 표시 및 해당 파티클 참조 저장
           setHovering(true);
           hoveredParticleRef.current = intersect.object;
           found = true;
@@ -454,20 +470,30 @@ const ParticlePlanetGallery = () => {
       rendererRef.current = null;
       controlsRef.current = null;
     };
-  }, [isMaximized, currentIndex, diaryEmotions]);
+  }, [isMaximized, diaryEmotions]);
 
+  // 좌측 버튼: 이전 날로 이동
   const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? 7 : prev - 1));
+    setSelectedDate((prevDate) => {
+      const date = new Date(prevDate);
+      date.setDate(date.getDate() - 1);
+      return date.toISOString().split("T")[0];
+    });
   };
 
+  // 우측 버튼: 다음 날로 이동
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev === 7 ? 0 : prev + 1));
+    setSelectedDate((prevDate) => {
+      const date = new Date(prevDate);
+      date.setDate(date.getDate() + 1);
+      return date.toISOString().split("T")[0];
+    });
   };
 
   return (
     <div className="relative w-full h-screen bg-black">
       <div ref={mountRef} className="w-full h-full" />
-      {/* UI 메시지 오버레이 - 배경 없이 자연스럽게 페이드 아웃 */}
+      {/* UI 메시지 오버레이 */}
       <div
         className={`absolute bottom-20 left-1/2 transform -translate-x-1/2 text-white px-4 py-2 rounded shadow-lg text-lg transition-opacity duration-500 ${
           hovering ? "opacity-100" : "opacity-0"
@@ -480,6 +506,7 @@ const ParticlePlanetGallery = () => {
         <p className="text-sm opacity-80">
           "오늘, 당신의 마음은 어떤 별에 머무르고 있나요?"
         </p>
+        <p className="mt-2 text-sm">날짜: {selectedDate}</p>
       </div>
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
         <button
