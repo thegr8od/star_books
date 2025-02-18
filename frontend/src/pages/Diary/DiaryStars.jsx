@@ -211,7 +211,7 @@ function DiaryStars() {
             startEmotionId: selectedStar,
             endEmotionId: diaryEmotionId,
             year: currentDate.getFullYear(),
-            month: currentDate.getMonth(),
+            month: currentDate.getMonth() + 1,
           },
         ]);
       }
@@ -222,7 +222,7 @@ function DiaryStars() {
 
   // 선 클릭 시 삭제하는 함수
   const handleConnectionClick = (connection) => {
-    setConnections((prev) => prev.filter((c) => !(c.startEmotionId === connection.startEmotionId && c.endEmotionId === connection.endEmotionId)));
+    setConnections((prev) => prev.filter((c) => !((c.startEmotionId === connection.startEmotionId && c.endEmotionId === connection.endEmotionId) || (c.startEmotionId === connection.endEmotionId && c.endEmotionId === connection.startEmotionId))));
   };
 
   // ==================================================== 편집 함수 ====================================================
@@ -236,8 +236,43 @@ function DiaryStars() {
   };
 
   // 변경 저장
-  const handleSave = () => {
-    // axios 요청
+  const handleSave = async () => {
+    // // axios 요청
+    // // 별 위치 업데이트 요청
+    // if (Object.keys(modifiedStars).length > 0) {
+    //   const starsRequestData = Object.entries(modifiedStars).map(([diaryEmotionId, coords]) => ({
+    //     diaryEmotionId: Number(diaryEmotionId),
+    //     xCoord: coords.xCoord,
+    //     yCoord: coords.yCoord,
+    //   }));
+
+    //   const starsResponse = await useUniverseApi.updatePersonalUniv(starsRequestData);
+    //   console.log(starsResponse);
+    //   if (starsResponse.status === "C000") {
+    //     console.log("별 위치 업데이트 성공");
+    //   } else {
+    //     console.log("별 위치 업데이트 실패");
+    //   }
+    // }
+
+    // // 별선 업데이트 요청
+    // if (connections.length > 0) {
+    //   const connectionsRequestData = connections.map((connection) => ({
+    //     startEmotionId: connection.startEmotionId,
+    //     endEmotionId: connection.endEmotionId,
+    //     year: currentDate.getFullYear(),
+    //     month: currentDate.getMonth() + 1,
+    //   }));
+
+    //   const connectionsResponse = await useStarlineApi.updateStarlineCoords(connectionsRequestData);
+    //   console.log(connectionsResponse);
+    //   if (connectionsResponse.status === "C000") {
+    //     console.log("별선 업데이트 성공");
+    //   } else {
+    //     console.log("별선 업데이트 실패");
+    //   }
+    // }
+
     setIsEdit(false); // 편집 상태 비활성화
     setOriginalStars([]); // 복사 별 데이터 초기화
     setOriginalConnections([]); // 복사 선 데이터 초기화
