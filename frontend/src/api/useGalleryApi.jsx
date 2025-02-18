@@ -4,10 +4,6 @@ import useAxiosInstance from "./useAxiosInstance";
 const generateConstellation = async (file) => {
   const jwt = localStorage.getItem("accessToken");
 
-  if (!jwt) {
-    throw new Error("로그인이 필요합니다");
-  }
-
   try {
     const formData = new FormData();
     formData.append("file", file);
@@ -19,17 +15,8 @@ const generateConstellation = async (file) => {
           "Content-Type": "multipart/form-data",
         },
       });
-
-    if (response.data) {
-      return response.data;
-    } else {
-      throw new Error("별자리 생성에 실패했습니다");
-    }
+    return response.data;
   } catch (error) {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("accessToken");
-      throw new Error("로그인이 만료되었습니다. 다시 로그인해주세요.");
-    }
     console.error("별자리 생성 실패:", error);
     throw error;
   }
@@ -39,30 +26,14 @@ const generateConstellation = async (file) => {
 const uploadUserConstellation = async (lines) => {
   const jwt = localStorage.getItem("accessToken");
 
-  if (!jwt) {
-    throw new Error("로그인이 필요합니다");
-  }
-
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
       .post("/constellation/user-upload", { lines });
-
-    // 응답 구조 확인 및 처리
-    if (response.data && response.data.status === "SUCCESS") {
-      return response.data;
-    } else {
-      throw new Error(response.data?.message || "별자리 저장에 실패했습니다");
-    }
+    return response.data;
   } catch (error) {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("accessToken");
-      throw new Error("로그인이 만료되었습니다. 다시 로그인해주세요.");
-    }
     console.error("유저 별자리 업로드 실패:", error);
-    throw error.response?.data?.message
-      ? new Error(error.response.data.message)
-      : error;
+    throw error;
   }
 };
 
@@ -70,20 +41,12 @@ const uploadUserConstellation = async (lines) => {
 const getUserConstellations = async () => {
   const jwt = localStorage.getItem("accessToken");
 
-  if (!jwt) {
-    throw new Error("로그인이 필요합니다");
-  }
-
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
       .get("/constellation/user");
     return response.data;
   } catch (error) {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("accessToken"); // 토큰 제거
-      throw new Error("로그인이 만료되었습니다. 다시 로그인해주세요.");
-    }
     console.error("별자리 목록 조회 실패:", error);
     throw error;
   }

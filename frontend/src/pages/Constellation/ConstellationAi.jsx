@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import {
-  CSS2DRenderer,
-  CSS2DObject,
-} from "three/examples/jsm/renderers/CSS2DRenderer";
+import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { Plus, X, ZoomIn, ZoomOut } from "lucide-react";
 import ConstellationCreateModal from "../../components/Modal/ConstellationCreateModal";
 import useGalleryApi from "../../api/useGalleryApi";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
+import gsap from "gsap";
 
 function ConstellationAi() {
   const mountRef = useRef(null);
@@ -21,6 +19,7 @@ function ConstellationAi() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [constellations, setConstellations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDetailView, setIsDetailView] = useState(false);
 
   const navigate = useNavigate();
 
@@ -175,35 +174,69 @@ function ConstellationAi() {
     const constellationGroup = new THREE.Group();
     constellationGroup.name = "constellationGroup";
 
-    // 구 형태로 배치하기 위한 설정
-    const radius = 200; // 구의 반지름
-    const phi = Math.PI * (3 - Math.sqrt(5)); // 황금각
+    // 구면 배치를 위한 설정
+    const radius = 300; // 구의 반지름 증가
+    const phi = Math.PI * (3 - Math.sqrt(5));
+
+    // 화면 영역 설정
+    const screenWidth = 600; // 좌우 범위 확대
+    const screenHeight = 400; // 상하 범위 확대
+    const depthRange = 200; // 깊이 범위 축소하여 더 평면적으로
+
+    // 그리드 설정
+    const cols = Math.ceil(Math.sqrt(data.length));
+    const rows = Math.ceil(data.length / cols);
+    const cellWidth = screenWidth / cols;
+    const cellHeight = screenHeight / rows;
 
     data.forEach((constellation, index) => {
       const constellationObject = createConstellationObject(constellation);
 
-      // 구면 좌표계 계산
-      const y = 1 - (index / (data.length - 1)) * 2; // -1에서 1 사이의 값
-      const radiusAtY = Math.sqrt(1 - y * y); // 현재 y 위치에서의 반지름
+      // 그리드 위치 계산
+      const col = index % cols;
+      const row = Math.floor(index / cols);
 
-      const theta = phi * index; // 황금각을 이용한 회전
+      // 기본 위치 계산 (그리드 중심)
+      const baseX = (col - (cols - 1) / 2) * cellWidth;
+      const baseY = (row - (rows - 1) / 2) * cellHeight;
 
-      // 직교 좌표계로 변환
-      const x = Math.cos(theta) * radiusAtY * radius;
-      const z = Math.sin(theta) * radiusAtY * radius;
-      const yPos = y * radius;
+      // 랜덤 오프셋 추가 (그리드 셀 내에서만)
+      const offsetX = (Math.random() - 0.5) * (cellWidth * 0.6);
+      const offsetY = (Math.random() - 0.5) * (cellHeight * 0.6);
 
-      // 위치 설정
-      constellationObject.position.set(x, yPos, z);
+      // 중앙에서의 거리에 따른 Z값 계산
+      const distanceFromCenter = Math.sqrt(
+        Math.pow(baseX / screenWidth, 2) + Math.pow(baseY / screenHeight, 2)
+      );
 
-      // 중심을 향하도록 회전
+      // 중앙에 가까울수록 앞으로 나오게
+      const z = (1 - Math.min(distanceFromCenter, 1)) * depthRange;
+
+      const randomPosition = new THREE.Vector3(
+        baseX + offsetX,
+        baseY + offsetY,
+        z
+      );
+
+      // 구면 좌표계 위치도 더 균일하게 분포
+      const spherePosition = new THREE.Vector3();
+      const phi = Math.acos(-1 + (2 * row) / rows);
+      const theta = (2 * Math.PI * col) / cols;
+
+      spherePosition.x = radius * Math.sin(phi) * Math.cos(theta);
+      spherePosition.y = radius * Math.cos(phi);
+      spherePosition.z = radius * Math.sin(phi) * Math.sin(theta);
+
+      // 초기 위치 설정
+      constellationObject.position.copy(spherePosition);
       constellationObject.lookAt(new THREE.Vector3(0, 0, 0));
 
-      // 개별 회전을 위한 초기 각도 설정
+      // 위치 정보 저장
       constellationObject.userData = {
-        rotationSpeed: Math.random() * 0.02 + 0.01,
-        originalPosition: new THREE.Vector3(x, yPos, z),
-        gridPosition: calculateGridPosition(index, data.length),
+        id: constellation.id,
+        spherePosition: spherePosition.clone(),
+        randomPosition: randomPosition.clone(),
+        sphereRotation: new THREE.Euler().copy(constellationObject.rotation),
       };
 
       constellationGroup.add(constellationObject);
@@ -217,111 +250,92 @@ function ConstellationAi() {
     }
   };
 
-  // 격자 위치 계산 함수 추가
-  const calculateGridPosition = (index, total) => {
-    const cols = Math.ceil(Math.sqrt(total));
-    const spacing = 50;
-
-    const col = index % cols;
-    const row = Math.floor(index / cols);
-
-    return new THREE.Vector3(
-      (col - cols / 2) * spacing,
-      (row - Math.floor(total / cols) / 2) * spacing,
-      0
-    );
-  };
-
-  // 카메라 거리에 따른 배치 전환 함수 추가
-  const updatePositionsBasedOnZoom = () => {
-    if (!sceneRef.current || !controlsRef.current) return;
-
-    const distance = controlsRef.current.getDistance();
-    const threshold = 300; // 전환 기준점
+  // 별자리 배치 전환 함수 추가
+  const transitionConstellations = (type, duration = 2000) => {
     const constellationGroup =
-      sceneRef.current.getObjectByName("constellationGroup");
-
+      sceneRef.current?.getObjectByName("constellationGroup");
     if (!constellationGroup) return;
 
     constellationGroup.children.forEach((object) => {
-      if (!object.userData.originalPosition || !object.userData.gridPosition)
-        return;
+      object.userData.isClickable = type === "random";
 
-      // 거리에 따른 보간
-      const t = Math.smoothstep(200, threshold, distance);
-      const newPosition = new THREE.Vector3();
+      const targetPosition =
+        type === "sphere"
+          ? object.userData.spherePosition
+          : object.userData.randomPosition;
 
-      newPosition.lerpVectors(
-        object.userData.gridPosition,
-        object.userData.originalPosition,
-        t
-      );
+      const targetRotation =
+        type === "sphere"
+          ? object.userData.sphereRotation
+          : new THREE.Euler(0, 0, 0);
 
-      object.position.copy(newPosition);
+      // GSAP를 사용한 부드러운 전환
+      gsap.to(object.position, {
+        duration: duration / 1000,
+        x: targetPosition.x,
+        y: targetPosition.y,
+        z: targetPosition.z,
+        ease: "power2.inOut",
+      });
 
-      // 거리에 따라 중심을 향하도록 회전
-      if (t > 0.5) {
-        object.lookAt(new THREE.Vector3(0, 0, 0));
-      } else {
-        object.rotation.set(0, 0, 0);
-      }
+      gsap.to(object.rotation, {
+        duration: duration / 1000,
+        x: targetRotation.x,
+        y: targetRotation.y,
+        z: targetRotation.z,
+        ease: "power2.inOut",
+        onComplete: () => {
+          // 격자 배치에서만 자체 회전 시작
+          if (type === "random") {
+            object.userData.selfRotating = true;
+            // 각 별자리마다 약간 다른 회전 속도 부여
+            object.userData.rotationSpeed = 0.002 + Math.random() * 0.002;
+          } else {
+            object.userData.selfRotating = false;
+          }
+        },
+      });
     });
   };
 
-  // Math.smoothstep 함수 추가
-  Math.smoothstep = (min, max, value) => {
-    const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
-    return x * x * (3 - 2 * x);
-  };
-
-  // animateCamera 함수 추가
-  const animateCamera = (
-    targetPosition,
-    duration,
-    easeType = "easeOutCubic"
-  ) => {
-    const startPosition = controlsRef.current.getDistance();
-    const startTime = Date.now();
-
-    const easing = {
-      easeOutCubic: (t) => 1 - Math.pow(1 - t, 3),
-      easeOutElastic: (t) => {
-        const p = 0.3;
-        return (
-          Math.pow(2, -10 * t) * Math.sin(((t - p / 4) * (2 * Math.PI)) / p) + 1
-        );
-      },
-    };
-
-    const animate = () => {
-      const currentTime = Date.now();
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-
-      const easeProgress = easing[easeType](progress);
-      const newPosition =
-        startPosition + (targetPosition - startPosition) * easeProgress;
-      controlsRef.current.dollyTo(newPosition, false);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  };
-
-  // 줌 상태를 위한 함수 추가
+  // handleZoomIn 함수 수정
   const handleZoomIn = () => {
-    if (!controlsRef.current) return;
-    const targetDistance = 150; // 가까운 거리
-    animateCamera(targetDistance, 1000, "easeOutCubic");
+    if (!controlsRef.current || !cameraRef.current) return;
+    setIsDetailView(true);
+    transitionConstellations("random");
+
+    // 카메라 위치 조정
+    gsap.to(cameraRef.current.position, {
+      duration: 2,
+      x: 0,
+      y: 150, // 약간 위에서 내려다보는 각도 유지
+      z: 600,
+      ease: "power2.inOut",
+    });
+
+    controlsRef.current.autoRotate = false;
   };
 
+  // handleZoomOut 함수 수정
   const handleZoomOut = () => {
-    if (!controlsRef.current) return;
-    const targetDistance = 500; // 먼 거리
-    animateCamera(targetDistance, 1000, "easeOutCubic");
+    if (!controlsRef.current || !cameraRef.current) return;
+    setIsDetailView(false);
+
+    // 카메라 이동을 먼저 시작
+    gsap.to(cameraRef.current.position, {
+      duration: 1,
+      x: 0,
+      y: 100,
+      z: 1000, // 카메라를 더 멀리 이동
+      ease: "power2.inOut",
+      onComplete: () => {
+        // 카메라가 충분히 멀어진 후 별자리 전환 시작
+        transitionConstellations("sphere", 2000);
+        setTimeout(() => {
+          controlsRef.current.autoRotate = true;
+        }, 2000);
+      },
+    });
   };
 
   // Three.js 렌더링 useEffect 수정
@@ -339,7 +353,7 @@ function ConstellationAi() {
       0.1,
       1000
     );
-    camera.position.set(0, 0, 500); // 초기 거리를 500으로 설정
+    camera.position.set(0, 100, 1000); // 초기 거리를 더 멀리 설정
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
@@ -356,14 +370,13 @@ function ConstellationAi() {
     // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.screenSpacePanning = true;
+    controls.dampingFactor = 0.1;
+    controls.screenSpacePanning = false;
     controls.enableRotate = true;
     controls.rotateSpeed = 0.5;
-    controls.enableZoom = true;
-    controls.zoomSpeed = 0.8;
-    controls.minDistance = 100; // 최소 줌인 거리
-    controls.maxDistance = 600; // 최대 줌아웃 거리
+    controls.enableZoom = false;
+    controls.minDistance = 600; // 최소 거리 증가
+    controls.maxDistance = 2000; // 최대 거리 증가
     controls.maxPolarAngle = Math.PI;
     controls.minPolarAngle = 0;
     controls.enablePan = true;
@@ -399,50 +412,32 @@ function ConstellationAi() {
         y: event.clientY - previousMousePosition.y,
       };
 
-      // 드래그 거리 계산
-      const dragDistance = Math.sqrt(
-        deltaMove.x * deltaMove.x + deltaMove.y * deltaMove.y
-      );
-
-      if (dragDistance > 0) {
-        // 궤도 회전
+      if (event.buttons === 1) {
+        // 좌클릭 드래그: 시점 회전
+        controlsRef.current.rotateLeft(deltaMove.x * 0.002);
+        controlsRef.current.rotateUp(deltaMove.y * 0.002);
+      } else if (event.buttons === 2) {
+        // 우클릭 드래그: 이동
         const camera = cameraRef.current;
-        const target = controlsRef.current.target;
+        const distance = camera.position.distanceTo(controlsRef.current.target);
+        const moveSpeed = distance * 0.001;
 
-        // 현재 카메라 위치에서 타겟까지의 벡터
-        const offset = new THREE.Vector3().subVectors(camera.position, target);
-
-        // 수평 회전
-        const theta = -deltaMove.x * 0.002;
-        const rotationMatrix = new THREE.Matrix4().makeRotationY(theta);
-        offset.applyMatrix4(rotationMatrix);
-
-        // 수직 회전
-        const phi = -deltaMove.y * 0.002;
-        const rightVector = new THREE.Vector3()
-          .crossVectors(camera.up, offset)
-          .normalize();
-        const verticalRotation = new THREE.Matrix4().makeRotationAxis(
-          rightVector,
-          phi
+        // 카메라 좌우 이동
+        const right = new THREE.Vector3();
+        camera.getWorldDirection(right);
+        right.cross(camera.up).normalize();
+        camera.position.addScaledVector(right, -deltaMove.x * moveSpeed);
+        controlsRef.current.target.addScaledVector(
+          right,
+          -deltaMove.x * moveSpeed
         );
-        offset.applyMatrix4(verticalRotation);
 
-        // 카메라 위치 업데이트
-        camera.position.copy(target).add(offset);
-        camera.lookAt(target);
-
-        // 드래그 속도에 따른 줌 조정
-        const zoomFactor = Math.min(dragDistance / 100, 0.1);
-        const currentDistance = controlsRef.current.getDistance();
-        const newDistance = currentDistance * (1 - zoomFactor);
-
-        if (
-          newDistance > controls.minDistance &&
-          newDistance < controls.maxDistance
-        ) {
-          controlsRef.current.dollyTo(newDistance, true);
-        }
+        // 카메라 상하 이동
+        camera.position.addScaledVector(camera.up, -deltaMove.y * moveSpeed);
+        controlsRef.current.target.addScaledVector(
+          camera.up,
+          -deltaMove.y * moveSpeed
+        );
       }
 
       previousMousePosition = {
@@ -461,41 +456,51 @@ function ConstellationAi() {
             controlsRef.current.autoRotate = true;
           }
         }, 1500);
-
-        // 부드러운 줌아웃
-        const currentDistance = controlsRef.current.getDistance();
-        if (currentDistance < controls.maxDistance * 0.5) {
-          const targetDistance = Math.min(
-            currentDistance * 1.3,
-            controls.maxDistance
-          );
-          animateCamera(targetDistance, 1000, "easeOutCubic");
-        }
       }
     };
 
-    const handleWheel = (event) => {
-      if (!controlsRef.current) return;
+    const handleMouseWheel = (event) => {
+      if (!controlsRef.current || !cameraRef.current) return;
 
-      const zoomSpeed = 0.1;
+      event.preventDefault();
+
+      const zoomSpeed = 0.1; // 속도 조정
       const delta = -Math.sign(event.deltaY);
-      const currentDistance = controlsRef.current.getDistance();
-      const newDistance = currentDistance * (1 - delta * zoomSpeed);
 
+      // 현재 카메라 방향으로 이동
+      const forward = new THREE.Vector3();
+      cameraRef.current.getWorldDirection(forward);
+
+      // 이동 거리 계산 (거리에 비례하여 속도 조정)
+      const currentDistance = cameraRef.current.position.length();
+      const moveDistance =
+        delta * zoomSpeed * Math.max(currentDistance * 0.1, 10);
+
+      // 최소/최대 거리 체크
+      const newDistance = currentDistance - moveDistance;
       if (
         newDistance > controls.minDistance &&
         newDistance < controls.maxDistance
       ) {
-        controlsRef.current.dollyTo(newDistance, true);
+        cameraRef.current.position.addScaledVector(forward, moveDistance);
+        controlsRef.current.target.addScaledVector(forward, moveDistance * 0.5);
       }
     };
 
+    // 우클릭 메뉴 방지
+    const handleContextMenu = (event) => {
+      event.preventDefault();
+    };
+
     // 이벤트 리스너 추가
+    renderer.domElement.addEventListener("contextmenu", handleContextMenu);
+    renderer.domElement.addEventListener("wheel", handleMouseWheel, {
+      passive: false,
+    });
     renderer.domElement.addEventListener("mousedown", handleMouseDown);
     renderer.domElement.addEventListener("mousemove", handleMouseMove);
     renderer.domElement.addEventListener("mouseup", handleMouseUp);
     renderer.domElement.addEventListener("mouseleave", handleMouseUp);
-    renderer.domElement.addEventListener("wheel", handleWheel);
 
     // 배경 그라데이션
     const bgCanvas = document.createElement("canvas");
@@ -574,14 +579,19 @@ function ConstellationAi() {
               Math.sin(child.userData.time) * 0.15;
           }
         });
+
+        // 각 별자리의 자체 회전 업데이트
+        constellationGroup.children.forEach((constellation) => {
+          if (constellation.userData.selfRotating) {
+            constellation.rotation.y += constellation.userData.rotationSpeed;
+          }
+        });
       }
 
       // 배경 별들 천천히 회전
       stars.rotation.y += 0.0001;
 
-      // 줌 레벨에 따른 위치 업데이트
-      updatePositionsBasedOnZoom();
-
+      // Controls 업데이트
       if (controlsRef.current) {
         controlsRef.current.update();
       }
@@ -616,7 +626,8 @@ function ConstellationAi() {
       renderer.domElement.removeEventListener("mousemove", handleMouseMove);
       renderer.domElement.removeEventListener("mouseup", handleMouseUp);
       renderer.domElement.removeEventListener("mouseleave", handleMouseUp);
-      renderer.domElement.removeEventListener("wheel", handleWheel);
+      renderer.domElement.removeEventListener("wheel", handleMouseWheel);
+      renderer.domElement.removeEventListener("contextmenu", handleContextMenu);
       cancelAnimationFrame(animationId);
       mountRef.current?.removeChild(renderer.domElement);
       mountRef.current?.removeChild(labelRenderer.domElement);
