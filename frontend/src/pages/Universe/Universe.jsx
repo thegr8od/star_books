@@ -189,8 +189,8 @@ const ParticlePlanetGallery = () => {
         return;
       }
       const today = new Date().toISOString().split("T")[0];
-      console.log("API 요청 URL:", `http://localhost:9090/api/diary/emotion?diaryDate=${today}`);
-      const response = await axios.get(`http://localhost:9090/api/diary/emotion`, {
+      console.log("API 요청 URL:", `https://starbooks.site/api/diary/emotion?diaryDate=${today}`);
+      const response = await axios.get(`https://starbooks.site/api/diary/emotion`, {
         params: { diaryDate: today },
         headers: {
           Authorization: `Bearer ${accessToken}`,
