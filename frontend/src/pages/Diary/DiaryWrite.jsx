@@ -23,8 +23,6 @@ const DiaryWrite = () => {
   // URL로 접근해서 해당 일기에 대한 데이터가 없을 때 에러페이지로 이동
   if (
     !location.state?.emotions ||
-    !location.state?.xvalue ||
-    !location.state?.yvalue ||
     !location.state?.diaryId
   ) {
     return (
