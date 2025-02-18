@@ -30,13 +30,13 @@ function Diary() {
       return;
     }
     
-    console.log("API 요청 전 날짜:", selectedDate); // API 요청 전 데이터 확인
+    // console.log("API 요청 전 날짜:", selectedDate); // API 요청 전 데이터 확인
     
     try {
       const result = await diaryApi.createEmptyDiary({
         diaryDate: selectedDate,
       });
-      console.log("API 응답:", result); // API 응답 확인
+      // console.log("API 응답:", result); // API 응답 확인
       
       if (result) {
         setShowModal(true);

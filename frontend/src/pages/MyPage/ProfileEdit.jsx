@@ -126,12 +126,6 @@ const ProfileEdit = () => {
 
     setIsUploading(true);
 
-    // const reader = new FileReader();
-
-    // reader.onloadend = () => {
-    //   const previewUrl = reader.result;
-    //   setImagePreview(previewUrl);
-
     useMemberApi
       .updateProfileImage(file, user.email)
       .then(() => useMemberApi.getProfileImage(user.email))

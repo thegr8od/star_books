@@ -36,8 +36,8 @@ const DiaryCalendar = () => {
         const targetMonth = currentDate.getMonth() + 1;
         const data = { targetYear: targetYear, targetMonth: targetMonth };
 
-        console.log(targetYear); //2025
-        console.log(targetMonth); //2
+        // console.log(targetYear); //2025
+        // console.log(targetMonth); //2
         //참고용
         // const getDiariesByMonth = async (data) => {
         //     const jwt = localStorage.getItem("accessToken");
@@ -98,7 +98,7 @@ const DiaryCalendar = () => {
         //     "createdAt": "2025-03-28T18:20:00"
         //   }
         // ]
-        console.log(response); // 데이터가 있어야 조회가 된다.
+        // console.log(response); // 데이터가 있어야 조회가 된다.
         //참고용: response.data는 배열로 받아진다.
 
         // data
@@ -129,11 +129,11 @@ const DiaryCalendar = () => {
         // :
         // {diaryId: 155, title: '오늘의 다이어리', content:
         //받은 데이터 가공 함수
-        console.log(response.data);
+        // console.log(response.data);
 
         if (response && response.data) {
           const diaryDatas = response.data.map((oneday) => {
-            console.log("각 일기 데이터:", oneday); // 데이터 구조 확인
+            // console.log("각 일기 데이터:", oneday); // 데이터 구조 확인
             return {
               id: oneday.diaryId,
               date: oneday.diaryDate, // diaryDate 사용
@@ -142,7 +142,7 @@ const DiaryCalendar = () => {
                 : null,
             };
           });
-          console.log("가공된 데이터:", diaryDatas); // 가공된 데이터 확인
+          // console.log("가공된 데이터:", diaryDatas); // 가공된 데이터 확인
           setDiaryEntries(diaryDatas);
         }
       } catch (error) {
@@ -183,8 +183,8 @@ const DiaryCalendar = () => {
 
   // 특정 날짜의 다이어리 엔트리와 감정 색상을 찾는 함수
   const getColorForDay = (day) => {
-    console.log("현재 확인하는 날짜:", day);
-    console.log("전체 일기 데이터:", diaryEntries);
+    // console.log("현재 확인하는 날짜:", day);
+    // console.log("전체 일기 데이터:", diaryEntries);
 
     const entry = diaryEntries.find((entry) => {
       // entry.date가 배열인지 확인
