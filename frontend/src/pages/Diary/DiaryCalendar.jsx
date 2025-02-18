@@ -36,113 +36,18 @@ const DiaryCalendar = () => {
         const targetMonth = currentDate.getMonth() + 1;
         const data = { targetYear: targetYear, targetMonth: targetMonth };
 
-        // console.log(targetYear); //2025
-        // console.log(targetMonth); //2
-        //참고용
-        // const getDiariesByMonth = async (data) => {
-        //     const jwt = localStorage.getItem("accessToken");
-
-        //     try {
-        //         const response = await useAxiosInstance
-        //             .authApiClient(jwt)
-        //       .get(`/diary/year/${data.targetYear}/month/${data.targetMonth}`);
-
-        //         return response;
-        //     } catch(e) {
-        //         return e.response;
-        //     }
-        // }
-
         const response = await diaryApi.getDiariesByMonth(data);
-        //참고용 response형식
-        // [
-        //   {
-        //     "diaryId": 101,
-        //     "title": "따뜻한 봄날",
-        //      "diaryDate": "2025-02-18"
-        //     "content": "오늘은 날씨가 따뜻해서 산책을 다녀왔다. 기분이 상쾌하다!",
-        //     "emotions": [
-        //       { "xValue": 3.5, "yValue": 2.0 }
-        //     ],
-        //     "hashtags": ["행복한", "설레는", "기쁜"],
-        //     "imageUrls": [
-        //       "https://example.com/image1.jpg",
-        //       "https://example.com/image2.jpg"
-        //     ],
-        //     "createdAt": "2025-03-05T14:30:00"
-        //   },
-        //   {
-        //     "diaryId": 102,
-        //     "title": "바쁜 하루",
-        //     "diaryDate": "2025-02-19"
-        //     "content": "오늘은 업무가 많아서 정신없이 보냈다. 피곤하지만 뿌듯한 하루였다.",
-        //     "emotions": [
-        //       { "xValue": 2.0, "yValue": 3.5 }
-        //     ],
-        //     "hashtags": ["지친", "만족스러운"],
-        //     "imageUrls": [
-        //       "https://example.com/image3.png"
-        //     ],
-        //     "createdAt": "2025-03-15T09:45:00"
-        //   },
-        //   {
-        //     "diaryId": 103,
-        //     "title": "비 오는 날",
-        //     "diaryDate": "2025-02-20"
-        //     "content": "오늘은 비가 내려서 기분이 조금 가라앉았다. 따뜻한 차 한잔으로 위로했다.",
-        //     "emotions": [
-        //       { "xValue": -1.5, "yValue": -2.0 }
-        //     ],
-        //     "hashtags": ["우울한", "조용한"],
-        //     "imageUrls": [],
-        //     "createdAt": "2025-03-28T18:20:00"
-        //   }
-        // ]
-        // console.log(response); // 데이터가 있어야 조회가 된다.
-        //참고용: response.data는 배열로 받아진다.
-
-        // data
-        // :
-        // Array(8)
-        // 0
-        // :
-        // {diaryId: 128, title: '', content: '', emotions: Array(0), hashtags: Array(0), …}
-        // 1
-        // :
-        // {diaryId: 129, title: '', content: '', emotions: Array(0), hashtags: Array(0), …}
-        // 2
-        // :
-        // {diaryId: 130, title: '', content: '', emotions: Array(0), hashtags: Array(0), …}
-        // 3
-        // :
-        // {diaryId: 131, title: '', content: '', emotions: Array(0), hashtags: Array(0), …}
-        // 4
-        // :
-        // {diaryId: 133, title: '', content: '', emotions: Array(1), hashtags: Array(4), …}
-        // 5
-        // :
-        // {diaryId: 135, title: '', content: '', emotions: Array(1), hashtags: Array(5), …}
-        // 6
-        // :
-        // {diaryId: 136, title: '', content: '', emotions: Array(1), hashtags: Array(5), …}
-        // 7
-        // :
-        // {diaryId: 155, title: '오늘의 다이어리', content:
-        //받은 데이터 가공 함수
-        // console.log(response.data);
 
         if (response && response.data) {
           const diaryDatas = response.data.map((oneday) => {
-            // console.log("각 일기 데이터:", oneday); // 데이터 구조 확인
             return {
               id: oneday.diaryId,
-              date: oneday.diaryDate, // diaryDate 사용
+              date: oneday.diaryDate,
               color: oneday.emotions[0]
                 ? GetColor(oneday.emotions[0].xValue, oneday.emotions[0].yValue)
                 : null,
             };
           });
-          // console.log("가공된 데이터:", diaryDatas); // 가공된 데이터 확인
           setDiaryEntries(diaryDatas);
         }
       } catch (error) {
@@ -183,40 +88,19 @@ const DiaryCalendar = () => {
 
   // 특정 날짜의 다이어리 엔트리와 감정 색상을 찾는 함수
   const getColorForDay = (day) => {
-    // console.log("현재 확인하는 날짜:", day);
-    // console.log("전체 일기 데이터:", diaryEntries);
-
     const entry = diaryEntries.find((entry) => {
-      // entry.date가 배열인지 확인
-      if (!Array.isArray(entry.date)) {
-        console.error("Invalid date format:", entry.date);
-        return false;
-      }
+      if (!entry.date) return false;
 
-      const [entryYear, entryMonth, entryDay] = entry.date;
-
-      console.log(
-        `비교: ${entryDay} === ${day} && ${entryMonth} === ${
-          currentDate.getMonth() + 1
-        } && ${entryYear} === ${currentDate.getFullYear()}`
-      );
-
+      const entryDate = new Date(entry.date);
       return (
-        entryDay === day &&
-        entryMonth === currentDate.getMonth() + 1 &&
-        entryYear === currentDate.getFullYear()
+        entryDate.getDate() === day &&
+        entryDate.getMonth() === currentDate.getMonth() &&
+        entryDate.getFullYear() === currentDate.getFullYear()
       );
     });
 
     return entry && entry.color ? { color: entry.color } : null;
   };
-
-  //참고: diaryEntries는 아래와 같음.
-  //id: oneday.diaryId,
-  // date: oneday.diaryDate,
-  // color: GetColor(
-  //   oneday.emotions[0].xValue,
-  //   oneday.emotions[0].yValue
 
   // URL에 사용할 년/월 형식으로 변환하는 함수
   const formatMonthParam = (date) => {
@@ -234,18 +118,20 @@ const DiaryCalendar = () => {
     );
     setSelectedDate(selectedDate);
 
-    // YYYY-MM-DD 형식으로 변환하여 전달
     const formattedDate = selectedDate.toISOString().split("T")[0];
-    console.log("선택된 날짜:", formattedDate); // 날짜 형식 확인
     setClickDay(formattedDate);
 
     // 해당 날짜에 일기가 있는지 확인
-    const entry = diaryEntries.find(
-      (entry) =>
-        entry.date.day === day &&
-        entry.date.month === currentDate.getMonth() &&
-        entry.date.year === currentDate.getFullYear()
-    );
+    const entry = diaryEntries.find((entry) => {
+      if (!entry.date) return false;
+
+      const entryDate = new Date(entry.date);
+      return (
+        entryDate.getDate() === day &&
+        entryDate.getMonth() === currentDate.getMonth() &&
+        entryDate.getFullYear() === currentDate.getFullYear()
+      );
+    });
 
     // 일기가 있는 경우에만 monthly 페이지로 이동
     if (entry) {
