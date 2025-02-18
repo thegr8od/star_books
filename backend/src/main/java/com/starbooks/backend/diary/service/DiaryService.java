@@ -2,6 +2,7 @@ package com.starbooks.backend.diary.service;
 
 //import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.config.CustomUserDetails;
+import com.starbooks.backend.diary.dto.DiaryEmotionDTO;
 import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
 import com.starbooks.backend.diary.dto.response.HashtagStatsResponse;
@@ -10,6 +11,8 @@ import com.starbooks.backend.diary.model.*;
 import com.starbooks.backend.diary.repository.HashtagStatsRepository;
 import com.starbooks.backend.emotion.model.EmotionPoint;
 import com.starbooks.backend.emotion.service.EmotionService;
+import com.starbooks.backend.universe.model.PersonalUniv;
+import com.starbooks.backend.universe.repository.PersonalUnivRepository;
 import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.diary.repository.DiaryRepository;
 import com.starbooks.backend.user.repository.jpa.UserRepository;
@@ -33,6 +36,8 @@ public class DiaryService {
     private final EmotionService emotionService; // 감정 분석 서비스
     private final HashtagStatsRepository hashtagStatsRepository;
     private final UserRepository userRepository;
+    private final PersonalUnivRepository personalUnivRepository;
+
 
     /**
      * 1️⃣ 빈 다이어리 생성
@@ -49,6 +54,15 @@ public class DiaryService {
                 .build();
         diaryRepository.save(diary);
         return DiaryResponse.from(diary);
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<DiaryEmotionDTO> getAllDiaryEmotionsByDate(LocalDate diaryDate) {
+        List<DiaryEmotion> emotions = diaryRepository.findAllEmotionsByDate(diaryDate);
+        return emotions.stream()
+                .map(e -> new DiaryEmotionDTO(e.getDiaryEmotionId(), e.getXValue(), e.getYValue()))
+                .collect(Collectors.toList());
     }
 
 
@@ -184,7 +198,7 @@ public class DiaryService {
      * 4️⃣ 다이어리 내용 입력
      */
     @Transactional
-    public void addContentAndImages(Long diaryId, DiaryContentRequest contentRequest,String Imgurl) {
+    public PersonalUniv addContentAndImages(Long diaryId, DiaryContentRequest contentRequest, String Imgurl) {
         Diary diary = getDiaryEntity(diaryId);
 
         // 내용 저장
@@ -203,6 +217,17 @@ public class DiaryService {
                     .build();
             diary.setImage(diaryImage);
         }
+        DiaryEmotion emotion = diary.getEmotions().iterator().next();
+        // PersonalUniv 자동 생성
+        PersonalUniv personalUniv = PersonalUniv.builder()
+                .diaryEmotion(emotion)
+                .xCoord(50f)
+                .yCoord(50f)
+                .updatedAt(LocalDateTime.now())
+                .build();
+        personalUnivRepository.save(personalUniv);
+
+        return personalUniv;
     }
 
     @Transactional
@@ -240,6 +265,12 @@ public class DiaryService {
         }
 
         return DiaryResponse.from(diary);
+    }
+
+    @Transactional(readOnly = true)
+    public DiaryEmotion getDiaryEmotionByDate(Long userId, LocalDate diaryDate) {
+        return diaryRepository.findEmotionByUserIdAndDiaryDate(userId, diaryDate)
+                .orElseThrow(() -> new NotFoundException("해당 날짜의 다이어리 감정 데이터가 없습니다."));
     }
 
 
@@ -284,7 +315,7 @@ public class DiaryService {
     }
 
     public Diary getDiaryEntity(Long diaryId) {
-        return diaryRepository.findById(diaryId)
+        return diaryRepository.findByDiaryId(diaryId)
                 .orElseThrow(() -> new NotFoundException("Diary not found"));
     }
 

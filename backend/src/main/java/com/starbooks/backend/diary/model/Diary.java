@@ -9,7 +9,9 @@ import javax.xml.crypto.dsig.spec.HMACParameterSpec;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "diary")
@@ -31,10 +33,10 @@ public class Diary {
     private DiaryContent content;
 
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DiaryEmotion> emotions = new ArrayList<>();
+    private Set<DiaryEmotion> emotions = new HashSet<>();
 
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DiaryHashtag> hashtags = new ArrayList<>();
+    private Set<DiaryHashtag> hashtags = new HashSet<>();
 
 
     @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)  // List에서 단일 관계로 변경

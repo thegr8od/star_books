@@ -4,12 +4,15 @@ package com.starbooks.backend.diary.controller;
 //import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
 import com.starbooks.backend.common.service.S3Service;
 import com.starbooks.backend.config.CustomUserDetails;
+import com.starbooks.backend.diary.dto.DiaryEmotionDTO;
 import com.starbooks.backend.diary.dto.request.DiaryContentRequest;
 import com.starbooks.backend.diary.dto.request.DiaryCreateRequest;
 import com.starbooks.backend.diary.dto.request.DiaryHashtagRequest;
 import com.starbooks.backend.diary.dto.response.DiaryResponse;
 import com.starbooks.backend.diary.dto.response.HashtagStatsResponse;
+import com.starbooks.backend.diary.model.DiaryEmotion;
 import com.starbooks.backend.emotion.model.EmotionPoint;
+import com.starbooks.backend.universe.model.PersonalUniv;
 import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.diary.service.DiaryService;
 import com.starbooks.backend.diary.model.Diary;
@@ -139,13 +142,24 @@ public class DiaryController {
      * 4️⃣ 내용 입력 및 저장
      */
     @PostMapping("/{diaryId}/content")
-    public ResponseEntity<Void> addContent(
-            @PathVariable Long diaryId,
-            @RequestBody @Valid DiaryContentRequest request) {
-        diaryService.addContentAndImages(diaryId, request, request.getImageUrl());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<PersonalUniv> addContent(@PathVariable Long diaryId,
+                                                   @RequestBody @Valid DiaryContentRequest request) {
+        PersonalUniv personalUniv = diaryService.addContentAndImages(diaryId, request, request.getImageUrl());
+        return ResponseEntity.ok(personalUniv);
     }
 
+    @GetMapping("/emotion-my")
+    public ResponseEntity<DiaryEmotionDTO> getDiaryEmotion(@RequestParam LocalDate diaryDate, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        DiaryEmotion emotion = diaryService.getDiaryEmotionByDate(userDetails.getUserId(), diaryDate);
+        DiaryEmotionDTO response = new DiaryEmotionDTO(emotion.getDiaryEmotionId(), emotion.getXValue(), emotion.getYValue());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/emotion")
+    public ResponseEntity<List<DiaryEmotionDTO>> getAllDiaryEmotions(@RequestParam LocalDate diaryDate) {
+        List<DiaryEmotionDTO> emotions = diaryService.getAllDiaryEmotionsByDate(diaryDate);
+        return ResponseEntity.ok(emotions);
+    }
 
     /**
      * 5. 내용 및 제목 수정
