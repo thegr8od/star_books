@@ -92,25 +92,34 @@ const HomeBackground = () => {
     }
   }, [activeSection]);
 
-  // 스크롤 이벤트 핸들러
+  // 스크롤 감지 및 섹션 활성화 로직 수정
   useEffect(() => {
-    const handleScroll = () => {
-      const winScrollTop = window.scrollY;
-      sectionsRef.current.forEach((section, index) => {
-        if (!section) return;
-        const offsetTop = section.offsetTop;
-        const offsetBottom = offsetTop + section.clientHeight;
-
-        if (winScrollTop >= offsetTop && offsetBottom > winScrollTop) {
-          setActiveSection(index);
-        }
-      });
+    const observerOptions = {
+      root: null,
+      rootMargin: '-50% 0px',
+      threshold: 0
     };
 
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const sectionIndex = sectionsRef.current.findIndex(
+            section => section === entry.target
+          );
+          setActiveSection(sectionIndex);
+        }
+      });
+    }, observerOptions);
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    sectionsRef.current.forEach(section => {
+      if (section) sectionObserver.observe(section);
+    });
+
+    return () => {
+      sectionsRef.current.forEach(section => {
+        if (section) sectionObserver.unobserve(section);
+      });
+    };
   }, []);
 
   const scrollToSection = (e, id) => {
@@ -369,30 +378,36 @@ const HomeBackground = () => {
 
         {/* Navigation */}
         {activeSection < sections.length - 2 && (
-          <nav className="fixed right-3 top-[55%] transform -translate-y-1/2 z-50 drop-shadow-lg">
-            {sections.map((section, index) => (
-              <div key={section.id} className="mb-4">
-                <a
-                  href={`#${section.id}`}
-                  onClick={(e) => scrollToSection(e, section.id)}
-                  className={`relative block transition-colors duration-500 py-1 pr-6 font-medium tracking-wide
-                    ${
-                      activeSection === index
-                        ? sectionColors[index]?.active || "text-white"
-                        : `text-white/70 hover:text-white ${sectionColors[index]?.hover || ""}`
-                    }`}
-                >
-                  <div
-                    className={`absolute left-[-20px] top-1/2 w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 transform -translate-y-1/2  
-                      transition-transform duration-500 bg-cover
-                      ${activeSection === index ? "rotate-360" : ""}`}
-                  />
-                  <span className="text-[13px] md:text-[17px] lg:text-[20px] inline-block">
-                    {section.label}
-                  </span>
-                </a>
-              </div>
-            ))}
+          <nav className="fixed right-8 top-1/2 transform -translate-y-1/2 z-50">
+            <ul className="space-y-6">
+              {sections.map((section, index) => (
+                <li key={section.id} className="relative flex items-center">
+                  <button
+                    onClick={() => scrollToSection(null, section.id)}
+                    className={`group flex items-center gap-2 transition-all duration-300`}
+                  >
+                    {/* 활성화된 섹션 표시 라인 */}
+                    <div
+                      className={`w-8 h-[1px] transition-all duration-300 ${
+                        activeSection === index
+                          ? 'bg-white'
+                          : 'bg-white/30 group-hover:bg-white/50'
+                      }`}
+                    />
+                    {/* 섹션 이름 */}
+                    <span
+                      className={`text-sm transition-all duration-300 ${
+                        activeSection === index
+                          ? 'text-white opacity-100 translate-x-0'
+                          : 'text-white/50 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-white/80'
+                      }`}
+                    >
+                      {section.label}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </nav>
         )}
 
