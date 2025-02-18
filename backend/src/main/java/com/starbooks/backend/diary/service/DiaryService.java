@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -207,34 +208,58 @@ public class DiaryService {
     public PersonalUniv addContentAndImages(Long diaryId, DiaryContentRequest contentRequest, String Imgurl) {
         Diary diary = getDiaryEntity(diaryId);
 
-        // 내용 저장
-        DiaryContent content = DiaryContent.builder()
-                .diary(diary)
-                .title(contentRequest.getTitle())
-                .content(contentRequest.getContent())
-                .build();
+        // DiaryContent 처리
+        DiaryContent content = diary.getContent();
+        if (content == null) {
+            content = DiaryContent.builder()
+                    .diary(diary)
+                    .title(contentRequest.getTitle())
+                    .content(contentRequest.getContent())
+                    .build();
+        } else {
+            content.setTitle(contentRequest.getTitle());
+            content.setContent(contentRequest.getContent());
+        }
         diary.setContent(content);
 
-        // 이미지 저장 (단일 이미지)
+        // DiaryImage 처리
         if (Imgurl != null) {
-            DiaryImage diaryImage = DiaryImage.builder()
-                    .diary(diary)
-                    .Imgurl(Imgurl)
-                    .build();
+            DiaryImage diaryImage = diary.getImage();
+            if (diaryImage == null) {
+                diaryImage = DiaryImage.builder().diary(diary).Imgurl(Imgurl).build();
+            } else {
+                diaryImage.setImgurl(Imgurl);
+            }
             diary.setImage(diaryImage);
         }
-        DiaryEmotion emotion = diary.getEmotions().iterator().next();
-        // PersonalUniv 자동 생성
-        PersonalUniv personalUniv = PersonalUniv.builder()
-                .diaryEmotion(emotion)
-                .xCoord(50f)
-                .yCoord(50f)
-                .updatedAt(LocalDateTime.now())
-                .build();
-        personalUnivRepository.save(personalUniv);
 
+        DiaryEmotion emotion = diary.getEmotions().iterator().next();
+
+        // PersonalUniv 중복 확인
+        Optional<PersonalUniv> existingUniv = personalUnivRepository.findByDiaryEmotion(emotion);
+        PersonalUniv personalUniv;
+        if (existingUniv.isPresent()) {
+            // 이미 존재하면 업데이트
+            personalUniv = existingUniv.get();
+            personalUniv.setXCoord(50f);
+            personalUniv.setYCoord(50f);
+            personalUniv.setUpdatedAt(LocalDateTime.now());
+        } else {
+            // 존재하지 않으면 새로 생성
+            personalUniv = PersonalUniv.builder()
+                    .diaryEmotion(emotion)
+                    .xCoord(50f)
+                    .yCoord(50f)
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+        }
+
+        personalUnivRepository.save(personalUniv);
         return personalUniv;
     }
+
+
+
 
     @Transactional
     public DiaryResponse updateDiaryContent(Long diaryId, DiaryContentRequest contentRequest, String newImgUrl) {

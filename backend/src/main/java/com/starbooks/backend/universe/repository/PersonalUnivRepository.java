@@ -1,5 +1,6 @@
 package com.starbooks.backend.universe.repository;
 
+import com.starbooks.backend.diary.model.DiaryEmotion;
 import com.starbooks.backend.universe.model.PersonalUniv;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +30,5 @@ public interface PersonalUnivRepository extends JpaRepository<PersonalUniv, Long
     Optional<PersonalUniv> findByUserIdAndDiaryEmotionId(@Param("userId") Long userId,
                                                          @Param("diaryEmotionId") Long diaryEmotionId);
 
+    Optional<PersonalUniv> findByDiaryEmotion(DiaryEmotion diaryEmotion);
 }
