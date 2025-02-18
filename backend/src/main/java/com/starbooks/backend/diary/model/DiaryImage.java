@@ -19,12 +19,12 @@ public class DiaryImage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_id", nullable = false)
     private Diary diary;
 
     @Column(name = "save_file_path", nullable = false, length = 255)
-    private String saveFilePath;
+    private String Imgurl;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -35,8 +35,8 @@ public class DiaryImage {
     private LocalDateTime updatedAt;
 
     @Builder
-    public DiaryImage(Diary diary, String saveFilePath) {
+    public DiaryImage(Diary diary, String Imgurl) {
         this.diary = diary;
-        this.saveFilePath = saveFilePath;
+        this.Imgurl = Imgurl;
     }
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+import { useSelector } from "react-redux";
 
 const ParticlePlanetGallery = () => {
   const mountRef = useRef(null);
@@ -11,6 +12,9 @@ const ParticlePlanetGallery = () => {
   const controlsRef = useRef(null);
   const [isMaximized, setIsMaximized] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [diaryEmotions, setDiaryEmotions] = useState([]);
+  const [allEmotions, setAllEmotions] = useState([]);
+  const user = useSelector((state) => state.user);
 
   // 감정별 행성 데이터
   const emotionGroups = [
@@ -23,6 +27,61 @@ const ParticlePlanetGallery = () => {
     { emotion: "#짜증난", color: 0x40e0d0, particleCount: 50 },
     { emotion: "#화난", color: 0x6495ed, particleCount: 50 },
   ];
+
+  // API 호출 함수 추가
+  const fetchEmotions = async () => {
+    try {
+        const accessToken = localStorage.getItem("accessToken"); // ✅ 로컬스토리지에서 토큰 가져오기
+        console.log("Access Token:", accessToken);
+
+        if (!accessToken) {
+            console.error("인증 토큰이 없습니다.");
+            return;
+        }
+
+        const today = new Date().toISOString().split("T")[0];
+        console.log("API 요청 URL:", `https://starbooks.site/api/diary/emotion?diaryDate=${today}`);
+        console.log("요청 헤더:", {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        });
+
+        const response = await fetch(`https://starbooks.site/api/diary/emotion?diaryDate=${today}`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+        });
+
+        console.log("API 응답 상태:", response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("응답 에러 내용:", errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("받아온 데이터:", data);
+
+        if (Array.isArray(data)) {
+            setDiaryEmotions(data);
+        } else {
+            console.error("예상치 못한 데이터 형식:", data);
+        }
+    } catch (error) {
+        console.error("감정 데이터 조회 실패:", error);
+        setDiaryEmotions([]);
+    }
+};
+
+
+  useEffect(() => {
+    fetchEmotions();
+  }, []);
 
   // resize 핸들러 함수
   const handleResize = () => {
@@ -100,106 +159,106 @@ const ParticlePlanetGallery = () => {
     pointLight.position.set(-10, 10, 10);
     scene.add(pointLight);
 
-    // 파티클 그룹 생성
-    const particleGroups = emotionGroups.map((group, groupIndex) => {
+    // 더 선명한 별 텍스처 생성
+    const circleCanvas = document.createElement('canvas');
+    circleCanvas.width = 128;
+    circleCanvas.height = 128;
+    const circleContext = circleCanvas.getContext('2d');
+    
+    const centerX = circleCanvas.width / 2;
+    const centerY = circleCanvas.height / 2;
+    
+    // 더 선명한 그라데이션
+    const mainGradient = circleContext.createRadialGradient(
+      centerX, centerY, 0,
+      centerX, centerY, centerX * 0.7
+    );
+    mainGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');     // 중심부 완전 불투명
+    mainGradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)'); // 더 천천히 페이드
+    mainGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.6)');
+    mainGradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.2)');
+    mainGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+    // 더 선명한 원형
+    circleContext.beginPath();
+    circleContext.arc(centerX, centerY, centerX * 0.7, 0, Math.PI * 2);
+    circleContext.fillStyle = mainGradient;
+    circleContext.fill();
+
+    const circleTexture = new THREE.CanvasTexture(circleCanvas);
+    circleTexture.minFilter = THREE.LinearFilter;
+    circleTexture.magFilter = THREE.LinearFilter;
+
+    // 파티클 생성 로직 수정
+    const createParticles = () => {
       const particles = new THREE.Group();
-
-      for (let i = 0; i < group.particleCount; i++) {
-        const size = Math.random() * 1.1 + 0.1;
-        const isLarge = Math.random() < 0.1;
-        const finalSize = isLarge ? size * 2 : size;
-        const geometry = new THREE.SphereGeometry(finalSize, 16, 16);
-
-        const material = new THREE.MeshPhongMaterial({
-          color: group.color,
-          shininess: 100,
-          transparent: true,
-          opacity: Math.random() * 0.3 + 0.7,
-          emissive: group.color,
-          emissiveIntensity: 0.5,
-        });
-
-        const particle = new THREE.Mesh(geometry, material);
-
-        if (isMaximized) {
-          const radius = 30 + Math.random() * 10;
-          const phi = Math.random() * Math.PI * 2;
-          const theta = Math.random() * Math.PI;
-          const groupOffset = (groupIndex / emotionGroups.length) * Math.PI * 2;
-
-          particle.position.x =
-            radius * Math.sin(theta) * Math.cos(phi + groupOffset);
-          particle.position.y =
-            radius * Math.sin(theta) * Math.sin(phi + groupOffset);
-          particle.position.z = radius * Math.cos(theta);
-        } else {
-          if (groupIndex === currentIndex) {
-            const radius = 10;
-            const phi = Math.random() * Math.PI * 2;
-            const theta = Math.random() * Math.PI;
-
-            particle.position.x = radius * Math.sin(theta) * Math.cos(phi);
-            particle.position.y = radius * Math.sin(theta) * Math.sin(phi);
-            particle.position.z = radius * Math.cos(theta);
-          } else {
-            particle.position.y = -1000;
-          }
-        }
-
-        const glowMaterial = new THREE.SpriteMaterial({
-          map: new THREE.TextureLoader().load("/glow.png"),
-          color: group.color,
+      
+      // 전체 감정 파티클 생성
+      diaryEmotions.forEach(emotion => {
+        const { xvalue, yvalue } = emotion;
+        const color = new THREE.Color(GetColor({ x: xvalue, y: yvalue }));
+        
+        // 일반 파티클 생성
+        const spriteMaterial = new THREE.SpriteMaterial({
+          map: circleTexture,
+          color: color,
           transparent: true,
           blending: THREE.AdditiveBlending,
-          opacity: 0.8,
+          opacity: 0.7,
+          depthWrite: false,
         });
-        const glow = new THREE.Sprite(glowMaterial);
-        glow.scale.set(finalSize * 6, finalSize * 6, 1);
-        particle.add(glow);
+
+        const particle = new THREE.Sprite(spriteMaterial);
+        const size = Math.random() * 0.8 + 0.5; // 일반 파티클 크기
+        particle.scale.set(size, size, 1);
+
+        // 파티클 위치 설정
+        const radius = 30 + Math.random() * 10;
+        const phi = Math.random() * Math.PI * 2;
+        const theta = Math.random() * Math.PI;
+
+        particle.position.x = radius * Math.sin(theta) * Math.cos(phi);
+        particle.position.y = radius * Math.sin(theta) * Math.sin(phi);
+        particle.position.z = radius * Math.cos(theta);
 
         particles.add(particle);
-      }
+
+        // 내 감정 파티클은 더 크고 밝게 생성 (각 감정 위치에 추가 파티클)
+        const myEmotionMaterial = new THREE.SpriteMaterial({
+          map: circleTexture,
+          color: color,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          opacity: 1.0,
+        });
+
+        const myEmotionParticle = new THREE.Sprite(myEmotionMaterial);
+        const myEmotionSize = size * 2; // 더 큰 크기
+        myEmotionParticle.scale.set(myEmotionSize, myEmotionSize, 1);
+        myEmotionParticle.position.copy(particle.position);
+
+        // 빛나는 효과를 위한 PointLight 추가
+        const emotionLight = new THREE.PointLight(color, 1, 10);
+        emotionLight.position.copy(particle.position);
+        particles.add(emotionLight);
+        particles.add(myEmotionParticle);
+      });
 
       scene.add(particles);
       return particles;
-    });
+    };
 
-    // 배경 별 생성
-    const starsGeometry = new THREE.BufferGeometry();
-    const starsMaterial = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 0.15,
-      transparent: true,
-      opacity: 1.0,
-    });
-
-    const starsVertices = [];
-    for (let i = 0; i < 10000; i++) {
-      const x = (Math.random() - 0.5) * 2000;
-      const y = (Math.random() - 0.5) * 2000;
-      const z = (Math.random() - 0.5) * 2000;
-      starsVertices.push(x, y, z);
-    }
-
-    starsGeometry.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(starsVertices, 3)
-    );
-
-    const stars = new THREE.Points(starsGeometry, starsMaterial);
-    scene.add(stars);
+    const particleGroup = createParticles();
 
     // 애니메이션
     let animationFrameId;
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      particleGroups.forEach((group, index) => {
-        if (isMaximized || index === currentIndex) {
-          group.rotation.y += 0.001;
-          group.children.forEach((particle) => {
-            particle.rotation.y += 0.03;
-          });
+      particleGroup.rotation.y += 0.001;
+      particleGroup.children.forEach(particle => {
+        if (particle.isSprite) {
+          particle.rotation.y += 0.03;
         }
       });
 
@@ -222,18 +281,11 @@ const ParticlePlanetGallery = () => {
       }
 
       // 메모리 정리
-      particleGroups.forEach((group) => {
-        group.children.forEach((particle) => {
-          particle.geometry.dispose();
-          particle.material.dispose();
-          particle.children[0].material.dispose();
-        });
-        scene.remove(group);
+      particleGroup.children.forEach((particle) => {
+        particle.geometry.dispose();
+        particle.material.dispose();
       });
-
-      starsGeometry.dispose();
-      starsMaterial.dispose();
-      scene.remove(stars);
+      scene.remove(particleGroup);
 
       renderer.dispose();
 
@@ -243,7 +295,7 @@ const ParticlePlanetGallery = () => {
       rendererRef.current = null;
       controlsRef.current = null;
     };
-  }, [isMaximized, currentIndex]);
+  }, [isMaximized, currentIndex, diaryEmotions]);
 
   const handlePrevious = () => {
     setCurrentIndex((prev) =>

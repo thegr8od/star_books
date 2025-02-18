@@ -21,12 +21,7 @@ const DiaryWrite = () => {
   const [imageUploadError, setImageUploadError] = useState(""); // 이미지 업로드 에러 메시지
 
   // URL로 접근해서 해당 일기에 대한 데이터가 없을 때 에러페이지로 이동
-  if (
-    !location.state?.emotions ||
-    !location.state?.xvalue ||
-    !location.state?.yvalue ||
-    !location.state?.diaryId
-  ) {
+  if (!location.state?.emotions || !location.state?.diaryId) {
     return (
       <ErrorPage
         title="잘못된 접근입니다."

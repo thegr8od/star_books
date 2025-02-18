@@ -33,6 +33,7 @@ public class User {
     @Column(nullable = false)
     private Gender gender;
 
+    @Builder.Default
     @Column(name = "sns_account", nullable = false)
     private Boolean snsAccount = false;  // 변경된 필드 (기본값 false)
 
