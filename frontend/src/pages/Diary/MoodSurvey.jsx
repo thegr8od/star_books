@@ -7,6 +7,8 @@ import MoodSurveyToast from "./MoodSurveyToast";
 import useDiaryApi from "../../api/useDiaryApi";
 
 const MoodSurvey = ({ isOpen, onClose, data }) => {
+  console.log("data : ", data);
+
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedMood, setSelectedMood] = useState(null);
