@@ -33,14 +33,14 @@ const getMonthlyStarlineCoords = async (data) => {
 };
 
 //특정 월의 데이터에서 새로운 데이터 추가
-//get
+// post
 const updateStarlineCoords = async (data) => {
   const jwt = localStorage.getItem("accessToken");
 
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
-      .get(`/starline/update/${data.year}/${data.month}`, data);
+      .post(`/starline/update/${data.year}/${data.month}`, data);
 
     return response.data;
   } catch (e) {

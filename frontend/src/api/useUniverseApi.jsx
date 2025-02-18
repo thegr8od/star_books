@@ -45,6 +45,21 @@ const getPersonalUniv = async (data) => {
     }
 };
 
+// 별 위치 업데이트
+// post
+const updatePersonalUniv = async (data) => {
+    const jwt = localStorage.getItem("accessToken");
+
+    try{
+        const response = await useAxiosInstance
+            .authApiClient(jwt)
+            .post(`/universe/bulk`, data);
+        return response.data; 
+    } catch(e) {
+        return e.response;
+    }
+};
+
 export default{
     getMonthlyPersonalUniv,
     getYearlyPersonalUniv,
