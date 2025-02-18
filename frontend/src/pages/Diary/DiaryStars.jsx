@@ -7,6 +7,7 @@ import OpenWithIcon from "@mui/icons-material/OpenWith";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useOutletContext } from "react-router-dom";
+import useUniverseApi from "../../api/useUniverseApi";
 
 // 샘플 데이터
 const sampleWorryStars = [
@@ -34,7 +35,7 @@ function DiaryStars() {
   // ==================================================== 상태 관리 ====================================================
   const { currentDate } = useOutletContext();
 
-  const [stars, setStars] = useState(sampleWorryStars); // 별(초기 axios 응답 데이터)
+  const [stars, setStars] = useState([]); // 별(초기 axios 응답 데이터)
   const [connections, setConnections] = useState([]); // 선(초기 axios 응답 데이터, axios 요청 데이터)
 
   const [isEdit, setIsEdit] = useState(false); // 편집 상태
@@ -45,12 +46,26 @@ function DiaryStars() {
   const [selectedStar, setSelectedStar] = useState(null); // 편집시 선택된 별
   const [modifiedStars, setModifiedStars] = useState({}); // 편집시 이동된 별(axios 요청 데이터)
 
-  const [showCreateAiModal, setShowCreateAiModal] = useState(false); // AI 별자리 생성 모달 표시
   const [showConnections, setShowConnections] = useState(true); // 선 표시
   const BUTTON_STYLES = {
     base: "bg-white/25 text-white size-6 rounded-full flex items-center justify-center",
     active: "ring-2 ring-white",
   };
+
+  useEffect(() => {
+    (async () => {
+      const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
+      const response = await useUniverseApi.getMonthlyPersonalUniv(requestData);
+      console.log(response);
+      if (response.status === "C000") {
+        console.log("별 조회 성공");
+        setStars(response.data);
+        console.log(stars);
+      } else {
+        console.log("별 조회 실패");
+      }
+    })();
+  }, [currentDate]);
 
   // ==================================================== move 모드 ====================================================
   // 드래그 앤 드롭 (별 위치 업데이트)
@@ -249,7 +264,6 @@ function DiaryStars() {
             </div>
           ))}
         </div>
-
 
         {/* ========== 편집 버튼 영역 ========== */}
         <div className="flex justify-end mt-1.5">
