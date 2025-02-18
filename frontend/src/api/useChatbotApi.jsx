@@ -13,7 +13,7 @@ const chat = async (data) => {
 
         return response;
     } catch(e) {
-        return e.response;
+        return e;
     }
 }
 
@@ -29,7 +29,7 @@ const getHistory = async (data) => {
 
         return response;
     } catch(e) {
-        return e.response;
+        return e;
     }
 }
 
