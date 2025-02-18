@@ -12,10 +12,11 @@ const ParticlePlanetGallery = () => {
   const rendererRef = useRef(null);
   const controlsRef = useRef(null);
   const particleGroupRef = useRef(null);
-  const starFieldRef = useRef(null);
-  const nebulaRef = useRef(null);
+  // 마우스가 현재 사용자 감정 파티클 위에 있는지 상태로 관리
   const [hovering, setHovering] = useState(false);
+  // 현재 hover 중인 파티클을 참조 (움직임 처리에 사용)
   const hoveredParticleRef = useRef(null);
+
   const [isMaximized, setIsMaximized] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [diaryEmotions, setDiaryEmotions] = useState([]);
@@ -189,8 +190,8 @@ const ParticlePlanetGallery = () => {
         return;
       }
       const today = new Date().toISOString().split("T")[0];
-      console.log("API 요청 URL:", `https://starbooks.site/api/diary/emotion?diaryDate=${today}`);
-      const response = await axios.get(`https://starbooks.site/api/diary/emotion`, {
+      console.log("API 요청 URL:", `http://localhost:9090/api/diary/emotion?diaryDate=${today}`);
+      const response = await axios.get(`http://localhost:9090/api/diary/emotion`, {
         params: { diaryDate: today },
         headers: {
           Authorization: `Bearer ${accessToken}`,
