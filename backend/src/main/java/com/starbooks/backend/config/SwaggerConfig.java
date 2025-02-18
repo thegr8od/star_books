@@ -24,23 +24,16 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
-        String accessToken = "Access Token (Bearer)";
 
-        SecurityRequirement securityRequirement = new SecurityRequirement()
-                .addList(accessToken);
-
-        SecurityScheme accessTokenSecurityScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP)
-                .scheme(BEARER_TOKEN_PREFIX)
-                .bearerFormat("JWT")
-                .in(SecurityScheme.In.HEADER)
-                .name(HttpHeaders.AUTHORIZATION);
-
-        Components components = new Components()
-                .addSecuritySchemes(accessToken, accessTokenSecurityScheme);
-
-        return new OpenAPI()
-                .addSecurityItem(securityRequirement)
-                .components(components);
+        return new OpenAPI();
+//                .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
+//                .components(new Components()
+//                        .addSecuritySchemes(SECURITY_SCHEME_NAME, new SecurityScheme()
+//                                .name(SECURITY_SCHEME_NAME)
+//                                .type(SecurityScheme.Type.HTTP)
+//                                .scheme("bearer")
+//                                .bearerFormat("JWT")
+//                        )
+//                );
     }
 }

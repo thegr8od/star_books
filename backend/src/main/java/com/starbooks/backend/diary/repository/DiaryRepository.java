@@ -1,6 +1,7 @@
 package com.starbooks.backend.diary.repository;
 
 import com.starbooks.backend.diary.model.Diary;
+import com.starbooks.backend.user.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -8,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
@@ -17,4 +20,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     @Query("SELECT d FROM Diary d WHERE d.user.userId = :userId ORDER BY d.createdAt DESC")
     Page<Diary> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    List<Diary> findAllByUserAndCreatedAtBetween(User user, LocalDateTime start, LocalDateTime end);
 }

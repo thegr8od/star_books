@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -298,8 +298,12 @@ function DiaryStars() {
         {/* ========== 별 영역 ========== */}
         <div className="flex-1 relative star-container border border-gray-700">
           <div className="absolute left-1/2 -translate-x-1/2 text-center mt-3">
-            <div className="text-white/60 text-xs">별들의 이야기가 시작되는 곳.</div>
-            <div className="text-white/60 text-xs">당신의 별은 어떤 빛을 띄나요?</div>
+            <div className="text-white/60 text-xs">
+              별들의 이야기가 시작되는 곳.
+            </div>
+            <div className="text-white/60 text-xs">
+              당신의 별은 어떤 빛을 띄나요?
+            </div>
           </div>
 
           {/* 선 (svg) */}
@@ -321,9 +325,12 @@ function DiaryStars() {
                     y2={`${endStar.yCoord}%`} // 끝 별 y 좌표
                     stroke="rgba(255, 255, 255, 0.5)" // 선 색상
                     strokeWidth="1.5" // 선 두께
-                    className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
+                    className={`${
+                      isEdit && editMode === "connect" ? "cursor-pointer" : ""
+                    }`} // 커서 스타일
                     style={{
-                      pointerEvents: isEdit && editMode === "connect" ? "auto" : "none",
+                      pointerEvents:
+                        isEdit && editMode === "connect" ? "auto" : "none",
                     }} // 편집 모드에서만 클릭 가능
                     onClick={() => {
                       // 편집 상태이거나 connect 모드일 경우 -> 선 삭제 함수
@@ -376,8 +383,15 @@ function DiaryStars() {
           {!isEdit ? (
             <div className="flex space-x-1.5">
               {/* 선 표시 버튼 */}
-              <button onClick={() => setShowConnections((prev) => !prev)} className={BUTTON_STYLES.base}>
-                {showConnections ? <VisibilityIcon fontSize="inherit" /> : <VisibilityOffIcon fontSize="inherit" />}
+              <button
+                onClick={() => setShowConnections((prev) => !prev)}
+                className={BUTTON_STYLES.base}
+              >
+                {showConnections ? (
+                  <VisibilityIcon fontSize="inherit" />
+                ) : (
+                  <VisibilityOffIcon fontSize="inherit" />
+                )}
               </button>
 
               {/* 편집 시작 버튼 */}
@@ -393,7 +407,9 @@ function DiaryStars() {
                   setEditMode("move"); // 편집 모드 move 전환
                   setSelectedStar(null); // 선택된 별 초기화
                 }}
-                className={`${BUTTON_STYLES.base} ${editMode === "move" ? BUTTON_STYLES.active : ""}`}
+                className={`${BUTTON_STYLES.base} ${
+                  editMode === "move" ? BUTTON_STYLES.active : ""
+                }`}
               >
                 <OpenWithIcon fontSize="inherit" />
               </button>
@@ -404,7 +420,9 @@ function DiaryStars() {
                   setEditMode("connect"); // 편집 모드 connect 전환
                   setSelectedStar(null); // 선택된 별 초기화
                 }}
-                className={`${BUTTON_STYLES.base} ${editMode === "connect" ? BUTTON_STYLES.active : ""}`}
+                className={`${BUTTON_STYLES.base} ${
+                  editMode === "connect" ? BUTTON_STYLES.active : ""
+                }`}
               >
                 <TimelineIcon fontSize="inherit" />
               </button>
