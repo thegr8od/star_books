@@ -100,26 +100,66 @@ const ParticlePlanetGallery = () => {
     pointLight.position.set(-10, 10, 10);
     scene.add(pointLight);
 
+    // 더 선명한 별 텍스처 생성
+    const circleCanvas = document.createElement('canvas');
+    circleCanvas.width = 128;
+    circleCanvas.height = 128;
+    const circleContext = circleCanvas.getContext('2d');
+    
+    const centerX = circleCanvas.width / 2;
+    const centerY = circleCanvas.height / 2;
+    
+    // 더 선명한 그라데이션
+    const mainGradient = circleContext.createRadialGradient(
+      centerX, centerY, 0,
+      centerX, centerY, centerX * 0.7
+    );
+    mainGradient.addColorStop(0, 'rgba(255, 255, 255, 1)');     // 중심부 완전 불투명
+    mainGradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.9)'); // 더 천천히 페이드
+    mainGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.6)');
+    mainGradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.2)');
+    mainGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+    // 더 선명한 원형
+    circleContext.beginPath();
+    circleContext.arc(centerX, centerY, centerX * 0.7, 0, Math.PI * 2);
+    circleContext.fillStyle = mainGradient;
+    circleContext.fill();
+
+    const circleTexture = new THREE.CanvasTexture(circleCanvas);
+    circleTexture.minFilter = THREE.LinearFilter;
+    circleTexture.magFilter = THREE.LinearFilter;
+
     // 파티클 그룹 생성
     const particleGroups = emotionGroups.map((group, groupIndex) => {
       const particles = new THREE.Group();
 
       for (let i = 0; i < group.particleCount; i++) {
-        const size = Math.random() * 1.1 + 0.1;
-        const isLarge = Math.random() < 0.1;
-        const finalSize = isLarge ? size * 2 : size;
-        const geometry = new THREE.SphereGeometry(finalSize, 16, 16);
-
-        const material = new THREE.MeshPhongMaterial({
+        const sizeVariation = Math.random();
+        let size;
+        
+        if (sizeVariation < 0.4) {
+          size = Math.random() * 0.3 + 0.2;
+        } else if (sizeVariation < 0.75) {
+          size = Math.random() * 0.8 + 0.5;
+        } else if (sizeVariation < 0.9) {
+          size = Math.random() * 1.2 + 1.3;
+        } else {
+          size = Math.random() * 1.5 + 2.5;
+        }
+        
+        // 더 선명한 파티클 재질
+        const spriteMaterial = new THREE.SpriteMaterial({
+          map: circleTexture,
           color: group.color,
-          shininess: 100,
           transparent: true,
-          opacity: Math.random() * 0.3 + 0.7,
-          emissive: group.color,
-          emissiveIntensity: 0.5,
+          blending: THREE.AdditiveBlending,
+          opacity: 1.0,  // 모든 크기에 대해 동일한 최대 투명도
+          depthWrite: false,
         });
 
-        const particle = new THREE.Mesh(geometry, material);
+        const particle = new THREE.Sprite(spriteMaterial);
+        particle.scale.set(size, size, 1);
 
         if (isMaximized) {
           const radius = 30 + Math.random() * 10;
@@ -145,17 +185,6 @@ const ParticlePlanetGallery = () => {
             particle.position.y = -1000;
           }
         }
-
-        const glowMaterial = new THREE.SpriteMaterial({
-          map: new THREE.TextureLoader().load("/glow.png"),
-          color: group.color,
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          opacity: 0.8,
-        });
-        const glow = new THREE.Sprite(glowMaterial);
-        glow.scale.set(finalSize * 6, finalSize * 6, 1);
-        particle.add(glow);
 
         particles.add(particle);
       }
@@ -226,7 +255,6 @@ const ParticlePlanetGallery = () => {
         group.children.forEach((particle) => {
           particle.geometry.dispose();
           particle.material.dispose();
-          particle.children[0].material.dispose();
         });
         scene.remove(group);
       });
