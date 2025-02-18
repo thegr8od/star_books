@@ -10,14 +10,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
-    @EntityGraph(attributePaths = {"content", "emotions", "hashtags", "images"})
+    @EntityGraph(attributePaths = {"content", "diaryEmotion", "hashtags", "images"})
     Optional<Diary> findByDiaryId(Long diaryId);
+
+    @Query("SELECT d FROM Diary d WHERE d.user.userId = :userId AND d.diaryDate = :date")
+    Optional<Diary> findByUserIdAndDiaryDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 
     @Query("SELECT d FROM Diary d WHERE d.user.userId = :userId ORDER BY d.createdAt DESC")
     Page<Diary> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
