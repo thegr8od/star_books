@@ -18,7 +18,7 @@ import java.util.Optional;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
-    @EntityGraph(attributePaths = {"content", "emotions", "hashtags", "image"})
+    @EntityGraph(attributePaths = {"content", "diaryEmotion", "hashtags", "image"})
     Optional<Diary> findByDiaryId(Long diaryId);
 
     @Query("SELECT e FROM DiaryEmotion e WHERE e.diary.user.userId = :userId AND e.diary.diaryDate = :diaryDate")

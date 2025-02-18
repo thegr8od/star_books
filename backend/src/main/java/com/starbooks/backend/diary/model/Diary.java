@@ -32,8 +32,8 @@ public class Diary {
     @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private DiaryContent content;
 
-    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<DiaryEmotion> emotions = new HashSet<>();
+    @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    private DiaryEmotion diaryEmotion;
 
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DiaryHashtag> hashtags = new HashSet<>();
@@ -63,7 +63,7 @@ public class Diary {
     }
 
     public void addEmotion(DiaryEmotion emotion) {
-        emotions.add(emotion);
+        this.diaryEmotion = emotion;
         emotion.setDiary(this);
     }
 

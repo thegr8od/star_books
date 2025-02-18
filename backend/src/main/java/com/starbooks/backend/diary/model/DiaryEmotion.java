@@ -18,7 +18,7 @@ public class DiaryEmotion {
     @Column(name = "diary_emotion_id")
     private Long diaryEmotionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_id")
     @JsonIgnore
     private Diary diary;
