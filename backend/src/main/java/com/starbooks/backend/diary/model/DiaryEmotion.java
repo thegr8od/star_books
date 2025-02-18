@@ -1,5 +1,6 @@
 package com.starbooks.backend.diary.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,7 @@ public class DiaryEmotion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_id")
+    @JsonIgnore
     private Diary diary;
 
     private Float xValue;
