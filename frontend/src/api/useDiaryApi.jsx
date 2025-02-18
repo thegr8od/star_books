@@ -115,12 +115,11 @@ const getDiary = async (diaryId) => {
 //delete
 const deleteDiary = async (diaryId) => {
   const jwt = localStorage.getItem("accessToken");
-
+  console.log(diaryId)
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
       .delete(`/diary/${diaryId}`);
-
     return response;
   } catch (e) {
     return e.response;
