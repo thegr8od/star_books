@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.xml.crypto.dsig.spec.HMACParameterSpec;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,13 +40,19 @@ public class Diary {
     @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)  // List에서 단일 관계로 변경
     private DiaryImage image;  // List<DiaryImage>에서 DiaryImage로 변경
 
+
+    @Column(name = "diary_date", nullable = false)
+    private LocalDate diaryDate;  // 새로운 날짜 필드 추가
+
     private LocalDateTime createdAt;
 
     @Builder
-    public Diary(User user, LocalDateTime createdAt) {
+    public Diary(User user, LocalDateTime createdAt, LocalDate diaryDate) {
         this.user = user;
         this.createdAt = createdAt;
+        this.diaryDate = diaryDate;  // 새로운 날짜 필드 초기화
     }
+
 
     // 연관 관계 편의 메서드
     public void setContent(DiaryContent content) {

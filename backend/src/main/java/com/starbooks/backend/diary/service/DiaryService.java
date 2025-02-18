@@ -16,6 +16,8 @@ import com.starbooks.backend.user.repository.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,17 +38,19 @@ public class DiaryService {
      * 1️⃣ 빈 다이어리 생성
      */
     @Transactional
-    public DiaryResponse createEmptyDiary(Long userId) {  // userId만 받음
-        User user = userRepository.findById(userId)  // userId로 User 엔티티 조회
+    public DiaryResponse createEmptyDiary(Long userId, LocalDate diaryDate) {  // LocalDate 추가
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         Diary diary = Diary.builder()
                 .user(user)
                 .createdAt(LocalDateTime.now())
+                .diaryDate(diaryDate)  // 새 필드에 값 설정
                 .build();
         diaryRepository.save(diary);
         return DiaryResponse.from(diary);
     }
+
 
 
     /**
