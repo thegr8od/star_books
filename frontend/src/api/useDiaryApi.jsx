@@ -2,16 +2,16 @@ import useAxiosInstance from "./useAxiosInstance";
 
 //다이러리 생성
 //post
-const createEmptyDiary = async () => {
+const createEmptyDiary = async (data) => {
     const jwt = localStorage.getItem("accessToken");
 
-  try {
+    try {
         const response = await useAxiosInstance
             .authApiClient(jwt)
-      .post("/diary/create");
+            .post("/diary/create", data);
         return response.data;
     } catch (e) {
-        return e.response.status;
+        throw e;
     }
 };
 

@@ -80,10 +80,11 @@ const MoodSurvey = ({ isOpen, onClose, data }) => {
   const handleEmotionClick = (emotion) => {
     if (selectedEmotions.includes(emotion)) {
       setSelectedEmotions(selectedEmotions.filter((item) => item !== emotion));
-    } else if (selectedEmotions.length <= 4) {
+    } else if (selectedEmotions.length < 5) {
       setSelectedEmotions([...selectedEmotions, emotion]);
       console.log(selectedEmotions);
     } else {
+      setToastMessage("감정은 최대 5개까지 선택할 수 있습니다");
       setShowToast(true);
     }
   };
