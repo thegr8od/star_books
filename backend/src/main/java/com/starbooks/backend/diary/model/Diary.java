@@ -44,6 +44,7 @@ public class Diary {
 
 
     @Column(name = "diary_date", nullable = false)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  // 추가
     private LocalDate diaryDate;  // 새로운 날짜 필드 추가
 
     private LocalDateTime createdAt;
