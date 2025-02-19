@@ -111,6 +111,7 @@ pipeline {
                         -e "ANTHROPIC_REMOVED=${ANTHROPIC_REMOVED}" \
                         -e "SMTP_PASSWORD=${SMTP_PASSWORD}" \
                         -e TZ=Asia/Seoul \
+                        -e JAVA_TOOL_OPTIONS="-Duser.timezone=Asia/Seoul" \
                         ${DOCKER_IMAGE_NAME}
                     """
                 }
