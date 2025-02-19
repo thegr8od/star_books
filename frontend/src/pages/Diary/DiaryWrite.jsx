@@ -59,8 +59,8 @@ const DiaryWrite = () => {
   const getCurrentEmotionValues = () => {
     if (isEditMode) {
       return {
-        x: location.state.diary.emotions[0]?.xValue || 0,
-        y: location.state.diary.emotions[0]?.yValue || 0,
+        x: location.state.diary.DiaryEmotion?.xValue || 0,
+        y: location.state.diary.DiaryEmotion?.yValue || 0,
       };
     }
     return { x: xvalue, y: yvalue };
@@ -188,9 +188,13 @@ const DiaryWrite = () => {
           <div className="flex justify-center">
             <span
               className="rounded-full w-6 h-6"
-              style={{ backgroundColor: GetColor(xvalue, yvalue) }}
+              style={{
+                backgroundColor: GetColor(
+                  getCurrentEmotionValues().x,
+                  getCurrentEmotionValues().y
+                ),
+              }}
             />
-            {/* <span className={`rounded-full w-6 h-6 bg-[${GetColor(2, 3)}]`} /> */}
           </div>
 
           {/* 텍스트 입력 칸*/}
