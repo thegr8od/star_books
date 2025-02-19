@@ -16,7 +16,6 @@ const DiaryWrite = () => {
   const { emotions, xvalue, yvalue, diaryId, originalData } = location.state;
 
   const [text, setText] = useState("");
-  const [diaryData, setDiaryData] = useState([]);
   const [imagePreview, setImagePreview] = useState(null); // 프리뷰 이미지
   const [existingImage, setExistingImage] = useState(null); // 기존에 저장되어있는 이미지가 있을 때
   const [uploadedImageUrl, setUploadedImageUrl] = useState(null); // 업로드된 이미지 URL 저장
@@ -84,13 +83,6 @@ const DiaryWrite = () => {
     const dayName = days[date.getDay()];
     return { dayNum, dayName, month };
   };
-
-  // getDayInfo 호출을 useEffect 내부로 이동
-  const [dateInfo, setDateInfo] = useState({
-    month: 0,
-    dayNum: 0,
-    dayName: "",
-  });
 
   // 이미지 업로드
   const handleImageUpload = (e) => {
@@ -176,9 +168,9 @@ const DiaryWrite = () => {
         {/* 날짜 */}
         <div className="text-white px-3 text-lg">
           <div className="flex items-baseline gap-2 border-b border-white pb-1 w-fit">
-            <span>{dateInfo.month}월</span>
-            <span>{dateInfo.dayNum}일</span>
-            <span>{dateInfo.dayName}요일</span>
+            <span>{getDayInfo().month}월</span>
+            <span>{getDayInfo().dayNum}일</span>
+            <span>{getDayInfo().dayName}요일</span>
           </div>
         </div>
 
