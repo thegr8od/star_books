@@ -24,51 +24,56 @@ const Login = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // 완전한 초기화
-    localStorage.clear();  // 로컬 스토리지 완전 초기화
-    dispatch(clearUser());
-    
-    const handleOAuthLogin = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
+  // ❌ localStorage.clear();  <-- 일단 제거
+  dispatch(clearUser());      // 필요한 경우만 남기기
 
-      if (token) {
-        try {
-          // 기존 데이터 완전 제거
-          localStorage.clear();
-          dispatch(clearUser());
-          
-          console.log("Token received:", token);
-          const userData = await useMemberApi.handleOAuthToken(token);
-          console.log("User data:", userData);
-          
-          // 새로운 사용자 데이터 저장
-          dispatch(setUser({
-            ...userData,
-            isLogin: true,
-            isActive: true
-          }));
+  const handleOAuthLogin = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
 
-          window.history.replaceState({}, document.title, window.location.pathname);
+    if (token) {
+      try {
+        // ❌ localStorage.clear();  <-- 여기도 제거
+        // ❌ dispatch(clearUser()); <-- 굳이 필요 없다면 제거
 
-          setAlertMessage("로그인에 성공했습니다!");
-          setShowAlert(true);
+        console.log("Token received:", token);
 
-          setTimeout(() => {
-            navigate('/', { replace: true });
-          }, 2000);
-        } catch (error) {
-          console.error('OAuth 로그인 처리 실패:', error);
-          localStorage.clear();
-          dispatch(clearUser());
-          setAlertMessage("로그인에 실패했습니다.");
-          setShowAlert(true);
-        }
+        // 이 부분에서 바로 localStorage에 저장
+        localStorage.setItem("accessToken", token);
+
+        // 토큰 디코드 및 추가 작업
+        const userData = await useMemberApi.handleOAuthToken(token);
+        console.log("User data:", userData);
+
+        // Redux 저장
+        dispatch(setUser({
+          ...userData,
+          isLogin: true,
+          isActive: true
+        }));
+
+        // URL 파라미터 제거 (옵션)
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        setAlertMessage("로그인에 성공했습니다!");
+        setShowAlert(true);
+
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 2000);
+
+      } catch (error) {
+        console.error('OAuth 로그인 처리 실패:', error);
+        localStorage.clear();
+        dispatch(clearUser());
+        setAlertMessage("로그인에 실패했습니다.");
+        setShowAlert(true);
       }
-    };
+    }
+  };
 
-    handleOAuthLogin();
-  }, [navigate, dispatch]);
+  handleOAuthLogin();
+}, [navigate, dispatch]);
 
   //에러
   const validateForm = () => {
