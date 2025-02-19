@@ -303,34 +303,35 @@ public class DiaryService {
     }
 
 
-    /**
-     * 년도별 다이어리 조회
-     */
-    public List<DiaryResponse> getDiariesByYear(User user, int year) {
-        LocalDateTime start = LocalDateTime.of(year, 1, 1, 0, 0, 0);
-        // plusYears(1) 후 마지막 나노초 전까지
-        LocalDateTime end = start.plusYears(1).minusNanos(1);
-        List<Diary> diaries = diaryRepository.findAllByUserAndCreatedAtBetween(user, start, end);
-        return diaries.stream()
-                .map(DiaryResponse::from)
-                .collect(Collectors.toList());
-    }
+//    /**
+//     * 년도별 다이어리 조회
+//     */
+//    public List<DiaryResponse> getDiariesByYear(User user, int year) {
+//        LocalDate start = LocalDate.of(year, 1, 1, 0, 0, 0);
+//        // plusYears(1) 후 마지막 나노초 전까지
+//        LocalDate end = start.plusYears(1).minusNanos(1);
+//        List<Diary> diaries = diaryRepository.findAllByUserAndDiaryDateBetween(user, start, end);
+//        return diaries.stream()
+//                .map(DiaryResponse::from)
+//                .collect(Collectors.toList());
+//    }
 
     /**
      * 월별 다이어리 조회
      */
     public List<DiaryResponse> getDiariesByMonth(Long userId, int year, int month) {
-        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0, 0);
-        LocalDateTime end = start.plusMonths(1).minusNanos(1);
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth()); // 해당 월의 마지막 날짜
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));  // User 조회
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
-        List<Diary> diaries = diaryRepository.findAllByUserAndCreatedAtBetween(user, start, end);
+        List<Diary> diaries = diaryRepository.findAllByUserAndDiaryDateBetween(user, startDate, endDate);
         return diaries.stream()
                 .map(DiaryResponse::from)
                 .collect(Collectors.toList());
     }
+
 
     public DiaryResponse getDiary(Long diaryId) {
         Diary diary = getDiaryEntity(diaryId);

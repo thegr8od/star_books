@@ -125,7 +125,7 @@ anthropic:
 
 logging:
   level:
-    org.hibernate.SQL: debug
+    org.hibernate.SQL: off
 
 file:
   upload-dir: uploads/
