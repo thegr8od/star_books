@@ -128,7 +128,7 @@ const MoodSurvey = ({ isOpen, onClose, data }) => {
   // api 호출하여 감정 데이터 저장
   const saveMoodData = () => {
     // 로딩 메시지 표시 (나중에 속도 조절 필요!!)
-    showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 2000);
+    showToastMessage("감정을 분석하는 중입니다... 잠시만 기다려주세요", 3000);
 
     // 해시태그 추가 및 감정 분석
     useDiaryApi
@@ -136,8 +136,6 @@ const MoodSurvey = ({ isOpen, onClose, data }) => {
         hashtags: selectedEmotions,
       })
       .then((response) => {
-        console.log("response", response);
-
         setShowToast(false);
         handleClose();
         navigate("../diary/write", {

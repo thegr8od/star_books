@@ -70,10 +70,13 @@ const DiaryWrite = () => {
   const getDayInfo = () => {
     const days = ["일", "월", "화", "수", "목", "금", "토"];
     let dateArray;
+
     if (isEditMode && location.state?.diary) {
+      // 수정모드
       dateArray = diary.diaryDate;
-    } else if (location.state?.diaryDate) {
-      dateArray = location.state.diaryDate;
+    } else if (location.state?.originalData) {
+      // 작성모드
+      dateArray = location.state.originalData.diaryDate;
     } else {
       const today = new Date();
       dateArray = [today.getFullYear(), today.getMonth() + 1, today.getDate()];
