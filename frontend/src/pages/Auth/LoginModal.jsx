@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import useMemberApi from "@api/useMemberApi";
 
 const LoginModal = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1); // 1: 이메일 입력, 2: 인증번호 입력, 3: 새 비밀번호 입력
@@ -12,9 +13,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleSendVerification = async () => {
     try {
-      const response = await axios.post("/api/member/password/reset-request", {
-        email,
-      });
+      const response = await useMemberApi.sendVerification( {email});
       if (response.data.statusCode === 200) {
         setMessage("인증번호가 이메일로 전송되었습니다.");
         setStep(2);
@@ -27,7 +26,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   const handleVerifyCode = async () => {
     try {
-      const response = await axios.post("/api/member/password/verify-code", {
+      const response = await  useMemberApi.verifyCode({
         email,
         verificationCode,
       });
@@ -48,7 +47,7 @@ const LoginModal = ({ isOpen, onClose }) => {
     }
 
     try {
-      const response = await axios.post("/api/member/password/reset", {
+      const response = await useMemberApi.resetPassword({
         email,
         verificationCode,
         newPassword,
