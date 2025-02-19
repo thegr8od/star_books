@@ -36,22 +36,73 @@ const DiaryCalendar = () => {
         const targetMonth = currentDate.getMonth() + 1;
         const data = { targetYear: targetYear, targetMonth: targetMonth };
 
-        const response = await diaryApi.getDiariesByMonth(data);
+        console.log("요청 데이터:", data);
 
-        if (response && response.data) {
-          const diaryDatas = response.data.map((oneday) => {
-            return {
-              id: oneday.diaryId,
-              date: oneday.diaryDate,
-              color: oneday.emotions[0]
-                ? GetColor(oneday.emotions[0].xValue, oneday.emotions[0].yValue)
-                : null,
-            };
-          });
-          setDiaryEntries(diaryDatas);
+        const response = await diaryApi.getDiariesByMonth(data);
+        console.log(response);
+
+        // 서버 에러 응답 처리
+        if (response.status === 500) {
+          console.error("서버 에러:", response.data.message);
+          setDiaryEntries([]);
+          // 필요한 경우 사용자에게 에러 메시지 표시
+          // alert("데이터를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+          return;
         }
+
+        // 정상 응답이지만 데이터가 없는 경우
+        if (!response.data) {
+          console.log("응답에 데이터가 없음");
+          setDiaryEntries([]);
+          return;
+        }
+
+        // 실제 다이어리 데이터 처리
+        const diaryArray = response.data || [];
+        console.log("다이어리 배열:", diaryArray);
+
+        const diaryDatas = diaryArray
+          .map((oneday) => {
+            if (!oneday) {
+              console.log("유효하지 않은 다이어리 데이터");
+              return null;
+            }
+
+            try {
+              const mappedData = {
+                id: oneday.diaryId,
+                date: Array.isArray(oneday.diaryDate)
+                  ? `${oneday.diaryDate[0]}-${String(
+                      oneday.diaryDate[1]
+                    ).padStart(2, "0")}-${String(oneday.diaryDate[2]).padStart(
+                      2,
+                      "0"
+                    )}`
+                  : oneday.diaryDate,
+                color: oneday.DiaryEmotion // DiaryEmotion이 있는 경우에만 색상 설정
+                  ? GetColor(
+                      oneday.DiaryEmotion.xValue,
+                      oneday.DiaryEmotion.yValue
+                    )
+                  : null,
+              };
+              return mappedData;
+            } catch (err) {
+              console.error("다이어리 데이터 변환 중 에러:", err);
+              return null;
+            }
+          })
+          .filter(Boolean);
+
+        console.log("최종 다이어리 데이터:", diaryDatas);
+        setDiaryEntries(diaryDatas);
       } catch (error) {
         console.error("다이어리 데이터 조회 실패:", error);
+        if (error.response) {
+          console.log("에러 상태:", error.response.status);
+          console.log("에러 데이터:", error.response.data);
+        }
+        setDiaryEntries([]);
       }
     };
 
