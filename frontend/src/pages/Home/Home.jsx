@@ -26,8 +26,8 @@ const Home = () => {
         if(response.status === 200){
           const userData = { ...response.data.data, isLogin: true };
         
-          //✅ Redux 저장 전에 localStorage에도 저장
-          localStorage.setItem("user", JSON.stringify(userData));
+          // ✅ Redux 저장 전에 localStorage에도 저장
+          // localStorage.setItem("user", JSON.stringify(userData));
 
           console.log(response.data.data.nickname);
           dispatch(setUser(userData));
@@ -38,9 +38,9 @@ const Home = () => {
         console.error("Oauth 로그인인 에러:", error);
       }
 
-      // setTimeout(() => {
-      //   window.location.href = "/";
-      // }, 2000);
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 2000);
     }
     
   }, [searchParams, location.pathname]); // searchParams 또는 현재 경로가 변경될 때 실행
