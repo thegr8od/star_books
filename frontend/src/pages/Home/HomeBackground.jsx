@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import Login from "../Auth/Login";
+import WaveAnimation from '../../components/WaveAnimation';
 
 const HomeBackground = () => {
   const [activeSection, setActiveSection] = useState(0);
@@ -255,6 +256,8 @@ const HomeBackground = () => {
                       [&::-webkit-scrollbar-thumb]:bg-white/20
                       [&::-webkit-scrollbar-thumb]:rounded-full
                       [&::-webkit-scrollbar-thumb]:hover:bg-white/30">
+        <WaveAnimation />
+
         <div
           ref={starsRef}
           className={`fixed inset-0 z-10 overflow-hidden bg-gradient-to-b transition-colors duration-1000 ${
