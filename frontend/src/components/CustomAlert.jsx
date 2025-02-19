@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import Button from "./Button";
 
 const CustomAlert = ({ message, isOpen, onClose }) => {
   useEffect(() => {
@@ -18,12 +19,12 @@ const CustomAlert = ({ message, isOpen, onClose }) => {
       <div className="bg-white/90 p-6 rounded-lg shadow-lg max-w-sm w-full mx-4 text-xs md:text-base">
         <div className="text-center">
           <p className="text-black mb-4">{message}</p>
-          <button
+          <Button
+            text={"확인"}
+            type={"DEFAULT"}
             onClick={onClose}
-            className="bg-purple-200 text-purple-700 px-4 py-2 rounded hover:bg-purple-300 transition-colors"
-          >
-            확인
-          </button>
+            className="px-4 py-2"
+          />
         </div>
       </div>
     </div>
