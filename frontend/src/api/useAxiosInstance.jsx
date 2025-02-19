@@ -43,6 +43,8 @@ const authApiClient = (token) => {
                 const newAccessToken = refreshResponse.data.data.accessToken;
                 console.log(refreshResponse);
                 localStorage.setItem('accessToken', newAccessToken);
+
+                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
     
                 return instance(originalRequest); // 요청 재시도
               } catch (refreshError) {
