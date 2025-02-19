@@ -25,7 +25,8 @@ public enum ErrorCode {
     ALREADY_EXIST_PHONE_NUMBER("U009", HttpStatus.BAD_REQUEST, "이미 존재하는 전화번호입니다."),
     USER_UPDATE_FAILED("U010", HttpStatus.BAD_REQUEST, "사용자 정보 업데이트에 실패했습니다."),
     EMAIL_ALREADY_EXIST("U011", HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
-    NICKNAME_ALREADY_EXIST("U012", HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."), // 닉네임 중복 체크 추가
+    NICKNAME_ALREADY_EXIST("U012", HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."),
+    USER_INACTIVE("U013", HttpStatus.FORBIDDEN, "비활성화된 계정입니다."),
 
     // Email Error
     EMAIL_SEND_FAIL("E001", HttpStatus.BAD_REQUEST, "이메일 전송에 실패했습니다."),
@@ -40,7 +41,16 @@ public enum ErrorCode {
     UNIVERSE_NOT_FOUND("U100", HttpStatus.NOT_FOUND, "해당 유니버스를 찾을 수 없습니다."),
     UNIVERSE_SAVE_FAILED("U101", HttpStatus.BAD_REQUEST, "유니버스 저장에 실패했습니다."),
     UNIVERSE_UPDATE_FAILED("U102", HttpStatus.BAD_REQUEST, "유니버스 업데이트에 실패했습니다."),
-    UNIVERSE_DELETE_FAILED("U103", HttpStatus.BAD_REQUEST, "유니버스 삭제에 실패했습니다.");
+    UNIVERSE_DELETE_FAILED("U103", HttpStatus.BAD_REQUEST, "유니버스 삭제에 실패했습니다."),
+
+    // **Constellation (별자리) 관련 에러 코드 추가**
+    CONSTELLATION_NOT_FOUND("C100", HttpStatus.NOT_FOUND, "해당 별자리를 찾을 수 없습니다."),
+    CONSTELLATION_UPDATE_FAILED("C101", HttpStatus.BAD_REQUEST, "별자리 업데이트에 실패했습니다."),
+    CONSTELLATION_DELETE_FAILED("C102", HttpStatus.BAD_REQUEST, "별자리 삭제에 실패했습니다."),
+    CONSTELLATION_FORBIDDEN("C103", HttpStatus.FORBIDDEN, "AI가 생성한 별자리만 수정 또는 삭제할 수 있습니다."),
+    CONSTELLATION_INVALID_REQUEST("C104", HttpStatus.BAD_REQUEST, "별자리 요청이 유효하지 않습니다.");
+
+
 
     private final String code;
     private final HttpStatus httpStatus;

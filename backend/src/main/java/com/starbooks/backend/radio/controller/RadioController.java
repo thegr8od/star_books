@@ -1,9 +1,12 @@
 package com.starbooks.backend.radio.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.livekit.server.AccessToken;
 import io.livekit.server.RoomJoin;
 import io.livekit.server.RoomName;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +25,8 @@ public class RadioController {
     @Value("${livekit.api.secret}")
     private String LIVEKIT_API_SECRET;
 
-    private final StringRedisTemplate redisTemplate;
-
-    public RadioController(StringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     /**
      * 기존 역할 확인 API
@@ -34,6 +34,7 @@ public class RadioController {
      */
     @PostMapping(value = "/getRole")
     public ResponseEntity<Map<String, String>> getRole(@RequestBody Map<String, String> params) {
+        System.out.println(params);
         String roomName = params.get("roomName");
         String participantName = params.get("participantName");
 
@@ -153,7 +154,6 @@ public class RadioController {
 
                     return broadcastInfo;
                 })
-                //시청자 순 으로 정렬
                 .sorted((a, b) -> Integer.compare(
                         ((Integer) b.get("participantCount")),
                         ((Integer) a.get("participantCount"))
