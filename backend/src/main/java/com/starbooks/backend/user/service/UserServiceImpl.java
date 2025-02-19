@@ -178,6 +178,15 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    // ... (다른 메서드들 사이에 추가)
+    @Override
+    public void updatePassword(User user, String newPassword) {
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        log.info("비밀번호 업데이트 완료: {}", user.getEmail());
+    }
+
+
     @Override
     public boolean existsByNickname(String nickname) {
         return userRepository.existsByNickname(nickname);
