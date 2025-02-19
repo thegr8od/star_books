@@ -32,8 +32,8 @@ public class Diary {
     @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private DiaryContent content;
 
-    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<DiaryEmotion> emotions = new HashSet<>();
+    @OneToOne(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    private DiaryEmotion diaryEmotion;
 
     @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DiaryHashtag> hashtags = new HashSet<>();
@@ -44,6 +44,7 @@ public class Diary {
 
 
     @Column(name = "diary_date", nullable = false)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  // 추가
     private LocalDate diaryDate;  // 새로운 날짜 필드 추가
 
     private LocalDateTime createdAt;
@@ -63,7 +64,7 @@ public class Diary {
     }
 
     public void addEmotion(DiaryEmotion emotion) {
-        emotions.add(emotion);
+        this.diaryEmotion = emotion;
         emotion.setDiary(this);
     }
 

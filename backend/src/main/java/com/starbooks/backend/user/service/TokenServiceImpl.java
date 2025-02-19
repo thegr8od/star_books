@@ -18,7 +18,7 @@ public class TokenServiceImpl implements TokenService {
 
     private static final String REFRESH_TOKEN_PREFIX = "refreshToken:";
     private static final String BLACKLIST_PREFIX = "blacklist:";
-
+    //
     @Override
     public String generateAccessToken(User user) {
         return jwtTokenProvider.generateAccessToken(user);
