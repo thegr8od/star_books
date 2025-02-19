@@ -234,4 +234,12 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         log.info("비밀번호 변경 완료: email={}", dto.getEmail());
     }
+
+    @Override
+    public ResponseUserDTO getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_FOUND.getMessage()));
+        return ResponseUserDTO.fromEntity(user);
+    }
+
 }
