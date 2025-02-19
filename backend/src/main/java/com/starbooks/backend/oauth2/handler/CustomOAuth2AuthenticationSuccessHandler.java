@@ -58,7 +58,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
 
         if (email == null || email.isEmpty()) {
             log.error("🚨 로그인 성공했지만 이메일 정보를 가져올 수 없습니다.");
-            response.sendRedirect("https://i12d206.p.ssafy.io/error");
+            response.sendRedirect("https://starbooks.site/error");
             return;
         }
 
@@ -94,13 +94,13 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
                 .sameSite("None")
                 .maxAge(60 * 60 * 24 * 14) // 14일 유지
                 .path("/")
-                .domain("i12d206.p.ssafy.io")
+                .domain("starbooks.site")
                 .build();
 
         response.setHeader("Set-Cookie", refreshTokenCookie.toString());
 
         // ✅ Access Token을 URL 파라미터로 전달
-        String targetUrl = UriComponentsBuilder.fromUriString("https://i12d206.p.ssafy.io/")
+        String targetUrl = UriComponentsBuilder.fromUriString("https://starbooks.site/")
                 .queryParam("token", accessToken)
                 .build().toUriString();
 
