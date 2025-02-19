@@ -18,7 +18,9 @@ function Diary() {
   const isCalendarMatch = useMatch({ path: "/diary/calendar", end: true });
   const currentTab = isStarsMatch ? "stars" : isCalendarMatch ? "calendar" : "";
   const [modalData, setModalData] = useState(null);
-  const [clickDay, setClickDay] = useState(new Date().toISOString().split('T')[0]);
+  const [clickDay, setClickDay] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   const handleSetShowModal = (show, data) => {
     setShowModal(show);

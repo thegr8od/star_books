@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext, useLocation } from "react-router-dom";
 import diaryApi from "../../api/useDiaryApi";
 import GetColor from "../../components/GetColor";
 
@@ -22,46 +22,25 @@ const CalendarTile = ({ children, marker }) => {
 // 메인 캘린더 컴포넌트
 const DiaryCalendar = () => {
   const navigate = useNavigate();
-  const { currentDate, setClickDay } = useOutletContext(); // 상위 컴포넌트에서 현재 날짜 받아오기
+  const location = useLocation();
+  const { currentDate, setClickDay, diaryEntries, setDiaryEntries } =
+    useOutletContext();
   const [selectedDate, setSelectedDate] = useState(new Date()); // 선택된 날짜 상태
-  const [diaryEntries, setDiaryEntries] = useState([]); // 다이어리 엔트리 데이터 상태
 
   const today = new Date(); // 오늘 날짜
 
-  // 현재 날짜 데이터를 Diary에서 가져오는 useEffect
-  useEffect(() => {
-    const CalendarMonthly = async () => {
-      try {
-        const targetYear = currentDate.getFullYear();
-        const targetMonth = currentDate.getMonth() + 1;
-        const data = { targetYear: targetYear, targetMonth: targetMonth };
+  // 데이터 새로고침 함수
+  const refreshCalendarData = async () => {
+    try {
+      const targetYear = currentDate.getFullYear();
+      const targetMonth = currentDate.getMonth() + 1;
+      const response = await diaryApi.getDiariesByMonth({
+        targetYear,
+        targetMonth,
+      });
 
-        console.log("요청 데이터:", data);
-
-        const response = await diaryApi.getDiariesByMonth(data);
-        console.log(response);
-
-        // 서버 에러 응답 처리
-        if (response.status === 500) {
-          console.error("서버 에러:", response.data.message);
-          setDiaryEntries([]);
-          // 필요한 경우 사용자에게 에러 메시지 표시
-          // alert("데이터를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
-          return;
-        }
-
-        // 정상 응답이지만 데이터가 없는 경우
-        if (!response.data) {
-          console.log("응답에 데이터가 없음");
-          setDiaryEntries([]);
-          return;
-        }
-
-        // 실제 다이어리 데이터 처리
-        const diaryArray = response.data || [];
-        console.log("다이어리 배열:", diaryArray);
-
-        const diaryDatas = diaryArray
+      if (response.data) {
+        const diaryDatas = response.data
           .map((oneday) => {
             if (!oneday) {
               console.log("유효하지 않은 다이어리 데이터");
@@ -93,21 +72,24 @@ const DiaryCalendar = () => {
             }
           })
           .filter(Boolean);
-
-        console.log("최종 다이어리 데이터:", diaryDatas);
         setDiaryEntries(diaryDatas);
-      } catch (error) {
-        console.error("다이어리 데이터 조회 실패:", error);
-        if (error.response) {
-          console.log("에러 상태:", error.response.status);
-          console.log("에러 데이터:", error.response.data);
-        }
-        setDiaryEntries([]);
       }
-    };
+    } catch (error) {
+      console.error("캘린더 데이터 새로고침 실패:", error);
+    }
+  };
 
-    CalendarMonthly();
+  // currentDate가 변경될 때마다 데이터 새로고침
+  useEffect(() => {
+    refreshCalendarData();
   }, [currentDate]);
+
+  // location이 변경될 때 캘린더 데이터 새로고침
+  useEffect(() => {
+    if (location.pathname === "/diary/calendar") {
+      refreshCalendarData();
+    }
+  }, [location]);
 
   //여기부터 캘린더 함수들
   // 현재 월의 총 일수 계산
@@ -153,35 +135,47 @@ const DiaryCalendar = () => {
     return entry && entry.color ? { color: entry.color } : null;
   };
 
-  // 날짜 클릭 시 해당 날짜의 상세 페이지로 이동하는 함수
-  const handleDateClick = (day) => {
+  // 미래 날짜인지 확인하는 함수 추가
+  const isFutureDate = (day) => {
     const selectedDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       day
     );
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 시간 제거하고 날짜만 비교
+    return selectedDate > today;
+  };
+
+  // 날짜 클릭 시 함수 수정
+  const handleDateClick = (day) => {
+    // 미래 날짜면 클릭 무시
+    if (isFutureDate(day)) return;
+
+    const selectedDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day
+    );
+    console.log("선택한 날짜:", day);
     setSelectedDate(selectedDate);
 
-    const formattedDate = selectedDate.toISOString().split("T")[0];
+    // YYYY-MM-DD 형식으로 변환
+    const formattedDate = selectedDate.toLocaleDateString("fr-CA");
+    console.log("변환된 날짜:", formattedDate);
     setClickDay(formattedDate);
 
     // 해당 날짜에 일기가 있는지 확인
     const entry = diaryEntries.find((entry) => {
       if (!entry.date) return false;
-
-      const entryDate = new Date(entry.date);
-      return (
-        entryDate.getDate() === day &&
-        entryDate.getMonth() === currentDate.getMonth() &&
-        entryDate.getFullYear() === currentDate.getFullYear()
-      );
+      return entry.date === formattedDate; // 날짜 문자열 직접 비교
     });
 
     // 일기가 있는 경우에만 monthly 페이지로 이동
     if (entry) {
       navigate(`/diary/monthly`, {
         state: {
-          selectedDate: selectedDate.toLocaleDateString("fr-CA"),
+          selectedDate: formattedDate,
         },
       });
     }
@@ -214,6 +208,7 @@ const DiaryCalendar = () => {
             <CalendarTile key={day} marker={getColorForDay(day)}>
               <button
                 onClick={() => handleDateClick(day)}
+                disabled={isFutureDate(day)} // 미래 날짜 비활성화
                 className={`
                   w-full 
                   h-full 
@@ -222,7 +217,11 @@ const DiaryCalendar = () => {
                   items-start
                   p-1
                   rounded-lg
-                  cursor-pointer
+                  ${
+                    isFutureDate(day)
+                      ? "cursor-not-allowed opacity-50"
+                      : "cursor-pointer"
+                  } 
                   ${
                     getColorForDay(day)
                       ? "hover:bg-blue-50/20"
