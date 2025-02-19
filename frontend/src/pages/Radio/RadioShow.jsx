@@ -126,6 +126,7 @@ const RadioShow = ({ title = "라디오? 레디오!", nickname = "닉네임", pr
           </div>
         ))}
       </div>
+      <AudioComponent track={track.trackPublication.audioTrack} participantIdentity={track.participantIdentity} />
     </div>
   );
 };

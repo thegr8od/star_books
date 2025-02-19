@@ -64,13 +64,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         } else {
             user = User.builder()
                     .email(email)
-                    .password(null)
+                    .password(null)  // OAuth 로그인 사용자는 비밀번호 없음
                     .nickname(oAuth2Response.getName() != null ? oAuth2Response.getName() : "Unknown User")
-                    .gender(Gender.OTHER)
-                    .snsAccount(true)  // 변경된 필드 (OAuth2 사용자는 snsAccount = true)
-                    .role(Role.member)
-                    .isActive(true)
+                    .gender(Gender.OTHER)  // 기본값 설정
+                    .snsAccount(true)  // ✅ 소셜 로그인 계정임을 명확히 설정
+                    .role(Role.member)  // ✅ 일반 사용자와 동일하게 설정
+                    .isActive(true)  // ✅ 활성화된 계정으로 설정
                     .build();
+
+            userRepository.save(user);
+            log.info("✅ 소셜 로그인 사용자 저장 완료: {}", user);
+
 
             log.info("📥 새 유저 등록 시도: {}", user);
             try {

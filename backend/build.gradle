@@ -85,6 +85,9 @@ dependencies {
     annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+    implementation('com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0') {
+        exclude group: 'org.jetbrains.kotlinx', module: 'kotlinx-serialization-json'
+    }
 
     // SMS 예시 (nurigo)
     implementation 'net.nurigo:sdk:4.3.0'

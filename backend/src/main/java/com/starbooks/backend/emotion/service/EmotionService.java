@@ -29,7 +29,7 @@ public class EmotionService {
         tagCoordinateMap.put("불안한",    new EmotionPoint(-3.0,  3.0));
         tagCoordinateMap.put("초조한",    new EmotionPoint(-2.5,  3.5));
         tagCoordinateMap.put("화난",      new EmotionPoint(-4.0,  4.0));
-        tagCoordinateMap.put("짜증 나는", new EmotionPoint(-3.5,  2.5));
+        tagCoordinateMap.put("짜증나는", new EmotionPoint(-3.5,  2.5));
         tagCoordinateMap.put("답답한",    new EmotionPoint(-3.0,  2.0));
         tagCoordinateMap.put("속상한",    new EmotionPoint(-3.0,  1.5));
         tagCoordinateMap.put("슬픈",      new EmotionPoint(-4.0, -2.0));
@@ -38,7 +38,7 @@ public class EmotionService {
         tagCoordinateMap.put("무기력한",  new EmotionPoint(-4.0, -4.0));
 
         // Neutral (10개)
-        tagCoordinateMap.put("그저 그런", new EmotionPoint(0.0,  0.0));
+        tagCoordinateMap.put("그저그런", new EmotionPoint(0.0,  0.0));
         tagCoordinateMap.put("담담한",    new EmotionPoint(0.5, -1.0));
         tagCoordinateMap.put("멍한",      new EmotionPoint(0.0, -2.0));
         tagCoordinateMap.put("고민되는",  new EmotionPoint(0.0,  1.0));
@@ -78,10 +78,14 @@ public class EmotionService {
             return new EmotionPoint(0.0, 0.0);
         }
 
-        double weightedValence = clamp(sumValence / sumWeight, -5.0, 5.0);
-        double weightedArousal = clamp(sumArousal / sumWeight, -5.0, 5.0);
+        int weightedValence = (int)clamp(sumValence / sumWeight, -5.0, 5.0);
+        int weightedArousal = (int)clamp(sumArousal / sumWeight, -5.0, 5.0);
 
         return new EmotionPoint(weightedValence, weightedArousal);
+    }
+
+    public EmotionPoint getTagCoordinate(String tag) {
+        return tagCoordinateMap.getOrDefault(tag, new EmotionPoint(0.0, 0.0));
     }
 
     private double clamp(double value, double min, double max) {

@@ -12,7 +12,10 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@EnableRedisRepositories
+@EnableRedisRepositories(basePackages = {
+        "com.starbooks.backend.user.repository.redis",
+        "com.starbooks.backend.chatbot.repository"
+})
 public class RedisConfig {
 
     @Value("${spring.data.redis.host}")

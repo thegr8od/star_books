@@ -62,12 +62,11 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/ws/**",
                                 "/api/radio/**",
-                                "/api/member/**", // 🔹 수정: "/api/member" → "/api/member/**"
+                                "/api/member/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/oauth_test.html",
-                                "/index.html",
-                                "/api/constellation/**"
+                                "/index.html"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/chat/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -77,17 +76,17 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(customOAuth2AuthenticationSuccessHandler)
                 )
-                // 🔹 JWT 필터 직접 등록
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, customUserDetailsService),
-                        UsernamePasswordAuthenticationFilter.class);
+                        UsernamePasswordAuthenticationFilter.class); // ✅ JWT 필터 적용
 
         return http.build();
     }
 
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://i12d206.p.ssafy.io", "http://localhost:5173", "http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("https://starbooks.site", "http://localhost:5173", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setExposedHeaders(List.of("Authorization")); // 🔹 추가

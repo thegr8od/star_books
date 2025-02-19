@@ -27,6 +27,8 @@ function DiaryStars() {
   const [modifiedStars, setModifiedStars] = useState({}); // 편집시 이동된 별(axios 요청 데이터)
 
   const [showConnections, setShowConnections] = useState(true); // 선 표시
+  const [isVisible, setIsVisible] = useState(true);
+
   const BUTTON_STYLES = {
     base: "bg-white/25 text-white size-6 rounded-full flex items-center justify-center",
     active: "ring-2 ring-white",
@@ -54,6 +56,14 @@ function DiaryStars() {
       }
     })();
   }, [currentDate]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+    }, 3000); // 3초 후에 사라지기 시작
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // ==================================================== move 모드 ====================================================
   // 드래그 앤 드롭 (별 위치 업데이트)
@@ -216,9 +226,11 @@ function DiaryStars() {
       <div className="flex-1 flex flex-col ">
         {/* ========== 별 영역 ========== */}
         <div className="flex-1 relative star-container border border-gray-700">
-          <div className="absolute left-1/2 -translate-x-1/2 text-center mt-3">
-            <div className="text-white/60 text-xs">별들의 이야기가 시작되는 곳.</div>
-            <div className="text-white/60 text-xs">당신의 별은 어떤 빛을 띄나요?</div>
+          <div className="absolute left-1/2 -translate-x-1/2 text-center mt-4">
+            <div className={`transition-opacity duration-1000 ${isVisible ? "opacity-100" : "opacity-0"}`}>
+              <div className="text-white/60">별들의 이야기가 시작되는 곳.</div>
+              <div className="text-white/60">당신의 별은 어떤 빛을 띄나요?</div>
+            </div>
           </div>
 
           {/* 선 (svg) */}

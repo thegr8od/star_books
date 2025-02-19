@@ -77,44 +77,21 @@ const MonthlyDiary = () => {
     <Layout>
       <div className="flex flex-col h-[calc(100vh-4rem)]">
         <DiaryDate currentDate={currentDate} setCurrentDate={setCurrentDate} />
-        <div
-          className="flex-1 flex-col space-y-4 overflow-y-auto bg-neutral-100 rounded-3xl p-4"
-          style={{ scrollbarWidth: "none" }}
-        >
+        <div className="flex-1 flex-col space-y-4 overflow-y-auto bg-neutral-100 rounded-3xl p-4" style={{ scrollbarWidth: "none" }}>
           {diaries?.length ? (
             diaries.map((diary, index) => {
               // 요일 표시를 위해 Date 객체 생성
-              const diaryDateObj = new Date(
-                diary.diaryDate[0],
-                diary.diaryDate[1] - 1,
-                diary.diaryDate[2]
-              );
-              const formattedDate = `${diary.diaryDate[0]}-${String(
-                diary.diaryDate[1]
-              ).padStart(2, "0")}-${String(diary.diaryDate[2]).padStart(
-                2,
-                "0"
-              )}`;
+              const diaryDateObj = new Date(diary.diaryDate[0], diary.diaryDate[1] - 1, diary.diaryDate[2]);
+              const formattedDate = `${diary.diaryDate[0]}-${String(diary.diaryDate[1]).padStart(2, "0")}-${String(diary.diaryDate[2]).padStart(2, "0")}`;
 
               return (
-                <div
-                  key={diary.diaryId}
-                  ref={(el) => (diaryRefs.current[formattedDate] = el)}
-                  className={`space-y-3 px-5 py-3 bg-white rounded-xl shadow-sm ${
-                    selectedDate === formattedDate
-                      ? "animate-[pulse_1s_ease-in-out_1]"
-                      : ""
-                  }`}
-                >
+                <div key={diary.diaryId} ref={(el) => (diaryRefs.current[formattedDate] = el)} className={`space-y-3 px-5 py-3 bg-white rounded-xl shadow-sm ${selectedDate === formattedDate ? "animate-[pulse_1s_ease-in-out_1]" : ""}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex space-x-3">
                       <div
                         className="w-5 h-5 rounded-full"
                         style={{
-                          backgroundColor: GetColor(
-                            diary.emotions[0].xValue,
-                            diary.emotions[0].yValue
-                          ),
+                          backgroundColor: GetColor(diary.DiaryEmotion.xValue, diary.DiaryEmotion.yValue),
                         }}
                       />
                       <div>
@@ -129,18 +106,10 @@ const MonthlyDiary = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
-                      <button
-                        onClick={() => handleEdit(diary)}
-                        className="text-gray-400 hover:text-gray-700"
-                      >
+                      <button onClick={() => handleEdit(diary)} className="text-gray-400 hover:text-gray-700">
                         <Edit fontSize="inherit" />
                       </button>
-                      <button
-                        onClick={() =>
-                          setDeleteModal({ isOpen: true, diaryToDelete: diary })
-                        }
-                        className="text-gray-400 hover:text-gray-700"
-                      >
+                      <button onClick={() => setDeleteModal({ isOpen: true, diaryToDelete: diary })} className="text-gray-400 hover:text-gray-700">
                         <Delete fontSize="inherit" />
                       </button>
                     </div>
@@ -150,11 +119,7 @@ const MonthlyDiary = () => {
 
                   {diary.imageUrl && (
                     <div>
-                      <img
-                        src={diary.imageUrl}
-                        alt="Diary img"
-                        className="object-cover rounded-lg"
-                      />
+                      <img src={diary.imageUrl} alt="Diary img" className="object-cover rounded-lg" />
                     </div>
                   )}
 
@@ -179,12 +144,7 @@ const MonthlyDiary = () => {
       </div>
 
       {/* 모달 추가 */}
-      <ConfirmModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, diaryToDelete: null })}
-        onConfirm={handleDelete}
-        title="잠시만요"
-      />
+      <ConfirmModal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, diaryToDelete: null })} onConfirm={handleDelete} title="잠시만요" />
     </Layout>
   );
 };

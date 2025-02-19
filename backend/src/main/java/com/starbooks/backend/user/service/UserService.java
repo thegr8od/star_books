@@ -7,6 +7,7 @@ import com.starbooks.backend.user.dto.response.ResponseUserDTO;
 import com.starbooks.backend.user.model.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -40,4 +41,13 @@ public interface UserService {
 
     String getUserProfileImage(String email);
 
+    /**
+     * 로그아웃 - Refresh Token을 블랙리스트에 추가 후 쿠키 제거
+     */
+    void logoutUser(String refreshToken, HttpServletResponse response);
+
+    /**
+     * 회원 탈퇴 - Refresh Token을 블랙리스트에 추가 후 사용자 삭제
+     */
+    void withdrawUser(String email, HttpServletResponse response);
 }
