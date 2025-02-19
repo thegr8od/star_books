@@ -63,6 +63,8 @@ public class SecurityConfig {
                                 "/ws/**",
                                 "/api/radio/**",
                                 "/api/member/**",
+                                "/api/password/reset-request", // 비밀번호 재설정 요청 허용
+                                "/api/password/**",         // 비밀번호 재설정 처리 허용
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/oauth_test.html",
@@ -82,6 +84,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
 
     @Bean

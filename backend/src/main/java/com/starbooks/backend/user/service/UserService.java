@@ -41,6 +41,8 @@ public interface UserService {
 
     String getUserProfileImage(String email);
 
+    void updatePassword(User user, String newPassword);
+
     /**
      * 로그아웃 - Refresh Token을 블랙리스트에 추가 후 쿠키 제거
      */

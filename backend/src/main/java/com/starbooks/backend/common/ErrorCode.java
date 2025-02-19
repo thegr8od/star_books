@@ -30,7 +30,7 @@ public enum ErrorCode {
 
     // Email Error
     EMAIL_SEND_FAIL("E001", HttpStatus.BAD_REQUEST, "이메일 전송에 실패했습니다."),
-    PASSWORD_RESET_TOKEN_NOT_VALID("E002", HttpStatus.BAD_REQUEST, "비밀번호 재설정 토큰이 유효하지 않습니다."),
+    PASSWORD_RESET_TOKEN_NOT_VALID("E002", HttpStatus.BAD_REQUEST, "비밀번호 재설정 토큰이 유효하지 않거나 만료되었습니다."),
 
     // JWT Error
     INVALID_JWT_TOKEN("J001", HttpStatus.UNAUTHORIZED, "유효하지 않은 JWT 토큰입니다."),
@@ -43,14 +43,12 @@ public enum ErrorCode {
     UNIVERSE_UPDATE_FAILED("U102", HttpStatus.BAD_REQUEST, "유니버스 업데이트에 실패했습니다."),
     UNIVERSE_DELETE_FAILED("U103", HttpStatus.BAD_REQUEST, "유니버스 삭제에 실패했습니다."),
 
-    // **Constellation (별자리) 관련 에러 코드 추가**
+    // Constellation (별자리) 관련 에러 코드
     CONSTELLATION_NOT_FOUND("C100", HttpStatus.NOT_FOUND, "해당 별자리를 찾을 수 없습니다."),
     CONSTELLATION_UPDATE_FAILED("C101", HttpStatus.BAD_REQUEST, "별자리 업데이트에 실패했습니다."),
     CONSTELLATION_DELETE_FAILED("C102", HttpStatus.BAD_REQUEST, "별자리 삭제에 실패했습니다."),
     CONSTELLATION_FORBIDDEN("C103", HttpStatus.FORBIDDEN, "AI가 생성한 별자리만 수정 또는 삭제할 수 있습니다."),
     CONSTELLATION_INVALID_REQUEST("C104", HttpStatus.BAD_REQUEST, "별자리 요청이 유효하지 않습니다.");
-
-
 
     private final String code;
     private final HttpStatus httpStatus;
