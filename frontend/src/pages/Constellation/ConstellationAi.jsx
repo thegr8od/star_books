@@ -27,9 +27,6 @@ function ConstellationAi() {
   const createConstellationObject = (constellation) => {
     const group = new THREE.Group();
 
-    // 별자리 크기 조정을 위한 스케일 팩터
-    const scale = 1.5; // 크기를 1.5배로 증가
-
     // 선 그리기 - 더 밝고 선명하게
     const material = new THREE.LineBasicMaterial({
       color: 0xffffff,
@@ -59,11 +56,10 @@ function ConstellationAi() {
 
     if (constellation.lines) {
       constellation.lines.forEach((line) => {
-        // 좌표 변환 시 스케일 적용
-        const startX = ((line.startX - 50) / 2) * scale;
-        const startY = -((line.startY - 50) / 2) * scale;
-        const endX = ((line.endX - 50) / 2) * scale;
-        const endY = -((line.endY - 50) / 2) * scale;
+        const startX = (line.startX - 50) / 2;
+        const startY = -((line.startY - 50) / 2);
+        const endX = (line.endX - 50) / 2;
+        const endY = -((line.endY - 50) / 2);
 
         // 선 사이의 은은한 빛 효과
         const glowGeometry = new THREE.SphereGeometry(0.4, 16, 16);
@@ -219,11 +215,11 @@ function ConstellationAi() {
 
       // 기본 위치 계산 (그리드 중심)
       const baseX = (col - (cols - 1) / 2) * cellWidth;
-      const baseY = Math.abs((row - (rows - 1) / 2) * cellHeight); // Math.abs() 추가하여 항상 양수값 보장
+      const baseY = (row - (rows - 1) / 2) * cellHeight;
 
       // 랜덤 오프셋 추가 (그리드 셀 내에서만)
       const offsetX = (Math.random() - 0.5) * (cellWidth * 0.6);
-      const offsetY = Math.random() * (cellHeight * 0.3); // 오프셋도 항상 양수로 변경
+      const offsetY = (Math.random() - 0.5) * (cellHeight * 0.6);
 
       // 중앙에서의 거리에 따른 Z값 계산
       const distanceFromCenter = Math.sqrt(
@@ -241,11 +237,11 @@ function ConstellationAi() {
 
       // 구면 좌표계 위치도 더 균일하게 분포
       const spherePosition = new THREE.Vector3();
-      const phi = Math.acos(-1 + (2 * row) / rows) / 2; // phi 값을 반으로 줄여서 위쪽 반구에만 배치
+      const phi = Math.acos(-1 + (2 * row) / rows);
       const theta = (2 * Math.PI * col) / cols;
 
       spherePosition.x = radius * Math.sin(phi) * Math.cos(theta);
-      spherePosition.y = radius * Math.cos(phi) + radius * 0.2; // y값을 약간 올려서 바닥과 거리를 둠
+      spherePosition.y = radius * Math.cos(phi);
       spherePosition.z = radius * Math.sin(phi) * Math.sin(theta);
 
       // 초기 위치 설정
@@ -391,21 +387,19 @@ function ConstellationAi() {
     // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.screenSpacePanning = true;
+    controls.dampingFactor = 0.1;
+    controls.screenSpacePanning = false;
     controls.enableRotate = true;
     controls.rotateSpeed = 0.5;
-    controls.enableZoom = true;
-    controls.zoomSpeed = 1.5;
-    controls.minDistance = 200;
-    controls.maxDistance = 2000;
+    controls.enableZoom = false;
+    controls.minDistance = 600; // 최소 거리 증가
+    controls.maxDistance = 2000; // 최대 거리 증가
     controls.maxPolarAngle = Math.PI;
     controls.minPolarAngle = 0;
     controls.enablePan = true;
     controls.panSpeed = 0.8;
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.5;
-    controls.enabled = true;
     controlsRef.current = controls;
 
     // 마우스 상태 추적
@@ -419,7 +413,7 @@ function ConstellationAi() {
     const handleMouseDown = (event) => {
       if (controlsRef.current) {
         isDragging = true;
-        // autoRotate 비활성화 제거
+        controlsRef.current.autoRotate = false; // 드래그 시작시 자동 회전 비활성화
         previousMousePosition = {
           x: event.clientX,
           y: event.clientY,
@@ -445,14 +439,22 @@ function ConstellationAi() {
         const distance = camera.position.distanceTo(controlsRef.current.target);
         const moveSpeed = distance * 0.001;
 
+        // 카메라 좌우 이동
         const right = new THREE.Vector3();
         camera.getWorldDirection(right);
         right.cross(camera.up).normalize();
         camera.position.addScaledVector(right, -deltaMove.x * moveSpeed);
-        controlsRef.current.target.addScaledVector(right, -deltaMove.x * moveSpeed);
+        controlsRef.current.target.addScaledVector(
+          right,
+          -deltaMove.x * moveSpeed
+        );
 
+        // 카메라 상하 이동
         camera.position.addScaledVector(camera.up, -deltaMove.y * moveSpeed);
-        controlsRef.current.target.addScaledVector(camera.up, -deltaMove.y * moveSpeed);
+        controlsRef.current.target.addScaledVector(
+          camera.up,
+          -deltaMove.y * moveSpeed
+        );
       }
 
       previousMousePosition = {
@@ -464,14 +466,42 @@ function ConstellationAi() {
     const handleMouseUp = () => {
       if (controlsRef.current) {
         isDragging = false;
-        // setTimeout 제거
+
+        // 일정 시간 후 자동 회전 재개
+        setTimeout(() => {
+          if (controlsRef.current) {
+            controlsRef.current.autoRotate = true;
+          }
+        }, 1500);
       }
     };
 
     const handleMouseWheel = (event) => {
-      // GSAP 애니메이션 대신 OrbitControls의 기본 줌 기능 사용
-      // 이벤트를 가로채지 않고 OrbitControls가 처리하도록 함
-      return true;
+      if (!controlsRef.current || !cameraRef.current) return;
+
+      event.preventDefault();
+
+      const zoomSpeed = 0.1; // 속도 조정
+      const delta = -Math.sign(event.deltaY);
+
+      // 현재 카메라 방향으로 이동
+      const forward = new THREE.Vector3();
+      cameraRef.current.getWorldDirection(forward);
+
+      // 이동 거리 계산 (거리에 비례하여 속도 조정)
+      const currentDistance = cameraRef.current.position.length();
+      const moveDistance =
+        delta * zoomSpeed * Math.max(currentDistance * 0.1, 10);
+
+      // 최소/최대 거리 체크
+      const newDistance = currentDistance - moveDistance;
+      if (
+        newDistance > controls.minDistance &&
+        newDistance < controls.maxDistance
+      ) {
+        cameraRef.current.position.addScaledVector(forward, moveDistance);
+        controlsRef.current.target.addScaledVector(forward, moveDistance * 0.5);
+      }
     };
 
     // 우클릭 메뉴 방지
@@ -479,70 +509,15 @@ function ConstellationAi() {
       event.preventDefault();
     };
 
-    // 터치 이벤트도 동일한 방식으로 처리
-    const handleTouchStart = (event) => {
-      if (event.touches.length === 1 && controlsRef.current) {
-        isDragging = true;
-        controlsRef.current.autoRotate = false;
-        previousMousePosition = {
-          x: event.touches[0].clientX,
-          y: event.touches[0].clientY,
-        };
-      }
-    };
-
-    const handleTouchMove = (event) => {
-      if (isDragging && controlsRef.current && cameraRef.current) {
-        const deltaMove = {
-          x: event.touches[0].clientX - previousMousePosition.x,
-          y: event.touches[0].clientY - previousMousePosition.y,
-        };
-
-        if (event.touches.length === 1) {
-          // 터치 드래그: 시점 회전
-          controlsRef.current.rotateLeft(deltaMove.x * 0.002);
-          controlsRef.current.rotateUp(deltaMove.y * 0.002);
-        } else if (event.touches.length === 2) {
-          // 터치 드래그: 이동
-          const camera = cameraRef.current;
-          const distance = camera.position.distanceTo(controlsRef.current.target);
-          const moveSpeed = distance * 0.001;
-
-          const right = new THREE.Vector3();
-          camera.getWorldDirection(right);
-          right.cross(camera.up).normalize();
-          camera.position.addScaledVector(right, -deltaMove.x * moveSpeed);
-          controlsRef.current.target.addScaledVector(right, -deltaMove.x * moveSpeed);
-
-          camera.position.addScaledVector(camera.up, -deltaMove.y * moveSpeed);
-          controlsRef.current.target.addScaledVector(camera.up, -deltaMove.y * moveSpeed);
-        }
-
-        previousMousePosition = {
-          x: event.touches[0].clientX,
-          y: event.touches[0].clientY,
-        };
-      }
-    };
-
-    const handleTouchEnd = () => {
-      if (controlsRef.current) {
-        isDragging = false;
-        // setTimeout 제거
-      }
-    };
-
     // 이벤트 리스너 추가
     renderer.domElement.addEventListener("contextmenu", handleContextMenu);
+    renderer.domElement.addEventListener("wheel", handleMouseWheel, {
+      passive: false,
+    });
     renderer.domElement.addEventListener("mousedown", handleMouseDown);
     renderer.domElement.addEventListener("mousemove", handleMouseMove);
     renderer.domElement.addEventListener("mouseup", handleMouseUp);
     renderer.domElement.addEventListener("mouseleave", handleMouseUp);
-
-    // 이벤트 리스너에 touchend 추가
-    renderer.domElement.addEventListener("touchstart", handleTouchStart);
-    renderer.domElement.addEventListener("touchmove", handleTouchMove);
-    renderer.domElement.addEventListener("touchend", handleTouchEnd);
 
     // 배경 그라데이션
     const bgCanvas = document.createElement("canvas");
@@ -569,7 +544,7 @@ function ConstellationAi() {
 
     // 배경 별들
     const starsGeometry = new THREE.BufferGeometry();
-    const count = 10000; // 50000에서 10000으로 감소
+    const count = 50000;
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < positions.length; i++) {
       positions[i] = (Math.random() - 0.5) * 1000;
@@ -602,7 +577,6 @@ function ConstellationAi() {
     );
     labelRenderer.domElement.style.position = "absolute";
     labelRenderer.domElement.style.top = "0";
-    labelRenderer.domElement.style.pointerEvents = "none";
     mountRef.current.appendChild(labelRenderer.domElement);
     labelRendererRef.current = labelRenderer;
 
@@ -669,10 +643,8 @@ function ConstellationAi() {
       renderer.domElement.removeEventListener("mousemove", handleMouseMove);
       renderer.domElement.removeEventListener("mouseup", handleMouseUp);
       renderer.domElement.removeEventListener("mouseleave", handleMouseUp);
+      renderer.domElement.removeEventListener("wheel", handleMouseWheel);
       renderer.domElement.removeEventListener("contextmenu", handleContextMenu);
-      renderer.domElement.removeEventListener("touchstart", handleTouchStart);
-      renderer.domElement.removeEventListener("touchmove", handleTouchMove);
-      renderer.domElement.removeEventListener("touchend", handleTouchEnd);
       cancelAnimationFrame(animationId);
       mountRef.current?.removeChild(renderer.domElement);
       mountRef.current?.removeChild(labelRenderer.domElement);
