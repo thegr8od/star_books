@@ -112,6 +112,19 @@ const HomeBackground = () => {
       content: {
         title: "당신의 감정을 기록하세요",
         description: "스타북스와 함께 하루하루의 감정을 별처럼 기록해보세요",
+        details: [
+          {
+            title: "감정 기록의 새로운 방법",
+            description:
+              "텍스트, 이미지, 음성 등 다양한 방식으로 감정을 기록하세요",
+            icon: "📝",
+          },
+          {
+            title: "나만의 감정 달력",
+            description: "하루하루 기록된 감정을 달력으로 한눈에 확인하세요",
+            icon: "📅",
+          },
+        ],
       },
     },
     {
@@ -122,6 +135,18 @@ const HomeBackground = () => {
       content: {
         title: "내 감정이 그리는 별자리",
         description: "감정이 별이 되고, 그 별들로 나만의 별자리를 만들어봐요.",
+        features: [
+          {
+            title: "감정 별자리 생성",
+            description: "기록된 감정은 자동으로 별자리로 변환됩니다",
+            animation: "star-constellation",
+          },
+          {
+            title: "감정 분석 리포트",
+            description: "월간, 연간 감정 변화를 한눈에 파악하세요",
+            animation: "report-analysis",
+          },
+        ],
       },
     },
     {
@@ -154,8 +179,7 @@ const HomeBackground = () => {
       imageUrl: "/images/4.jpg",
       content: {
         title: "추억을 담은 나만의 별자리",
-        description:
-          "소중한 사진을 AI로 분석해 특별한 별자리로 만들어보세요.",
+        description: "소중한 사진을 AI로 분석해 특별한 별자리로 만들어보세요.",
       },
     },
     { id: "i", type: "video" },
@@ -189,17 +213,61 @@ const HomeBackground = () => {
     );
   };
 
+  // 섹션 컨텐츠 렌더링 컴포넌트
+  const SectionContent = ({ content, isActive }) => {
+    if (!content) return null;
+
+    return (
+      <div
+        className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 
+        w-full max-w-4xl px-6 text-white ${
+          isActive ? "opacity-100" : "opacity-0"
+        } 
+        transition-opacity duration-500`}
+      >
+        <h3 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+          {content.title}
+        </h3>
+        <p className="text-xl md:text-2xl mb-12">{content.description}</p>
+
+        {content.details && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {content.details.map((detail, index) => (
+              <div
+                key={index}
+                className="bg-white/10 backdrop-blur-md rounded-lg p-6 
+                transform hover:scale-105 transition-transform duration-300"
+              >
+                <div className="text-3xl mb-4">{detail.icon}</div>
+                <h4 className="text-xl font-bold mb-2">{detail.title}</h4>
+                <p className="text-gray-200">{detail.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {content.features && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            {content.features.map((feature, index) => (
+              <div
+                key={index}
+                className="relative overflow-hidden rounded-lg 
+                bg-gradient-to-r from-white/5 to-white/10 p-6"
+              >
+                <h4 className="text-xl font-bold mb-2">{feature.title}</h4>
+                <p className="text-gray-200">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <>
       <style>
         {`
-          @font-face {
-              font-family: 'HakgyoansimPuzzleTTF-Outline';
-              src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimPuzzleTTF-Outline.woff2') format('woff2');
-              font-weight: normal;
-              font-style: normal;
-          }
-
           @font-face {
               font-family: '양진체';
               src: url('https://fastly.jsdelivr.net/gh/supernovice-lab/font@0.9/yangjin.woff') format('woff');
@@ -219,14 +287,14 @@ const HomeBackground = () => {
 
         {/* Title */}
         <h2
-          className={`fixed left-1/2 top-[10%] z-50 font-['HakgyoansimPuzzleTTF-Outline'] text-3xl md:text-5xl lg:text-6xl
-          transform -translate-x-1/2 opacity-60 transition-colors duration-500 text-center drop-shadow-lg animate-pulse
+          className={`fixed left-1/2 top-[10%] z-50 text-3xl md:text-5xl lg:text-6xl
+          transform -translate-x-1/2 opacity-60 transition-colors duration-500 text-center drop-shadow-lg
           ${sectionColors[activeSection]?.active || "text-white"}`}
         >
           <img
             src="/icons/Logo.svg"
             alt="STARBOOKS"
-            className="w-64 md:w-72 lg:w-80 h-auto mx-auto"
+            className="logo-animation w-64 md:w-72 lg:w-80 h-auto mx-auto"
           />
         </h2>
         {/* Join Button */}
@@ -243,13 +311,13 @@ const HomeBackground = () => {
           </button>
         )}
 
-        {/* Sections */}
+        {/* Sections with enhanced content */}
         {sections.map((section, index) => (
           <div
             key={section.id}
             id={section.id}
             ref={(el) => (sectionsRef.current[index] = el)}
-            className={`h-screen overflow-hidden ${
+            className={`relative h-screen overflow-hidden ${
               section.type === "image"
                 ? `bg-cover bg-center ${section.fixed ? "bg-fixed" : ""}`
                 : "relative"
@@ -267,16 +335,20 @@ const HomeBackground = () => {
                   muted
                   loop
                   playsInline
-                  className="absolute top-[55%] left-1/2 min-w-full min-h-full w-auto h-auto 
-                    transform -translate-x-1/2 -translate-y-1/2 object-cover"
+                  className="absolute top-0 left-0 w-full h-full object-cover"
                 >
                   <source src="/videos/home.mp4" type="video/mp4" />
                 </video>
-                {index === sections.length - 1 && (
-                  <Login className="font-['BMEULJIRO']" />
-                )}
+                {index === sections.length - 1 && <Login />}
               </>
             )}
+
+            {/* Add content overlay */}
+            <div className="absolute inset-0 bg-black/50" />
+            <SectionContent
+              content={section.content}
+              isActive={activeSection === index}
+            />
           </div>
         ))}
 
@@ -310,7 +382,7 @@ const HomeBackground = () => {
         )}
 
         {/* 3D Circles*/}
-        {activeSection < sections.length - 1 && (
+        {/* {activeSection < sections.length - 1 && (
           <div
             className="fixed left-1/2 top-1/2 lg:top-[58%] z-20 transform -translate-x-1/2 -translate-y-1/2 animate-[fade_2s_ease-in-out_infinite] opacity-85 font-['양진체']"
             style={{ perspective: "1000px" }}
@@ -333,14 +405,37 @@ const HomeBackground = () => {
               />
             </div>
           </div>
-        )}
+        )} */}
 
-        <style>{`
+        <style>
+          {`
+          @font-face {
+            font-family: '양진체';
+            src: url('https://fastly.jsdelivr.net/gh/supernovice-lab/font@0.9/yangjin.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+          }
         @keyframes twinkle {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.2; }
         }
-      `}</style>
+       @keyframes glow {
+            0%, 100% { 
+              filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5))
+                     drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+            }
+            50% { 
+              filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.7))
+                     drop-shadow(0 0 8px rgba(255, 255, 255, 0.4))
+                     drop-shadow(0 0 12px rgba(255, 255, 255, 0.2));
+            }
+          }
+          .logo-animation {
+            animation: float 6s ease-in-out infinite, glow 3s ease-in-out infinite;
+            opacity: 1;
+          }
+      `}
+        </style>
       </div>
     </>
   );

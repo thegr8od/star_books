@@ -11,8 +11,13 @@ function LoginHome() {
 
   // 네비게이션 항목 정의 - 72도 간격으로 배치
   const navItems = [
-    { name: "AI채팅", angle: 270, path: "chat", delay: 0 },
-    { name: "라디오", angle: 342, path: "radio", delay: 0.2 },
+    { name: "AI 채팅", angle: 270, path: "chat", delay: 0 },
+    {
+      name: "AI 별자리",
+      angle: 342,
+      path: "constellation/ai/gallery",
+      delay: 0.2,
+    },
     { name: "캘린더", angle: 54, path: "diary/calendar", delay: 0.4 },
     { name: "나의별", angle: 126, path: "diary/stars", delay: 0.6 },
     { name: "우리별", angle: 198, path: "universe", delay: 0.8 },
@@ -39,9 +44,13 @@ function LoginHome() {
       <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
         <div
           className="text-white text-3xl md:text-4xl lg:text-5xl font-light tracking-[0.3em] text-center mb-8 
-                             opacity-0 animate-[fadeIn_1.5s_ease-out_forwards]"
+                             opacity-0 animate-[logoEntrance_2s_ease-out_forwards]"
         >
-          STAR BOOKS
+          <img
+            src="/icons/Logo.svg"
+            alt="STARBOOKS"
+            className="w-64 md:w-72 lg:w-80 h-auto mx-auto animate-[logoGlow_3s_ease-in-out_infinite]"
+          />
         </div>
 
         <div className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] mx-auto">
@@ -77,7 +86,7 @@ function LoginHome() {
               <button
                 key={item.name}
                 onClick={() => navigate(item.path)}
-                className={`absolute left-[43%] top-1/2 text-white 
+                className={`absolute left-[43%] top-1/2 text-white font-['양진체']
                                           text-base md:text-lg lg:text-xl
                                           opacity-0 cursor-pointer
                                           transition-all duration-500 ease-in-out
@@ -97,11 +106,34 @@ function LoginHome() {
       </div>
 
       <style>{`
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: scale(0.9); }
-                    to { opacity: 1; transform: scale(1); }
+            @font-face {
+                font-family: '양진체';
+                src: url('https://fastly.jsdelivr.net/gh/supernovice-lab/font@0.9/yangjin.woff') format('woff');
+                font-weight: normal;
+                font-style: normal;
+          }
+                @keyframes logoEntrance {
+                    0% { 
+                        opacity: 0; 
+                        transform: translateY(20px) scale(0.95);
+                    }
+                    100% { 
+                        opacity: 1; 
+                        transform: translateY(0) scale(1);
+                    }
                 }
                 
+                @keyframes logoGlow {
+                    0%, 100% { 
+                        filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.7))
+                               drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
+                    }
+                    50% { 
+                        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9))
+                               drop-shadow(0 0 12px rgba(255, 255, 255, 0.7));
+                    }
+                }
+
                 @keyframes twinkle {
                     0%, 100% { opacity: 0.3; }
                     50% { opacity: 0.8; }
