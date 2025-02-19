@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, X } from "lucide-react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
@@ -54,6 +54,7 @@ function ConstellationDetail() {
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const controlsRef = useRef(null);
+  const navigate = useNavigate();
 
   // month 파라미터가 없으면 전체 보기(true), 있으면 개별 보기(false)
   const [isMaximized, setIsMaximized] = useState(!month);
@@ -535,7 +536,13 @@ function ConstellationDetail() {
       <div ref={mountRef} className="w-full h-full" />
 
       {/* 오른쪽 상단 버튼: 전체 보기 <-> 개별 보기 토글 */}
-      <div className="absolute top-4 right-4 flex gap-2">
+      <div className="absolute top-4 right-4 flex gap-2 flex-col">
+        <button
+            onClick={() => navigate("/diary/stars")}
+            className="bg-white/10 p-2 rounded-full hover:bg-white/50 transition-colors"
+          >
+          <X className="w-5 h-5 text-white" />
+        </button>
         <button
           onClick={() => setIsMaximized((prev) => !prev)}
           className="bg-white/10 p-2 rounded-full hover:bg-white/50 transition-colors"

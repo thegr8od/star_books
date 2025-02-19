@@ -167,7 +167,7 @@ const DiaryWrite = () => {
   };
 
   return (
-    <Layout>
+    <Layout backButton={true}>
       <div className="h-full flex flex-col space-y-6 pt-3">
         {/* 날짜 */}
         <div className="text-white px-3 text-lg">
