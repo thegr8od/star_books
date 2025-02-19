@@ -1,0 +1,94 @@
+pipeline {
+    agent any
+
+    environment {
+        FRONTEND_BRANCH = 'feature-frontend'
+    }
+
+    stages {
+        stage('Load Credentials') {
+            steps {
+                script {
+                    withCredentials([
+                        string(credentialsId: 'FRONT_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL'),
+                        string(credentialsId: 'NGINX_CONTAINER_NAME', variable: 'NGINX_CONTAINER_NAME'),
+                        string(credentialsId: 'FRONTEND_IMAGE_NAME', variable: 'FRONTEND_IMAGE_NAME'),
+                        string(credentialsId: 'DIST_PATH', variable: 'DIST_PATH'),
+                        string(credentialsId: 'HOST_DIST_PATH', variable: 'HOST_DIST_PATH')
+                    ]) {
+                        env.MATTERMOST_WEBHOOK_URL = MATTERMOST_WEBHOOK_URL
+                        env.NGINX_CONTAINER_NAME = NGINX_CONTAINER_NAME
+                        env.FRONTEND_IMAGE_NAME = FRONTEND_IMAGE_NAME
+                        env.DIST_PATH = DIST_PATH
+                        env.HOST_DIST_PATH = HOST_DIST_PATH
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dir('frontend') {  
+                        sh '''#!/bin/bash
+                        docker build -t "$FRONTEND_IMAGE_NAME" .
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Frontend') {
+            steps {
+                script {
+                    sh '''#!/bin/bash
+                    docker stop frontend | true
+                    docker rm frontend | true
+                    docker run -d --name frontend -p 3002:3001 "$FRONTEND_IMAGE_NAME"
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                withCredentials([string(credentialsId: 'BACKEND_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL')]) {
+                    def jsonMessage = """{
+                        "attachments": [{
+                            "text": "**✅ Frontend Build 성공**\\n- 상태: SUCCESS\\n- [🔗 상세 정보](${env.BUILD_URL})",
+                            "color": "#00FF00"
+                        }]
+                    }"""
+
+                    sh """
+                    echo '${jsonMessage}' > mattermost_payload.json
+                    cat mattermost_payload.json
+                    curl -X POST -H "Content-Type: application/json" --data @mattermost_payload.json '${MATTERMOST_WEBHOOK_URL}'
+                    rm -f mattermost_payload.json
+                    """
+                }
+            }
+        }
+        failure {
+            script {
+                withCredentials([string(credentialsId: 'BACKEND_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL')]) {
+                    def jsonMessage = """{
+                        "attachments": [{
+                            "text": "**❌ Frontend Build 실패**\\n- 상태: FAILURE\\n- [🔗 상세 정보](${env.BUILD_URL}/console) ",
+                            "color": "#FF0000"
+                        }]
+                    }"""
+
+                    sh """
+                    echo '${jsonMessage}' > mattermost_payload.json
+                    cat mattermost_payload.json
+                    curl -X POST -H "Content-Type: application/json" --data @mattermost_payload.json '${MATTERMOST_WEBHOOK_URL}'
+                    rm -f mattermost_payload.json
+                    """
+                }
+            }
+        }
+    }
+}
