@@ -1,4 +1,39 @@
+import { jwtDecode } from "jwt-decode";
 import useAxiosInstance from "./useAxiosInstance";
+
+// OAuth 로그인 처리 함수
+const handleOAuthToken = async (token) => {
+  try {
+    // JWT 토큰 디코딩
+    const decodedToken = jwtDecode(token);
+    console.log('Decoded token:', decodedToken);
+
+    // 토큰 저장
+    localStorage.setItem("accessToken", token);
+
+    // 토큰에서 사용자 정보 추출하여 바로 반환
+    // JSON.parse를 사용하여 문자열 값들을 적절한 타입으로 변환
+    const userData = {
+      userId: decodedToken.user_id,
+      email: decodedToken.email,
+      nickname: decodedToken.nickname,
+      gender: decodedToken.gender,
+      role: decodedToken.role,
+      profileImagePath: decodedToken.profile_image_path || null,
+      isLogin: true,
+      isActive: true,
+      snsAccount: true
+    };
+
+    // 디버깅을 위한 로그
+    console.log('Processed user data:', userData);
+
+    return userData;
+  } catch (error) {
+    console.error("OAuth 토큰 처리 실패:", error);
+    throw error;
+  }
+};
 
 //로그인
 //post
@@ -307,4 +342,5 @@ export default {
   verifyCode,
   resetPassword,
   getMemberMY,
+  handleOAuthToken
 };

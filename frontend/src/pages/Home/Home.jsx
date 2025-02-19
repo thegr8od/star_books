@@ -1,21 +1,16 @@
-import { useEffect, useState } from "react";
-import { useSearchParams, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { setUser } from "../../store/userSlice";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
 import HomeBackground from "./HomeBackground";
 import LoginHome from "./LoginHome";
-import useMemberApi from "../../api/useMemberApi";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 const Home = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [searchParams] = useSearchParams();
-  const location = useLocation(); // 현재 페이지 경로 가져오기
-  const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
 
+  // 디버깅을 위한 로그
   useEffect(() => {
-    const token = searchParams.get("token");
-    const storedToken = localStorage.getItem("accessToken");
+    console.log("Current user state:", user);
+  }, [user]);
 
     //oauth
     if (token) {
@@ -35,3 +30,4 @@ const Home = () => {
 };
 
 export default Home;
+

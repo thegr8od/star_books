@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 //redux
 import { useDispatch } from "react-redux";
-import { setUser } from "../../store/userSlice";
+import { setUser, clearUser } from "../../store/userSlice";
 //api함수
 import useMemberApi from "@api/useMemberApi";
 //커스텀
@@ -22,6 +22,58 @@ const Login = () => {
   const [alertMessage, setAlertMessage] = useState(""); //알람
   const [showAlert, setShowAlert] = useState(false); //알람상태
   const dispatch = useDispatch();
+
+  useEffect(() => {
+  // ❌ localStorage.clear();  <-- 일단 제거
+  dispatch(clearUser());      // 필요한 경우만 남기기
+
+  const handleOAuthLogin = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (token) {
+      try {
+        // ❌ localStorage.clear();  <-- 여기도 제거
+        // ❌ dispatch(clearUser()); <-- 굳이 필요 없다면 제거
+
+        console.log("Token received:", token);
+
+        // 이 부분에서 바로 localStorage에 저장
+        localStorage.setItem("accessToken", token);
+
+        // 토큰 디코드 및 추가 작업
+        const userData = await useMemberApi.handleOAuthToken(token);
+        console.log("User data:", userData);
+
+        // Redux 저장
+        dispatch(setUser({
+          ...userData,
+          isLogin: true,
+          isActive: true
+        }));
+
+        // URL 파라미터 제거 (옵션)
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        setAlertMessage("로그인에 성공했습니다!");
+        setShowAlert(true);
+
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 2000);
+
+      } catch (error) {
+        console.error('OAuth 로그인 처리 실패:', error);
+        localStorage.clear();
+        dispatch(clearUser());
+        setAlertMessage("로그인에 실패했습니다.");
+        setShowAlert(true);
+      }
+    }
+  };
+
+  handleOAuthLogin();
+}, [navigate, dispatch]);
 
   //에러
   const validateForm = () => {
@@ -44,6 +96,10 @@ const Login = () => {
 
     if (validateForm()) {
       try {
+        // 기존 데이터 완전 제거
+        localStorage.clear();
+        dispatch(clearUser());
+
         const response = await useMemberApi.loginMember({
           email: email,
           password: password,
@@ -51,10 +107,12 @@ const Login = () => {
 
         console.log("로그인 응답:", response);
 
-        // response가 있고 성공적인 응답인 경우
         if (response && response.user) {
-          // 리덕스에 저장하기
-          dispatch(setUser({ ...response.user, isLogin: true }));
+          dispatch(setUser({ 
+            ...response.user, 
+            isLogin: true,
+            isActive: true 
+          }));
           setAlertMessage("로그인에 성공했습니다!");
           setShowAlert(true);
 
@@ -62,12 +120,13 @@ const Login = () => {
             window.location.href = "/";
           }, 2000);
         } else {
-          // 실패한 경우
           setAlertMessage("로그인에 실패했습니다.");
           setShowAlert(true);
         }
       } catch (error) {
         console.error("로그인 에러:", error);
+        localStorage.clear();
+        dispatch(clearUser());
         setAlertMessage("이메일 또는 비밀번호가 일치하지 않습니다.");
         setShowAlert(true);
       }
@@ -77,6 +136,8 @@ const Login = () => {
   // 소셜 로그인 함수
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const handleSocialLogin = (provider) => {
+    // 현재 URL을 state로 저장
+    sessionStorage.setItem('loginRedirectUrl', window.location.pathname);
     window.location.href = `${baseUrl}/oauth2/authorization/${provider}`;
   };
 
