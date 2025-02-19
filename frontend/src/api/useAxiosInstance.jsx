@@ -38,7 +38,10 @@ const authApiClient = (token) => {
                 });
                 const refreshResponse = await refreshInstance.post("/member/refresh");
     
+                console.log("Refresh Response:", refreshResponse.data);
+
                 const newAccessToken = refreshResponse.data.data.accessToken;
+                console.log(refreshResponse);
                 localStorage.setItem('accessToken', newAccessToken);
     
                 return instance(originalRequest); // 요청 재시도
