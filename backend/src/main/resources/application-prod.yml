@@ -16,6 +16,7 @@ spring:
     serialization:
       write-dates-as-timestamps: true
     default-property-inclusion: non_null
+    time-zone: Asia/Seoul
 
   config:
     activate:
@@ -31,11 +32,12 @@ spring:
     minimum-idle: 2
     idle-timeout: 30000
     max-lifetime: 1800000
+    connection-init-sql: SET time_zone = 'Asia/Seoul'
 
   jpa:
     open-in-view: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
