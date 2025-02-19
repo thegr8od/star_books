@@ -151,23 +151,33 @@ public class UserController {
     @GetMapping("/my")
     public ApiResponse<?> getCurrentUser(@RequestHeader("Authorization") String token) {
         try {
-            // ✅ "Bearer " 접두사 제거
+            // 1. 토큰 로그 찍기
+            log.info("GET /member/my 요청 - Received token: {}", token);
+
+            // 2. "Bearer " 접두사 제거 후 실제 토큰 값 추출
             String accessToken = token.replace("Bearer ", "").trim();
+            log.info("GET /member/my - Extracted accessToken: {}", accessToken);
 
-            // ✅ JWT에서 이메일 추출
+            // 3. JWT에서 이메일 추출
             String email = jwtTokenProvider.getUserEmail(accessToken);
+            log.info("GET /member/my - Extracted email from JWT: {}", email);
 
-            // ✅ 사용자 정보 조회
+            // 4. 사용자 정보 조회
             User user = userService.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            log.info("GET /member/my - Found user: {}", user);
 
-            // ✅ DTO 변환 후 반환
-            return ApiResponse.createSuccess(ResponseUserDTO.fromEntity(user), "현재 로그인한 사용자 정보 조회 성공");
+            // 5. DTO 변환 및 최종 결과 로그 찍기
+            ResponseUserDTO responseUserDTO = ResponseUserDTO.fromEntity(user);
+            log.info("GET /member/my - ResponseUserDTO: {}", responseUserDTO);
+
+            return ApiResponse.createSuccess(responseUserDTO, "현재 로그인한 사용자 정보 조회 성공");
         } catch (Exception e) {
             log.error("현재 사용자 정보 조회 실패: {}", e.getMessage());
             return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
         }
     }
+
 
 
 

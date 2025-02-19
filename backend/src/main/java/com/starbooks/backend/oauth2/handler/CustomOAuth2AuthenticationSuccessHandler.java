@@ -90,7 +90,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         // ✅ Refresh Token을 HttpOnly Secure 쿠키에 저장
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .sameSite("None")
                 .maxAge(60 * 60 * 24 * 14) // 14일 유지
                 .path("/")
@@ -99,7 +99,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         response.setHeader("Set-Cookie", refreshTokenCookie.toString());
 
         // ✅ Access Token을 URL 파라미터로 전달
-        String targetUrl = UriComponentsBuilder.fromUriString("https://starbooks.site/")
+        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9090/")
                 .queryParam("token", accessToken)
                 .build().toUriString();
 
