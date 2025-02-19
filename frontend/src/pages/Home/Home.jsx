@@ -24,7 +24,8 @@ const Home = () => {
       // 기존 토큰이 있으면 로그인 유지
       setIsLoggedIn(true);
     }
-  }, [searchParams, location.pathname]); // searchParams 또는 현재 경로가 변경될 때 실행
+  // }, [searchParams, location.pathname]); // searchParams 또는 현재 경로가 변경될 때 실행
+  },[] );
 
   return <>{user.isLogin ? <LoginHome /> : <HomeBackground />}</>;
 };
