@@ -150,15 +150,15 @@ const HomeBackground = () => {
     {
       id: "radio",
       type: "image",
-      label: "# 라디오",
+      label: "# AI 별자리",
       imageUrl: "/images/4.jpg",
       content: {
-        title: "하루를 나누는 라디오",
+        title: "추억을 담은 나만의 별자리",
         description:
-          "오늘 하루 있었던 일들을 공유하고 서로 공감하며 위로받아 보세요.",
+          "소중한 사진을 AI로 분석해 특별한 별자리로 만들어보세요.",
       },
     },
-    { id: "i", type: "video", label: "# Login" },
+    { id: "i", type: "video" },
   ];
 
   const Circle = ({ type, sectionStyle }) => {
@@ -223,8 +223,25 @@ const HomeBackground = () => {
           transform -translate-x-1/2 opacity-60 transition-colors duration-500 text-center drop-shadow-lg animate-pulse
           ${sectionColors[activeSection]?.active || "text-white"}`}
         >
-          STARBOOKS
+          <img
+            src="/icons/Logo.svg"
+            alt="STARBOOKS"
+            className="w-64 md:w-72 lg:w-80 h-auto mx-auto"
+          />
         </h2>
+        {/* Join Button */}
+        {activeSection < sections.length - 1 && ( // 마지막 섹션(로그인)이 아닐 때만 보이도록
+          <button
+            onClick={() => scrollToSection({ preventDefault: () => {} }, "i")}
+            className={`fixed right-8 md:right-12 lg:right-16 top-[10%] z-50
+    px-4 py-2 rounded-full border border-current 
+    hover:bg-white/10 transition-colors duration-300
+    text-sm lg:text-base font-['양진체']
+    ${sectionColors[activeSection]?.active || "text-white"}`}
+          >
+            Join
+          </button>
+        )}
 
         {/* Sections */}
         {sections.map((section, index) => (
@@ -264,7 +281,7 @@ const HomeBackground = () => {
         ))}
 
         {/* Navigation */}
-        {activeSection < sections.length - 2 && (
+        {activeSection < sections.length - 1 && (
           <nav className="fixed right-3 top-[55%] transform -translate-y-1/2 z-50 drop-shadow-lg animate-[pulse_5s_ease-in-out_infinite] font-['양진체']">
             {sections.map((section, index) => (
               <div key={section.id} className="mb-4">
