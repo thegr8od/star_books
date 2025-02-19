@@ -202,6 +202,19 @@ const updateProfile = async (data) => {
   }
 };
 
+//비밀번호 리셋 요청 보내기기
+const sendVerification = async (param) => {
+
+  try {
+    const response = await useAxiosInstance
+      .apiClient.post("/member/password/reset-request", param);
+
+    return response
+  } catch (e) {
+    return e;
+  }
+}
+
 //비밀번호 변경
 //post
 const changePassword = async (data) => {
@@ -218,6 +231,31 @@ const changePassword = async (data) => {
     }
   }
 };
+
+//인증번호 확인
+const verifyCode = async (param) => {
+  try {
+    const response = await useAxiosInstance
+      .apiClient.post(`/member/password/verify-code`, param);
+    return response;
+  } catch (e) {
+    //오류 체크
+    if (e.response.data.status == 404) {
+      return e.response.data;
+    }
+  }
+}
+
+//토큰 없이 reset
+const resetPassword = async (param) => {
+  try {
+    const response = await useAxiosInstance
+      .apiClient.post(`/member/password/reset`, param);
+    return response;
+  } catch (e) {
+    return e;
+  }
+}
 
 // 회원 탈퇴
 // delete
@@ -251,4 +289,7 @@ export default {
   getProfileImage,
   changePassword,
   withdrawMember,
+  sendVerification,
+  verifyCode,
+  resetPassword,
 };
