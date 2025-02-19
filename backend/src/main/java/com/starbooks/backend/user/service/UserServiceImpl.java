@@ -172,11 +172,34 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Authentication authenticateUser(String email, String password) {
-        return authenticationManager.authenticate(
+    public Authentication authenticateUser(String email, String password, HttpServletResponse response) {
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, password)
         );
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("유저를 찾을 수 없습니다."));
+
+        // ✅ JWT 토큰 생성
+        String accessToken = tokenService.generateAccessToken(user);
+        String refreshToken = tokenService.generateRefreshToken(user);
+
+        // ✅ Refresh Token을 HttpOnly 쿠키로 저장
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .maxAge(60 * 60 * 24 * 14) // 14일 유지
+                .path("/")
+                .domain("starbooks.site")
+                .build();
+        response.setHeader("Set-Cookie", refreshTokenCookie.toString());
+
+        log.info("✅ 일반 로그인 성공: {} | Refresh Token 쿠키 저장 완료", email);
+
+        return authentication;
     }
+
 
     // ... (다른 메서드들 사이에 추가)
     @Override

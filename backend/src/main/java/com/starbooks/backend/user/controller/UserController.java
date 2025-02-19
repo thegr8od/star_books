@@ -88,7 +88,8 @@ public class UserController {
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
     @PostMapping("/login")
     public ApiResponse<?> login(@RequestBody RequestLoginDTO requestDTO, HttpServletResponse response) {
-        Authentication authentication = userService.authenticateUser(requestDTO.getEmail(), requestDTO.getPassword());
+        Authentication authentication = userService.authenticateUser(requestDTO.getEmail(), requestDTO.getPassword(), response);
+
         if (authentication.isAuthenticated()) {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -101,23 +102,11 @@ public class UserController {
 
             // 탈퇴(논리삭제)된 회원은 로그인 불가
             if (!user.getIsActive()) {
-                return ApiResponse.createError(ErrorCode.USER_INACTIVE); // 새로운 에러코드 추가 필요
+                return ApiResponse.createError(ErrorCode.USER_INACTIVE);
             }
 
             // JWT 생성 (user_id 포함)
             String accessToken = tokenService.generateAccessToken(user);
-            String refreshToken = tokenService.generateRefreshToken(user);
-
-            // Refresh Token을 쿠키에 저장
-            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-                    .httpOnly(true)
-                    .secure(true)
-                    .sameSite("None")
-                    .path("/")
-                    .maxAge(60L * 60 * 24 * 14)
-                    .domain("localhost")
-                    .build();
-            response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
             // AccessToken -> 헤더
             response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
