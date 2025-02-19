@@ -60,8 +60,23 @@ const updatePersonalUniv = async (data) => {
     }
 };
 
+const getDiaryEmotion = async (selectedDate) => {
+    const jwt = localStorage.getItem("accessToken");
+
+    try{
+        const response = await useAxiosInstance
+            .authApiClient(jwt)
+            .get(`/diary/emotion?diaryDate=${selectedDate}`);
+        return response;
+    } catch(e) {
+        return e;
+    }
+};
+
 export default{
     getMonthlyPersonalUniv,
     getYearlyPersonalUniv,
     getPersonalUniv,
+    updatePersonalUniv,
+    getDiaryEmotion,
 };

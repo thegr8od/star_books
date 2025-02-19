@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -11,90 +11,12 @@ import useUniverseApi from "../../api/useUniverseApi";
 import GetColor from "../../components/GetColor";
 import useStarlineApi from "../../api/useStarlineApi";
 
-// 샘플 데이터
-const sampleWorryStars = [
-  {
-    universeId: 10,
-    diaryEmotionId: 1,
-    diaryId: 1,
-    xCoord: 25.7,
-    yCoord: 45.3,
-    xvalue: 3,
-    yvalue: -2,
-    updatedAt: "2024-02-13T10:15:30",
-  },
-  {
-    universeId: 10,
-    diaryEmotionId: 2,
-    diaryId: 2,
-    xCoord: 78.4,
-    yCoord: 12.9,
-    xvalue: -4,
-    yvalue: 2,
-    updatedAt: "2024-02-13T10:15:30",
-  },
-  {
-    universeId: 10,
-    diaryEmotionId: 3,
-    diaryId: 3,
-    xCoord: 45.2,
-    yCoord: 67.8,
-    xvalue: 1,
-    yvalue: 4,
-    updatedAt: "2024-02-13T10:15:30",
-  },
-  {
-    universeId: 10,
-    diaryEmotionId: 4,
-    diaryId: 4,
-    xCoord: 92.1,
-    yCoord: 89.4,
-    xvalue: -2,
-    yvalue: -3,
-    updatedAt: "2024-02-13T10:15:30",
-  },
-  {
-    universeId: 10,
-    diaryEmotionId: 5,
-    diaryId: 5,
-    xCoord: 12.3,
-    yCoord: 34.8,
-    xvalue: 4,
-    yvalue: -1,
-    updatedAt: "2024-02-13T10:15:30",
-  },
-];
-
-const sampleConnections = [
-  {
-    starlineCoordId: 1,
-    startEmotionId: 1,
-    endEmotionId: 3,
-    year: 2024,
-    month: 3,
-  },
-  {
-    starlineCoordId: 2,
-    startEmotionId: 2,
-    endEmotionId: 5,
-    year: 2024,
-    month: 3,
-  },
-  {
-    starlineCoordId: 3,
-    startEmotionId: 3,
-    endEmotionId: 4,
-    year: 2024,
-    month: 3,
-  },
-];
-
 function DiaryStars() {
   // ==================================================== 상태 관리 ====================================================
   const { currentDate } = useOutletContext();
 
-  const [stars, setStars] = useState(sampleWorryStars); // 별(초기 axios 응답 데이터)
-  const [connections, setConnections] = useState(sampleConnections); // 선(초기 axios 응답 데이터, axios 요청 데이터)
+  const [stars, setStars] = useState([]); // 별(초기 axios 응답 데이터)
+  const [connections, setConnections] = useState([]); // 선(초기 axios 응답 데이터, axios 요청 데이터)
 
   const [isEdit, setIsEdit] = useState(false); // 편집 상태
   const [editMode, setEditMode] = useState("move"); // 편집 모드('move' 또는 'connect')
@@ -111,29 +33,26 @@ function DiaryStars() {
   };
 
   useEffect(() => {
-    // (async () => {
-    //   const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
-    //   const response = await useUniverseApi.getMonthlyPersonalUniv(requestData);
-    //   console.log(response);
-    //   if (response.status === "C000") {
-    //     console.log("별 조회 성공");
-    //     setStars(response.data);
-    //     console.log(stars);
-    //   } else {
-    //     console.log("별 조회 실패");
-    //   }
-    // })();
-    // (async () => {
-    //   const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
-    //   const response = await useStarlineApi.getMonthlyStarlineCoords(requestData);
-    //   console.log(response);
-    //   if (response.status === "C000") {
-    //     console.log("별선 조회 성공");
-    //     setConnections(response.data);
-    //   } else {
-    //     console.log("별선 조회 실패");
-    //   }
-    // })();
+    (async () => {
+      const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
+      const response = await useUniverseApi.getMonthlyPersonalUniv(requestData);
+      if (response.status === "C000") {
+        console.log("별 조회 성공");
+        setStars(response.data);
+      } else {
+        console.log("별 조회 실패");
+      }
+    })();
+    (async () => {
+      const requestData = { year: currentDate.getFullYear(), month: currentDate.getMonth() + 1 };
+      const response = await useStarlineApi.getMonthlyStarlineCoords(requestData);
+      if (response.status === "C000") {
+        console.log("별선 조회 성공");
+        setConnections(response.data);
+      } else {
+        console.log("별선 조회 실패");
+      }
+    })();
   }, [currentDate]);
 
   // ==================================================== move 모드 ====================================================
@@ -155,7 +74,7 @@ function DiaryStars() {
     const newY = Math.max(0, Math.min(100, y));
 
     // 선택된 별 위치 업데이트
-    setStars((prev) => prev.map((star) => (star.diaryEmotionId === selectedStar ? { ...star, xCoord: newX, yCoord: newY } : star)));
+    setStars((prev) => prev.map((star) => (star.diaryEmotionId === selectedStar ? { ...star, xcoord: newX, ycoord: newY } : star)));
 
     // 수정된 별 위치 저장
     setModifiedStars((prev) => ({
@@ -237,41 +156,41 @@ function DiaryStars() {
 
   // 변경 저장
   const handleSave = async () => {
-    // // axios 요청
-    // // 별 위치 업데이트 요청
-    // if (Object.keys(modifiedStars).length > 0) {
-    //   const starsRequestData = Object.entries(modifiedStars).map(([diaryEmotionId, coords]) => ({
-    //     diaryEmotionId: Number(diaryEmotionId),
-    //     xCoord: coords.xCoord,
-    //     yCoord: coords.yCoord,
-    //   }));
+    // axios 요청
+    // 별 위치 업데이트 요청
+    if (Object.keys(modifiedStars).length > 0) {
+      const starsRequestData = Object.entries(modifiedStars).map(([diaryEmotionId, coords]) => ({
+        diaryEmotionId: Number(diaryEmotionId),
+        xCoord: coords.xCoord,
+        yCoord: coords.yCoord,
+      }));
 
-    //   const starsResponse = await useUniverseApi.updatePersonalUniv(starsRequestData);
-    //   console.log(starsResponse);
-    //   if (starsResponse.status === "C000") {
-    //     console.log("별 위치 업데이트 성공");
-    //   } else {
-    //     console.log("별 위치 업데이트 실패");
-    //   }
-    // }
+      const starsResponse = await useUniverseApi.updatePersonalUniv(starsRequestData);
+      if (starsResponse.status === "C000") {
+        console.log("별 위치 업데이트 성공");
+      } else {
+        console.log("별 위치 업데이트 실패");
+      }
+    }
 
-    // // 별선 업데이트 요청
-    // if (connections.length > 0) {
-    //   const connectionsRequestData = connections.map((connection) => ({
-    //     startEmotionId: connection.startEmotionId,
-    //     endEmotionId: connection.endEmotionId,
-    //     year: currentDate.getFullYear(),
-    //     month: currentDate.getMonth() + 1,
-    //   }));
+    // 별선 업데이트 요청
+    if (connections.length > 0) {
+      const connectionsRequestData = connections.map((connection) => ({
+        startEmotionId: connection.startEmotionId,
+        endEmotionId: connection.endEmotionId,
+        year: currentDate.getFullYear(),
+        month: currentDate.getMonth() + 1,
+      }));
+      console.log(connectionsRequestData);
 
-    //   const connectionsResponse = await useStarlineApi.updateStarlineCoords(connectionsRequestData);
-    //   console.log(connectionsResponse);
-    //   if (connectionsResponse.status === "C000") {
-    //     console.log("별선 업데이트 성공");
-    //   } else {
-    //     console.log("별선 업데이트 실패");
-    //   }
-    // }
+      const connectionsResponse = await useStarlineApi.updateStarlineCoords(connectionsRequestData);
+      console.log(connectionsResponse);
+      if (connectionsResponse.status === "C000") {
+        console.log("별선 업데이트 성공");
+      } else {
+        console.log("별선 업데이트 실패");
+      }
+    }
 
     setIsEdit(false); // 편집 상태 비활성화
     setOriginalStars([]); // 복사 별 데이터 초기화
@@ -315,10 +234,10 @@ function DiaryStars() {
                 return (
                   <line
                     key={`${connection.startEmotionId}-${connection.endEmotionId}`}
-                    x1={`${startStar.xCoord}%`} // 시작 별 x 좌표
-                    y1={`${startStar.yCoord}%`} // 시작 별 y 좌표
-                    x2={`${endStar.xCoord}%`} // 끝 별 x 좌표
-                    y2={`${endStar.yCoord}%`} // 끝 별 y 좌표
+                    x1={`${startStar.xcoord}%`} // 시작 별 x 좌표
+                    y1={`${startStar.ycoord}%`} // 시작 별 y 좌표
+                    x2={`${endStar.xcoord}%`} // 끝 별 x 좌표
+                    y2={`${endStar.ycoord}%`} // 끝 별 y 좌표
                     stroke="rgba(255, 255, 255, 0.5)" // 선 색상
                     strokeWidth="1.5" // 선 두께
                     className={`${isEdit && editMode === "connect" ? "cursor-pointer" : ""}`} // 커서 스타일
@@ -342,8 +261,8 @@ function DiaryStars() {
               key={star.diaryEmotionId}
               className="absolute"
               style={{
-                left: `${star.xCoord}%`,
-                top: `${star.yCoord}%`,
+                left: `${star.xcoord}%`,
+                top: `${star.ycoord}%`,
                 transform: "translate(-50%, -50%)",
               }}
             >

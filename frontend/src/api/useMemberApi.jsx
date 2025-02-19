@@ -114,6 +114,7 @@ const checkEmail = async (data) => {
     const response = await useAxiosInstance.apiClient.get(
       `/member/check-email?email=${data.email}`
     );
+    console.log(response);
     return response.data;
   } catch (e) {
     //오류 체크

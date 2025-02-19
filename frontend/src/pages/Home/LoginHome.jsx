@@ -12,7 +12,7 @@ function LoginHome() {
   // 네비게이션 항목 정의 - 72도 간격으로 배치
   const navItems = [
     { name: "AI채팅", angle: 270, path: "chat", delay: 0 },
-    { name: "라디오", angle: 342, path: "radio/list", delay: 0.2 },
+    { name: "라디오", angle: 342, path: "radio", delay: 0.2 },
     { name: "캘린더", angle: 54, path: "diary/calendar", delay: 0.4 },
     { name: "나의별", angle: 126, path: "diary/stars", delay: 0.6 },
     { name: "우리별", angle: 198, path: "universe", delay: 0.8 },
@@ -21,7 +21,7 @@ function LoginHome() {
   const radius = 150; // 선과 점의 위치를 동일하게 설정
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-black">
+    <div className="relative h-screen w-full overflow-hidden">
       <video
         autoPlay
         loop
@@ -33,7 +33,7 @@ function LoginHome() {
       </video>
 
       {/* 배경 오버레이 */}
-      <div className="absolute inset-0 bg-black/30 z-10" />
+      <div className="absolu inset-0 bg-black/30" />
 
       {/* 메인 컨텐츠 */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-20">

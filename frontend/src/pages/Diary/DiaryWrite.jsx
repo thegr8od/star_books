@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Layout from "../../components/Layout";
 import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
 import Button from "../../components/Button";
@@ -8,53 +8,93 @@ import ErrorPage from "../ErrorPage";
 import useDiaryApi from "../../api/useDiaryApi";
 
 const DiaryWrite = () => {
+  const { id } = useParams();
   const location = useLocation();
-  const { emotions, xvalue, yvalue, diaryId, originalData } = location.state;
-  const [text, setText] = useState("");
-  const fileInputRef = useRef(null);
   const navigate = useNavigate();
-  const { diaryData } = location.state || {}; // 일기 목록에서 데이터 넘겨줌
-  const isEditMode = !!diaryData; // 데이터 있으면 true 데이터 없으면 false
+
+  const { diary } = location.state || {};
+  const { emotions, xvalue, yvalue, diaryId, originalData } = location.state;
+
+  const [text, setText] = useState("");
+  const [diaryData, setDiaryData] = useState([]);
   const [imagePreview, setImagePreview] = useState(null); // 프리뷰 이미지
   const [existingImage, setExistingImage] = useState(null); // 기존에 저장되어있는 이미지가 있을 때
   const [uploadedImageUrl, setUploadedImageUrl] = useState(null); // 업로드된 이미지 URL 저장
   const [imageUploadError, setImageUploadError] = useState(""); // 이미지 업로드 에러 메시지
+  const [currentEmotions, setCurrentEmotions] = useState([]);
+
+  const fileInputRef = useRef(null);
+  const isEditMode = !!id; // 데이터 있으면 true 데이터 없으면 false
 
   // URL로 접근해서 해당 일기에 대한 데이터가 없을 때 에러페이지로 이동
-  if (
-    !location.state?.emotions ||
-    !location.state?.xvalue ||
-    !location.state?.yvalue ||
-    !location.state?.diaryId
-  ) {
-    return (
-      <ErrorPage
-        title="잘못된 접근입니다."
-        message="올바른 경로로 접근해주세요."
-      />
-    );
-  }
+  // if (!location.state?.emotions || !location.state?.diaryId) {
+  //   return (
+  //     <ErrorPage
+  //       title="잘못된 접근입니다."
+  //       message="올바른 경로로 접근해주세요."
+  //     />
+  //   );
+  // }
 
-  // 일기 작성 날짜, 요일
+  useEffect(() => {
+    if (isEditMode && location.state?.diary) {
+      setText(location.state.diary.content || "");
+      setCurrentEmotions(location.state.diary.hashtags || []);
+      if (location.state.diary.imageUrl) {
+        setExistingImage(location.state.diary.imageUrl);
+        setImagePreview(location.state.diary.imageUrl);
+      }
+    } else {
+      // 새 글 작성 모드
+      setText(""); // 새 글 작성 시 텍스트 초기화
+      if (!emotions) {
+        navigate("/error");
+        return;
+      }
+      setCurrentEmotions(emotions);
+    }
+  }, [isEditMode, location.state?.diary]); // 의존성 배열 수정
+
+  // 감정 값 얻기
+  const getCurrentEmotionValues = () => {
+    if (isEditMode) {
+      return {
+        x: location.state.diary.emotions[0]?.xValue || 0,
+        y: location.state.diary.emotions[0]?.yValue || 0,
+      };
+    }
+    return { x: xvalue, y: yvalue };
+  };
+
+  // 일기 작성 날짜, 요일 함수 수정
   const getDayInfo = () => {
-    const days = ["일", "월", "화", "수", "목", "금", "토", "일"];
-    const date = originalData?.created_at
-      ? new Date(originalData.created_at)
-      : isEditMode
-      ? new Date(diaryData.created_at)
-      : new Date();
-    const month = date.getMonth() + 1;
-    const dayNum = date.getDate();
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    let dateArray;
+    if (isEditMode && location.state?.diary) {
+      dateArray = diary.diaryDate;
+    } else if (location.state?.diaryDate) {
+      dateArray = location.state.diaryDate;
+    } else {
+      const today = new Date();
+      dateArray = [today.getFullYear(), today.getMonth() + 1, today.getDate()];
+    }
+    const date = new Date(dateArray[0], dateArray[1] - 1, dateArray[2]);
+    const month = dateArray[1];
+    const dayNum = dateArray[2];
     const dayName = days[date.getDay()];
     return { dayNum, dayName, month };
   };
 
-  const { dayNum, dayName, month } = getDayInfo();
+  // getDayInfo 호출을 useEffect 내부로 이동
+  const [dateInfo, setDateInfo] = useState({
+    month: 0,
+    dayNum: 0,
+    dayName: "",
+  });
 
   // 이미지 업로드
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    console.log(file);
     setImageUploadError("");
 
     if (file) {
@@ -62,7 +102,6 @@ const DiaryWrite = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        console.log("프리뷰 : ", setImagePreview(reader.result));
       };
       reader.readAsDataURL(file);
 
@@ -70,10 +109,8 @@ const DiaryWrite = () => {
       useDiaryApi
         .uploadImage(file)
         .then((response) => {
-          console.log("서버 응답:", response);
           if (response.imageUrl) {
             setUploadedImageUrl(response.imageUrl);
-            console.log("업로드된 이미지 URL:", response.imageUrl); // 디버깅용
           }
         })
         .catch((error) => {
@@ -90,24 +127,41 @@ const DiaryWrite = () => {
 
   // 저장, 수정 버튼 클릭 시 데이터 넘기기
   const handleSave = () => {
+    //  날짜
+    let dateArray;
+    if (isEditMode && location.state?.diary) {
+      dateArray = location.state.diary.diaryDate;
+    } else if (location.state?.diaryDate) {
+      dateArray = location.state.diaryDate;
+    } else {
+      const today = new Date();
+      dateArray = [today.getFullYear(), today.getMonth() + 1, today.getDate()];
+    }
+
+    const emotionValues = getCurrentEmotionValues();
     const updatedDiaryData = {
       content: text,
-      diaryId,
+      hashtags: currentEmotions,
+      xValue: emotionValues.x,
+      yValue: emotionValues.y,
       imageUrl: uploadedImageUrl || existingImage,
-      created_at:
-        originalData?.created_at ||
-        (isEditMode ? diaryData.created_at : new Date().toISOString()),
-      ...(isEditMode && { id: diaryData.id }),
+      diaryDate: dateArray,
+      ...(diaryId && { diaryId }),
     };
-    console.log("저장할 데이터:", updatedDiaryData);
 
-    useDiaryApi
-      .addDiaryContent(diaryId, updatedDiaryData)
+    const savePromise = isEditMode
+      ? useDiaryApi.updateContent(
+          location.state.diary.diaryId,
+          updatedDiaryData
+        )
+      : useDiaryApi.addDiaryContent(diaryId, updatedDiaryData);
+
+    savePromise
       .then(() => {
         navigate("/diary/calendar");
       })
       .catch((error) => {
-        console.error("일기 저장 실패 : ", error);
+        console.error("일기 저장 실패:", error);
       });
   };
 
@@ -116,27 +170,15 @@ const DiaryWrite = () => {
     navigate(-1);
   };
 
-  // 수정 모드 -> 기존 데이터 로드
-  useEffect(() => {
-    if (isEditMode && diaryData) {
-      setText(diaryData.content || "");
-      // 이미지 있을 때
-      if (diaryData.imageUrl) {
-        setExistingImage(diaryData.imageUrl);
-        setImagePreview(diaryData.imageUrl);
-      }
-    }
-  }, [isEditMode, diaryData]);
-
   return (
     <Layout>
       <div className="h-full flex flex-col space-y-6 pt-3">
         {/* 날짜 */}
         <div className="text-white px-3 text-lg">
           <div className="flex items-baseline gap-2 border-b border-white pb-1 w-fit">
-            <span>{month}월</span>
-            <span>{dayNum}일</span>
-            <span>{dayName}요일</span>
+            <span>{dateInfo.month}월</span>
+            <span>{dateInfo.dayNum}일</span>
+            <span>{dateInfo.dayName}요일</span>
           </div>
         </div>
 
@@ -193,7 +235,7 @@ const DiaryWrite = () => {
 
           {/* 해시태그 */}
           <div className="flex flex-wrap gap-3 px-2">
-            {emotions.map((emotion, index) => (
+            {currentEmotions.map((emotion, index) => (
               <span key={index} className="text-gray-500">
                 #{emotion}
               </span>

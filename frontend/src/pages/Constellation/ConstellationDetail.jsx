@@ -320,8 +320,7 @@ function ConstellationDetail() {
             star.material.opacity = fadeProgress;
             const pulseAmount = 0.2;
             const pulse =
-              Math.sin(elapsed * 0.002 + star.userData.pulseTime) *
-                pulseAmount +
+              Math.sin(elapsed * 0.002 + star.userData.pulseTime) * pulseAmount +
               1;
             star.scale.set(
               star.userData.originalScale.x * pulse,
@@ -447,7 +446,6 @@ function ConstellationDetail() {
       prev === 0 ? universeData.length - 1 : prev - 1
     );
   };
-
   const handleNext = () => {
     setCurrentIndex((prev) =>
       prev === universeData.length - 1 ? 0 : prev + 1

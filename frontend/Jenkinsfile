@@ -42,16 +42,9 @@ pipeline {
             steps {
                 script {
                     sh '''#!/bin/bash
-                    docker create --name frontend-container "$FRONTEND_IMAGE_NAME"
-                    docker start frontend-container
-                    rm -rf /home/ubuntu/frontend
-                    rm -rf /home/ubuntu/forntend-assets
-                    mkdir /home/ubuntu/frontend
-                    mkdir /home/ubuntu/frontend-assets
-                    docker cp frontend-container:/dist/. /home/ubuntu/frontend/
-                    docker cp /home/ubuntu/frontend/. /usr/share/nginx/html/
-                    docker restart "$NGINX_CONTAINER_NAME"
-                    docker rm -f frontend-container || true
+                    docker stop frontend | true
+                    docker rm frontend | true
+                    docker run -d --name frontend -p 3002:3001 "$FRONTEND_IMAGE_NAME"
                     '''
                 }
             }
@@ -64,7 +57,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'BACKEND_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL')]) {
                     def jsonMessage = """{
                         "attachments": [{
-                            "text": "**✅ Frontend Build 성공**\\\\n- 상태: SUCCESS\\\\n- [🔗 상세 정보](${env.BUILD_URL})",
+                            "text": "**✅ Frontend Build 성공**\\n- 상태: SUCCESS\\n- [🔗 상세 정보](${env.BUILD_URL})",
                             "color": "#00FF00"
                         }]
                     }"""
@@ -83,7 +76,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'BACKEND_MESSAGE', variable: 'MATTERMOST_WEBHOOK_URL')]) {
                     def jsonMessage = """{
                         "attachments": [{
-                            "text": "**❌ Frontend Build 실패**\\\\n- 상태: FAILURE\\\\n- [🔗 상세 정보](${env.BUILD_URL}/console) ",
+                            "text": "**❌ Frontend Build 실패**\\n- 상태: FAILURE\\n- [🔗 상세 정보](${env.BUILD_URL}/console) ",
                             "color": "#FF0000"
                         }]
                     }"""

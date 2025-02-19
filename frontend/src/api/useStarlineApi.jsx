@@ -36,12 +36,10 @@ const getMonthlyStarlineCoords = async (data) => {
 // post
 const updateStarlineCoords = async (data) => {
   const jwt = localStorage.getItem("accessToken");
-
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
-      .post(`/starline/update/${data.year}/${data.month}`, data);
-
+      .post("/starline/update", data);
     return response.data;
   } catch (e) {
     return e.response;
