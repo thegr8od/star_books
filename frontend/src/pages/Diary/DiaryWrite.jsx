@@ -6,6 +6,7 @@ import Button from "../../components/Button";
 import GetColor from "../../components/GetColor";
 import ErrorPage from "../ErrorPage";
 import useDiaryApi from "../../api/useDiaryApi";
+import DiaryColorGuide from "./DiaryColorGuide";
 
 const DiaryWrite = () => {
   const { id } = useParams();
@@ -178,15 +179,22 @@ const DiaryWrite = () => {
         <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
           {/* 감정 아이콘 */}
           <div className="flex justify-center">
-            <span
-              className="rounded-full w-6 h-6"
-              style={{
-                backgroundColor: GetColor(
-                  getCurrentEmotionValues().x,
-                  getCurrentEmotionValues().y
-                ),
-              }}
-            />
+            <DiaryColorGuide
+              color={GetColor(
+                getCurrentEmotionValues().x,
+                getCurrentEmotionValues().y
+              )}
+            >
+              <span
+                className="rounded-full w-8 h-8"
+                style={{
+                  backgroundColor: GetColor(
+                    getCurrentEmotionValues().x,
+                    getCurrentEmotionValues().y
+                  ),
+                }}
+              />
+            </DiaryColorGuide>
           </div>
 
           {/* 텍스트 입력 칸*/}
