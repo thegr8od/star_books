@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 //redux
 import { useDispatch } from "react-redux";
-import { setUser } from "../../store/userSlice";
+import { setUser, clearUser } from "../../store/userSlice";
 //api함수
 import useMemberApi from "@api/useMemberApi";
 //커스텀
@@ -23,6 +23,72 @@ const Login = () => {
   const [showAlert, setShowAlert] = useState(false); //알람상태
   const dispatch = useDispatch();
 
+  // 컴포넌트 마운트 시 초기화
+  useEffect(() => {
+    const clearAllData = () => {
+      // 로컬 스토리지 초기화
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redux 초기화
+      dispatch(clearUser());
+    };
+
+    clearAllData();
+  }, []);
+
+  // OAuth 로그인 처리
+  useEffect(() => {
+    const handleOAuthLogin = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+
+      if (token) {
+        try {
+          // 기존 데이터 초기화
+          localStorage.clear();
+          sessionStorage.clear();
+          dispatch(clearUser());
+          
+          console.log("Received new token:", token);
+          
+          // 새로운 사용자 데이터 가져오기
+          const userData = await useMemberApi.handleOAuthToken(token);
+          console.log("New user data:", userData);
+          
+          if (!userData || !userData.email) {
+            throw new Error("Invalid user data received");
+          }
+
+          // Redux store에 새 데이터 저장
+          dispatch(setUser(userData));
+
+          // URL 파라미터 제거
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          setAlertMessage("로그인에 성공했습니다!");
+          setShowAlert(true);
+
+          // 홈으로 이동
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 2000);
+        } catch (error) {
+          console.error('OAuth 로그인 처리 실패:', error);
+          // 에러 시 모든 데이터 초기화
+          localStorage.clear();
+          sessionStorage.clear();
+          dispatch(clearUser());
+          
+          setAlertMessage("로그인에 실패했습니다.");
+          setShowAlert(true);
+        }
+      }
+    };
+
+    handleOAuthLogin();
+  }, [navigate, dispatch]);
+
   //에러
   const validateForm = () => {
     const newErrors = {};
@@ -39,35 +105,47 @@ const Login = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // 일반 로그인 핸들러
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validateForm()) {
       try {
+        // 기존 데이터 초기화
+        localStorage.clear();
+        sessionStorage.clear();
+        dispatch(clearUser());
+
         const response = await useMemberApi.loginMember({
           email: email,
           password: password,
         });
 
-        console.log("로그인 응답:", response);
+        console.log("Login response:", response);
 
-        // response가 있고 성공적인 응답인 경우
         if (response && response.user) {
-          // 리덕스에 저장하기
-          dispatch(setUser({ ...response.user, isLogin: true }));
+          dispatch(setUser({ 
+            ...response.user, 
+            isLogin: true,
+            isActive: true 
+          }));
+          
           setAlertMessage("로그인에 성공했습니다!");
           setShowAlert(true);
 
           setTimeout(() => {
-            window.location.href = "/";
+            navigate('/', { replace: true });
           }, 2000);
         } else {
-          // 실패한 경우
-          setAlertMessage("로그인에 실패했습니다.");
-          setShowAlert(true);
+          throw new Error("Invalid response data");
         }
       } catch (error) {
         console.error("로그인 에러:", error);
+        // 에러 시 모든 데이터 초기화
+        localStorage.clear();
+        sessionStorage.clear();
+        dispatch(clearUser());
+        
         setAlertMessage("이메일 또는 비밀번호가 일치하지 않습니다.");
         setShowAlert(true);
       }
@@ -77,6 +155,8 @@ const Login = () => {
   // 소셜 로그인 함수
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const handleSocialLogin = (provider) => {
+    // 현재 URL을 state로 저장
+    sessionStorage.setItem('loginRedirectUrl', window.location.pathname);
     window.location.href = `${baseUrl}/oauth2/authorization/${provider}`;
   };
 
