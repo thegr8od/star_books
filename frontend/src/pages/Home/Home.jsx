@@ -10,7 +10,7 @@ const Home = () => {
   // 디버깅을 위한 로그
   useEffect(() => {
     console.log("Current user state:", user);
-  }, [user]);
+  // }, [user]);
 
     //oauth
     if (token) {

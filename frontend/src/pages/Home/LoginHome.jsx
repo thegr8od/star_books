@@ -11,33 +11,33 @@ function LoginHome() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-          console.log("No token found");
-          return;
-        }
+    // const fetchUserInfo = async () => {
+    //   try {
+    //     const token = localStorage.getItem("accessToken");
+    //     if (!token) {
+    //       console.log("No token found");
+    //       return;
+    //     }
 
-        const response = await useAxiosInstance
-          .authApiClient(token)
-          .get("/member/my");
+    //     const response = await useAxiosInstance
+    //       .authApiClient(token)
+    //       .get("/member/my");
 
-        dispatch(setUser({
-          ...response.data.data,
-          isLogin: true
-        }));
-      } catch (error) {
-        console.error("Error fetching user info:", error);
-        // 토큰이 만료되었거나 유효하지 않은 경우
-        if (error.response && error.response.status === 401) {
-          localStorage.removeItem("accessToken");
-          navigate("/login");
-        }
-      }
-    };
+    //     dispatch(setUser({
+    //       ...response.data.data,
+    //       isLogin: true
+    //     }));
+    //   } catch (error) {
+    //     console.error("Error fetching user info:", error);
+    //     // 토큰이 만료되었거나 유효하지 않은 경우
+    //     if (error.response && error.response.status === 401) {
+    //       localStorage.removeItem("accessToken");
+    //       navigate("/login");
+    //     }
+    //   }
+    // };
 
-    fetchUserInfo();
+    // fetchUserInfo();
     setIsLoaded(true);
   }, [navigate, dispatch]);
 
