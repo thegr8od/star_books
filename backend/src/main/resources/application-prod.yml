@@ -16,6 +16,7 @@ spring:
     serialization:
       write-dates-as-timestamps: true
     default-property-inclusion: non_null
+    time-zone: Asia/Seoul
 
   mail:
     host: smtp.gmail.com
@@ -35,11 +36,13 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  hikari:
-    maximum-pool-size: 10
-    minimum-idle: 2
-    idle-timeout: 30000
-    max-lifetime: 1800000
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-init-sql: SET time_zone = 'Asia/Seoul'
+
 
   jpa:
     open-in-view: true
