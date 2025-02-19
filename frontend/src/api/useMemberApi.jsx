@@ -73,7 +73,7 @@ const getMemberMY = async () => {
   try {
     const response = await useAxiosInstance
       .authApiClient(jwt)
-      .post("/member/my");
+      .get("/member/my");
 
     return response;
   } catch (e) {
