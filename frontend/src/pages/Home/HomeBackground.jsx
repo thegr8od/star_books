@@ -1,50 +1,36 @@
 import { useEffect, useState, useRef } from "react";
 import Login from "../Auth/Login";
-import WaveAnimation from '../../components/WaveAnimation';
 
 const HomeBackground = () => {
   const [activeSection, setActiveSection] = useState(0);
   const sectionsRef = useRef([]);
   const starsRef = useRef(null);
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const titleRef = useRef(null);
 
-  // 배경 그라디언트 스타일 수정
-  const backgroundStyles = {
-    section0: "from-[#0B1437] via-[#1B2B4D] to-[#0B1437]", // 첫 페이지와 동일한 깊은 밤하늘
-    section1: "from-[#0B1437] via-[#1B2B4D] to-[#0B1437]", // 깊은 밤하늘 유지
-    section2: "from-[#1B2B4D] via-[#2B3F6B] to-[#1B2B4D]", // 조금 더 밝은 밤하늘
-    section3: "from-[#2B3F6B] via-[#3B5389] to-[#2B3F6B]", // 새벽녘 하늘
-    section4: "from-[#3B5389] via-[#0B1437] to-[#3B5389]", // 다시 어두워지는 하늘
-    section5: "from-[#0B1437] via-[#1B2B4D] to-[#0B1437]", // 마지막 페이지 깊은 밤하늘
+  // 원의 그라디언트 스타일 (기존 유지)
+  const gradientStyles = {
+    section0: { background: "linear-gradient(45deg,  #FFD700,  #FFB6C1)" }, // 연한 핑크와 부드러운 골드
+    section1: {
+      background: "linear-gradient(45deg, #FFA07A, #FF8C69, #FFFFFF)",
+    }, // 살몬핑크, 연한 살몬, 흰색
+    section2: { background: "linear-gradient(45deg, #FFD700, #FFDAB9)" }, // 골드와 피치
+    section3: { background: "linear-gradient(45deg, #FFA07A, #98FB98)" }, // 살몬과 연한 초록
+    section4: { background: "linear-gradient(45deg, #98FB98, #DDA0DD)" }, // 연한 초록과 연한 보라
+    section5: { background: "linear-gradient(45deg, #DDA0DD, #87CEEB)" }, // 연한 보라와 하늘색
+    section6: { background: "linear-gradient(45deg, #87CEEB, #B0C4DE)" }, // 하늘색과 연한 회색
+    section7: { background: "linear-gradient(45deg, #B0C4DE, #D3D3D3)" }, // 연한 회색과 밝은 회색
   };
 
-  // 원의 그라디언트 스타일 수정
-  const gradientStyles = {
-    section0: { 
-      background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0) 100%)",
-      boxShadow: "0 0 150px rgba(255,255,255,0.1)"
-    },
-    section1: { 
-      background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0) 100%)",
-      boxShadow: "0 0 150px rgba(255,255,255,0.1)"
-    },
-    section2: { 
-      background: "radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0) 100%)",
-      boxShadow: "0 0 150px rgba(255,255,255,0.12)"
-    },
-    section3: { 
-      background: "radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0) 100%)",
-      boxShadow: "0 0 150px rgba(255,255,255,0.15)"
-    },
-    section4: { 
-      background: "radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0) 100%)",
-      boxShadow: "0 0 150px rgba(255,255,255,0.12)"
-    },
-    section5: { 
-      background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0) 100%)",
-      boxShadow: "0 0 150px rgba(255,255,255,0.1)"
-    }
+  // 각 섹션별 대비되는 배경색 설정
+  const backgroundStyles = {
+    section0: "from-black via-[#FFB6C133] to-black", // 연한 핑크 그라데이션
+    section1: "from-black via-[#FF8C6933] to-black", // 살몬핑크 그라데이션
+    section2: "from-black via-[#FFD70033] to-black", // 골드 그라데이션
+    section3: "from-black via-[#FFA07A33] to-black", // 살몬 그라데이션
+    section4: "from-black via-[#98FB9833] to-black", // 연한 초록 그라데이션
+    section5: "from-black via-[#DDA0DD33] to-black", // 연한 보라 그라데이션
+    section6: "from-black via-[#87CEEB33] to-black", // 하늘색 그라데이션
+    section7: "from-black via-[#B0C4DE33] to-black", // 연한 회색 그라데이션
+    section8: "from-black via-[#FFB6C133] to-black", // 연한 회색 그라데이션
   };
 
   const sectionColors = {
@@ -60,7 +46,7 @@ const HomeBackground = () => {
 
   useEffect(() => {
     if (starsRef.current) {
-      const starCount = 200; // 별 개수 증가
+      const starCount = 200;
       const container = starsRef.current;
       container.innerHTML = "";
 
@@ -68,59 +54,45 @@ const HomeBackground = () => {
         const star = document.createElement("div");
         star.className = "absolute rounded-full";
 
-        // 별 크기를 더 작게 조정
-        const size = Math.random() * 2 + 0.5;
+        const size = Math.random() * 2 + 1;
         star.style.width = `${size}px`;
         star.style.height = `${size}px`;
 
         star.style.left = `${Math.random() * 100}%`;
         star.style.top = `${Math.random() * 100}%`;
 
-        // 반짝임 애니메이션 더 부드럽게
-        star.style.animation = `twinkle ${Math.random() * 3 + 3}s infinite ${
-          Math.random() * 3
+        star.style.animation = `twinkle ${Math.random() * 3 + 2}s infinite ${
+          Math.random() * 2
         }s`;
-        
-        // 별 밝기 조정
-        star.style.opacity = Math.random() * 0.5 + 0.3;
+        star.style.opacity = Math.random();
 
-        // 별 색상을 더 차분하게
-        const colors = ['#ffffff', '#f8f8ff', '#f0f8ff', '#f5f5f5'];
-        star.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        star.style.backgroundColor =
+          Math.random() > 0.5 ? "#ffffff" : "#ffffd9";
 
         container.appendChild(star);
       }
     }
-  }, [activeSection]);
+  }, [activeSection]); // activeSection이 변경될 때마다 별들 재생성
 
-  // 스크롤 감지 및 섹션 활성화 로직 수정
+  // 스크롤 이벤트 핸들러
   useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: '-50% 0px',
-      threshold: 0
-    };
+    const handleScroll = () => {
+      const winScrollTop = window.scrollY;
+      sectionsRef.current.forEach((section, index) => {
+        if (!section) return;
+        const offsetTop = section.offsetTop;
+        const offsetBottom = offsetTop + section.clientHeight;
 
-    const sectionObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const sectionIndex = sectionsRef.current.findIndex(
-            section => section === entry.target
-          );
-          setActiveSection(sectionIndex);
+        if (winScrollTop >= offsetTop && offsetBottom > winScrollTop) {
+          setActiveSection(index);
         }
       });
-    }, observerOptions);
-
-    sectionsRef.current.forEach(section => {
-      if (section) sectionObserver.observe(section);
-    });
-
-    return () => {
-      sectionsRef.current.forEach(section => {
-        if (section) sectionObserver.unobserve(section);
-      });
     };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToSection = (e, id) => {
@@ -131,133 +103,113 @@ const HomeBackground = () => {
     }
   };
 
-  // sections 배열을 다음과 같이 수정
+  // sections 배열 업데이트
   const sections = [
-    { 
-      id: "intro", 
-      type: "video", 
-      label: "# Intro",
+    {
+      id: "intro",
+      type: "video",
+      label: "# 별에 별 일",
       content: {
         title: "당신의 감정을 기록하세요",
-        description: "스타북스와 함께 하루하루의 감정을 별처럼 기록해보세요"
-      }
+        description: "스타북스와 함께 하루하루의 감정을 별처럼 기록해보세요",
+      },
+    },
+    {
+      id: "my-universe",
+      type: "image",
+      label: "# 나의 우주",
+      imageUrl: "/images/6.jpg",
+      content: {
+        title: "내 감정이 그리는 별자리",
+        description: "감정이 별이 되고, 그 별들로 나만의 별자리를 만들어봐요.",
+      },
+    },
+    {
+      id: "our-universe",
+      type: "image",
+      label: "# 우리의 우주",
+      imageUrl: "/images/2.jpg",
+      content: {
+        title: "감정이 빛나는 우주",
+        description:
+          "사람들의 감정이 빛나는 행성을 둘러보며, 그 속에서 나의 감정도 함께 어우러지는 순간을 느껴보세요.",
+      },
     },
     {
       id: "ai-chat",
       type: "image",
       label: "# AI 채팅",
-      imageUrl: "/images/chat.jpg",
+      imageUrl: "/images/3.jpg",
+      fixed: true,
       content: {
-        title: "AI와 함께하는 감정 대화",
-        description: "당신의 이야기를 들어줄 준비가 된 AI 친구가 기다리고 있어요"
-      }
+        title: "AI와 함께하는 대화",
+        description:
+          "당신의 이야기를 들어줄 준비가 된 AI 친구가 기다리고 있어요",
+      },
     },
     {
       id: "radio",
       type: "image",
-      label: "# 감정 라디오",
-      imageUrl: "/images/radio.jpg",
+      label: "# 라디오",
+      imageUrl: "/images/4.jpg",
       content: {
-        title: "감정에 어울리는 음악",
-        description: "현재 감정에 맞는 음악을 추천받고 다른 사람과 공유해보세요"
-      }
+        title: "하루를 나누는 라디오",
+        description:
+          "오늘 하루 있었던 일들을 공유하고 서로 공감하며 위로받아 보세요.",
+      },
     },
-    {
-      id: "diary",
-      type: "image",
-      label: "# 감정 일기",
-      imageUrl: "/images/diary.jpg",
-      content: {
-        title: "나만의 감정 달력",
-        description: "하루하루 쌓이는 감정을 달력으로 한눈에 확인해보세요"
-      }
-    },
-    {
-      id: "universe",
-      type: "image",
-      label: "# 감정 우주",
-      imageUrl: "/images/universe.jpg",
-      content: {
-        title: "우리들의 감정 우주",
-        description: "다른 사람들의 감정을 별자리처럼 둘러보세요"
-      }
-    },
-    { id: "login", type: "video", label: "# Login" }
+    { id: "i", type: "video", label: "# Login" },
   ];
 
   const Circle = ({ type, sectionStyle }) => {
     const baseStyles =
-      "absolute left-1/2 top-1/2 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500";
-
+      "absolute left-1/2 top-1/2 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 hover:scale-110";
     const circleStyles = {
-      main: "w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 backdrop-blur-sm z-30",
-      back: "w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 opacity-30 z-20",
-      "far-back": "w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 opacity-10 z-10",
+      main: "w-full h-full z-30 shadow-lg cursor-pointer flex items-center justify-center",
+      back: "w-[110%] h-[110%] opacity-60 blur z-20",
+      "far-back": "w-[120%] h-[120%] opacity-30 blur-lg z-10",
     };
 
     return (
       <div
         className={`${baseStyles} ${circleStyles[type]}`}
-        style={{
-          ...sectionStyle,
-          backdropFilter: type === 'main' ? 'blur(8px)' : 'none'
-        }}
-      />
+        style={sectionStyle}
+      >
+        {type === "main" && sections[activeSection].content && (
+          <div className="text-center text-white p-4 md:p-6 lg:p-8">
+            <h3 className="text-xl md:text-2xl lg:text-3xl mb-2 md:mb-3 lg:mb-4 font-bold">
+              {sections[activeSection].content.title}
+            </h3>
+            <p className="text-sm md:text-base lg:text-lg">
+              {sections[activeSection].content.description}
+            </p>
+          </div>
+        )}
+      </div>
     );
   };
 
-  // Intersection Observer 설정
-  useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.5
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('show');
-        } else {
-          entry.target.classList.remove('show');
-        }
-      });
-    }, observerOptions);
-
-    // 모든 애니메이션 요소 관찰
-    document.querySelectorAll('.animate-on-scroll').forEach((el) => {
-      observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  // 스크롤 위치에 따른 타이틀 투명도 계산
-  useEffect(() => {
-    const handleScroll = () => {
-      const position = window.scrollY;
-      setScrollPosition(position);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  // 타이틀 투명도 계산
-  const titleOpacity = Math.max(0, 1 - scrollPosition / 300);
-
   return (
-    <div className="fixed inset-0 w-full h-full">
-      <div className="relative w-full h-full font-['SUIT'] snap-y snap-mandatory overflow-y-scroll 
-                      [&::-webkit-scrollbar]:w-[3px] 
-                      [&::-webkit-scrollbar-track]:bg-transparent
-                      [&::-webkit-scrollbar-thumb]:bg-white/20
-                      [&::-webkit-scrollbar-thumb]:rounded-full
-                      [&::-webkit-scrollbar-thumb]:hover:bg-white/30">
-        <WaveAnimation />
+    <>
+      <style>
+        {`
+          @font-face {
+              font-family: 'HakgyoansimPuzzleTTF-Outline';
+              src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimPuzzleTTF-Outline.woff2') format('woff2');
+              font-weight: normal;
+              font-style: normal;
+          }
 
+          @font-face {
+              font-family: '양진체';
+              src: url('https://fastly.jsdelivr.net/gh/supernovice-lab/font@0.9/yangjin.woff') format('woff');
+              font-weight: normal;
+              font-style: normal;
+          }
+        `}
+      </style>
+      <div className="relative w-full">
+        {/* Stars background */}
         <div
           ref={starsRef}
           className={`fixed inset-0 z-10 overflow-hidden bg-gradient-to-b transition-colors duration-1000 ${
@@ -265,53 +217,14 @@ const HomeBackground = () => {
           }`}
         />
 
-        {/* STAR BOOKS 타이틀 - 첫 섹션에서만 표시 */}
-        {activeSection === 0 && (
-          <div className="fixed top-1/4 left-1/2 transform -translate-x-1/2 z-40 text-center w-full">
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-white mb-4
-                         tracking-wider animate-titleFadeIn">
-              STAR BOOKS
-            </h1>
-            <div className="flex items-center justify-center gap-4 animate-titleFadeIn animation-delay-300">
-              <div className="h-[1px] w-20 bg-gradient-to-r from-transparent via-white to-transparent" />
-              <div className="text-white/80 text-xl">✧</div>
-              <div className="h-[1px] w-20 bg-gradient-to-r from-transparent via-white to-transparent" />
-            </div>
-          </div>
-        )}
-
-        {/* 중앙 장식 요소 - 각 섹션에 따라 다르게 표시 */}
-        <div className="fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20
-                        pointer-events-none mix-blend-screen">
-          {activeSection === 0 ? (
-            // 첫 페이지의 특별한 장식 요소
-            <div className="relative">
-              <div className="absolute -inset-32 bg-gradient-radial from-white/5 via-white/3 to-transparent
-                            animate-pulse" />
-              <div className="relative flex items-center justify-center">
-                <div className="absolute animate-spin-slow">
-                  {[...Array(8)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="absolute h-40 w-[1px] origin-bottom"
-                      style={{
-                        transform: `rotate(${i * 45}deg)`,
-                        background: 'linear-gradient(to top, transparent, white)',
-                        opacity: 0.2
-                      }}
-                    />
-                  ))}
-                </div>
-                <div className="text-white text-6xl opacity-30">✧</div>
-              </div>
-            </div>
-          ) : (
-            // 다른 섹션들의 장식 요소
-            <div className="w-32 h-32 opacity-20 animate-pulse">
-              <div className="absolute inset-0 bg-gradient-radial from-white/20 via-white/5 to-transparent" />
-            </div>
-          )}
-        </div>
+        {/* Title */}
+        <h2
+          className={`fixed left-1/2 top-[10%] z-50 font-['HakgyoansimPuzzleTTF-Outline'] text-3xl md:text-5xl lg:text-6xl
+          transform -translate-x-1/2 opacity-60 transition-colors duration-500 text-center drop-shadow-lg animate-pulse
+          ${sectionColors[activeSection]?.active || "text-white"}`}
+        >
+          STARBOOKS
+        </h2>
 
         {/* Sections */}
         {sections.map((section, index) => (
@@ -319,8 +232,10 @@ const HomeBackground = () => {
             key={section.id}
             id={section.id}
             ref={(el) => (sectionsRef.current[index] = el)}
-            className={`h-screen w-full relative snap-start snap-always ${
-              section.type === 'image' ? 'bg-cover bg-center' : ''
+            className={`h-screen overflow-hidden ${
+              section.type === "image"
+                ? `bg-cover bg-center ${section.fixed ? "bg-fixed" : ""}`
+                : "relative"
             }`}
             style={
               section.type === "image"
@@ -328,100 +243,63 @@ const HomeBackground = () => {
                 : {}
             }
           >
-            {section.type === "video" ? (
-              <div className="relative w-full h-full z-30 flex items-center justify-center">
+            {section.type === "video" && (
+              <>
                 <video
                   autoPlay
                   muted
                   loop
                   playsInline
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute top-[55%] left-1/2 min-w-full min-h-full w-auto h-auto 
+                    transform -translate-x-1/2 -translate-y-1/2 object-cover"
                 >
                   <source src="/videos/home.mp4" type="video/mp4" />
                 </video>
-                {index === sections.length - 1 ? (
-                  <div className="relative z-40 w-full h-full flex items-center justify-center">
-                    <div className="w-full max-w-md">
-                      <Login />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative z-40 w-full max-w-4xl mx-auto px-4">
-                    <div className="text-center text-white">
-                      <h2 className="animate-on-scroll opacity-0 transition-opacity duration-1000 ease-out 
-                                  text-4xl md:text-5xl lg:text-6xl mb-6 font-bold tracking-wide">
-                        {section.content.title}
-                      </h2>
-                      <p className="animate-on-scroll opacity-0 transition-opacity duration-1000 delay-300 ease-out 
-                                 text-xl md:text-2xl lg:text-3xl opacity-90 font-normal leading-relaxed">
-                        {section.content.description}
-                      </p>
-                    </div>
-                  </div>
+                {index === sections.length - 1 && (
+                  <Login className="font-['BMEULJIRO']" />
                 )}
-              </div>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/50">
-                <div className="w-full max-w-4xl mx-auto px-4">
-                  <div className="text-center text-white">
-                    <h2 className="animate-on-scroll opacity-0 transition-opacity duration-1000 ease-out 
-                                text-4xl md:text-5xl lg:text-6xl mb-6 font-bold tracking-wide">
-                      {section.content.title}
-                    </h2>
-                    <p className="animate-on-scroll opacity-0 transition-opacity duration-1000 delay-300 ease-out 
-                               text-xl md:text-2xl lg:text-3xl opacity-90 font-normal leading-relaxed">
-                      {section.content.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              </>
             )}
           </div>
         ))}
 
         {/* Navigation */}
         {activeSection < sections.length - 2 && (
-          <nav className="fixed right-8 top-1/2 transform -translate-y-1/2 z-50">
-            <ul className="space-y-6">
-              {sections.map((section, index) => (
-                <li key={section.id} className="relative flex items-center">
-                  <button
-                    onClick={() => scrollToSection(null, section.id)}
-                    className={`group flex items-center gap-2 transition-all duration-300`}
-                  >
-                    {/* 활성화된 섹션 표시 라인 */}
-                    <div
-                      className={`w-8 h-[1px] transition-all duration-300 ${
-                        activeSection === index
-                          ? 'bg-white'
-                          : 'bg-white/30 group-hover:bg-white/50'
-                      }`}
-                    />
-                    {/* 섹션 이름 */}
-                    <span
-                      className={`text-sm transition-all duration-300 ${
-                        activeSection === index
-                          ? 'text-white opacity-100 translate-x-0'
-                          : 'text-white/50 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:text-white/80'
-                      }`}
-                    >
-                      {section.label}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <nav className="fixed right-3 top-[55%] transform -translate-y-1/2 z-50 drop-shadow-lg animate-[pulse_5s_ease-in-out_infinite] font-['양진체']">
+            {sections.map((section, index) => (
+              <div key={section.id} className="mb-4">
+                <a
+                  href={`#${section.id}`}
+                  onClick={(e) => scrollToSection(e, section.id)}
+                  className={`relative block transition-colors duration-500 py-1 pr-6
+                    ${
+                      activeSection === index
+                        ? sectionColors[index]?.active || "text-white"
+                        : `text-white ${sectionColors[index]?.hover || ""}`
+                    }`}
+                >
+                  <div
+                    className={`absolute left-[-20px] top-1/2 w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 transform -translate-y-1/2  
+                      transition-transform duration-500 bg-cover
+                      ${activeSection === index ? "rotate-360" : ""}`}
+                  />
+                  <span className="text-[13px] md:text-[17px] lg:text-[20px] inline-block">
+                    {section.label}
+                  </span>
+                </a>
+              </div>
+            ))}
           </nav>
         )}
 
-        {/* 3D Circles */}
+        {/* 3D Circles*/}
         {activeSection < sections.length - 1 && (
           <div
-            className="fixed left-1/2 top-1/2 z-20 transform -translate-x-1/2 -translate-y-1/2 animate-[fade_2s_ease-in-out_infinite] opacity-85"
+            className="fixed left-1/2 top-1/2 lg:top-[58%] z-20 transform -translate-x-1/2 -translate-y-1/2 animate-[fade_2s_ease-in-out_infinite] opacity-85 font-['양진체']"
             style={{ perspective: "1000px" }}
           >
             <div
-              className="relative w-64 h-64 md:w-72 md:h-72 lg:w-80 lg:h-80"
+              className="relative w-48 h-48 md:w-80 md:h-80 lg:w-96 lg:h-96"
               style={{ transformStyle: "preserve-3d" }}
             >
               <Circle
@@ -441,45 +319,13 @@ const HomeBackground = () => {
         )}
 
         <style>{`
-          @keyframes twinkle {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 0.2; }
-          }
-
-          .animate-on-scroll.show {
-            opacity: 1;
-          }
-
-          @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-
-          .animate-spin-slow {
-            animation: spin-slow 20s linear infinite;
-          }
-
-          @keyframes titleFadeIn {
-            0% { 
-              opacity: 0; 
-              transform: translateY(-30px);
-            }
-            100% { 
-              opacity: 1; 
-              transform: translateY(0);
-            }
-          }
-
-          .animate-titleFadeIn {
-            animation: titleFadeIn 1.5s ease-out forwards;
-          }
-
-          .animation-delay-300 {
-            animation-delay: 300ms;
-          }
-        `}</style>
+        @keyframes twinkle {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.2; }
+        }
+      `}</style>
       </div>
-    </div>
+    </>
   );
 };
 
