@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import Button from "../../components/Button";
 import { useSelector } from "react-redux";
 import { selectUserNickname } from "../../store/userSlice";
@@ -27,35 +27,11 @@ function RadioList({ onJoinRoom }) {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const scrollContainerRef = useRef(null); 
 
-  const [tracks, setTracks] = useState([{}])
-  //   { id: 1, title: "음악 방송", category: "음악", nickname: "DJ A", participantCount: 15 },
-  //   { id: 2, title: "연애 상담", category: "연애", nickname: "사랑방", participantCount: 8 },
-  //   { id: 3, title: "게임 스트리밍", category: "취미", nickname: "게이머123", participantCount: 20 },
-  // ; // 임시 데이터
-
-  const APPLICATION_SERVER_URL = "https://starbooks.site/api/radio/";
-  const LIVEKIT_URL = "wss://starbooks.site:7443";
-
-  async function getBroadcasts() {
-    try {
-        const response = await fetch(APPLICATION_SERVER_URL + "list", {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-            mode: "cors"
-        });
-        if (!response.ok) throw new Error("Failed to fetch broadcasts");
-          const data = await response.json();
-          setTracks(data.sort((a, b) => b.participantCount - a.participantCount));
-      } catch (error) {
-          console.error("Error fetching broadcasts:", error);
-      }
-  }
-
-  useEffect(() => {
-    getBroadcasts();
-    const interval = setInterval(getBroadcasts, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  const tracks = [
+    { id: 1, title: "음악 방송", category: "음악", nickname: "DJ A", participantCount: 15 },
+    { id: 2, title: "연애 상담", category: "연애", nickname: "사랑방", participantCount: 8 },
+    { id: 3, title: "게임 스트리밍", category: "취미", nickname: "게이머123", participantCount: 20 },
+  ]; // 임시 데이터
 
   const filteredTracks = tracks
     .filter((track) => selectedCategory === "전체" || track.category === selectedCategory)
