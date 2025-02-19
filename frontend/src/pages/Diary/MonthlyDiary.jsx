@@ -48,14 +48,6 @@ const MonthlyDiary = () => {
         block: "start",
       });
 
-      // scrollIntoView 완료 후 추가 여백을 위해 위로 스크롤
-      setTimeout(() => {
-        const scrollContainer = document.querySelector(".scroll-container");
-        if (scrollContainer) {
-          scrollContainer.scrollTop -= 10; // 40px만큼 위로 스크롤
-        }
-      }, 500);
-
       const timer = setTimeout(() => {
         setSelectedDate(null);
       }, 1000);
@@ -138,8 +130,8 @@ const MonthlyDiary = () => {
 
                   {/* 사진 */}
                   {diary.imageUrl && (
-                    <div>
-                      <img src={diary.imageUrl} alt="Diary img" className="object-cover rounded-lg" />
+                    <div className="w-full">
+                      <img src={diary.imageUrl} alt="Diary img" className="h-52 object-cover rounded-lg" />
                     </div>
                   )}
 
