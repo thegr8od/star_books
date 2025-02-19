@@ -33,9 +33,6 @@ public class JwtTokenProvider {
     @Value("${jwt.refreshToken-expiration}")
     private long refreshTokenExpiration;
 
-    @Value("${jwt.oauth-sign-up-expiration}")
-    private long oauthTokenExpiration;
-
     @Value("${jwt.secret}")
     private String secretKeyString;
 
@@ -47,32 +44,32 @@ public class JwtTokenProvider {
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // 일반 액세스 토큰 생성 (user_id 추가)
+    // ✅ 일반 로그인 & OAuth 로그인 동일한 JWT 생성 방식
     public String generateAccessToken(User user) {
-        return generateToken(user.getUserId(), user.getEmail(), accessTokenExpiration);
-    }
-
-    // 리프레시 토큰 생성 (user_id 추가)
-    public String generateRefreshToken(User user) {
-        return generateToken(user.getUserId(), user.getEmail(), refreshTokenExpiration);
-    }
-
-    // OAuth 가입용 토큰 생성 (user_id 추가)
-    public String generateOAuthSignUpToken(User user) {
         return Jwts.builder()
                 .issuer("StarBooks")
                 .subject("JWT Token")
-                .claim("user_id", user.getUserId())  // user_id 수정
-                .claim("userEmail", user.getEmail())
+                .claim("user_id", user.getUserId())  // ✅ user_id 추가
                 .claim("email", user.getEmail())
-                .claim("nickname", user.getNickname())  // name → nickname 수정
+                .claim("nickname", user.getNickname())
+                .claim("role", user.getRole().name()) // ✅ role 추가
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + oauthTokenExpiration))
+                .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
                 .signWith(secretKey)
                 .compact();
     }
 
-    // JWT 유효성 검사
+    public String generateRefreshToken(User user) {
+        return Jwts.builder()
+                .issuer("StarBooks")
+                .subject("Refresh Token")
+                .claim("user_id", user.getUserId())  // ✅ user_id 추가
+                .claim("email", user.getEmail())
+                .expiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
+                .signWith(secretKey)
+                .compact();
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
@@ -87,7 +84,6 @@ public class JwtTokenProvider {
         }
     }
 
-    // JWT에서 클레임 추출
     public Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
@@ -96,41 +92,21 @@ public class JwtTokenProvider {
                 .getPayload();
     }
 
-    // JWT에서 인증 정보 추출
-    public Authentication getAuthentication(String token) {
-        String userEmail = getUserEmail(token);
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-    }
-
-    // "userEmail" 또는 "email" 클레임에서 이메일 정보 가져오기
-    public String getUserEmail(String token) {
-        Claims claims = getClaims(token);
-        String email = claims.get("userEmail", String.class);
-        if (email == null) {
-            email = claims.get("email", String.class);
-        }
-        return email;
-    }
-
-    // "user_id" 클레임에서 user_id 가져오기
+    // ✅ user_id 가져오기 추가
     public Long getUserId(String token) {
         Claims claims = getClaims(token);
         return claims.get("user_id", Long.class);
     }
 
-    // JWT 생성 (user_id 포함)
-    private String generateToken(Long userId, String userEmail, long expiration) {
-        return Jwts.builder()
-                .issuer("StarBooks")
-                .subject("JWT Token")
-                .claim("user_id", userId)   // user_id 추가
-                .claim("userEmail", userEmail)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(secretKey)
-                .compact();
+    // ✅ email 가져오기 추가
+    public String getUserEmail(String token) {
+        Claims claims = getClaims(token);
+        return claims.get("email", String.class);
     }
 
-
+    public Authentication getAuthentication(String token) {
+        String email = getUserEmail(token);
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+    }
 }

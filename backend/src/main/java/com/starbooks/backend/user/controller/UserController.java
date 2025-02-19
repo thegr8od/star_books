@@ -147,6 +147,29 @@ public class UserController {
         return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
     }
 
+    @Operation(summary = "현재 로그인한 사용자 정보 조회", description = "Access Token을 이용해 현재 로그인한 회원 정보를 조회합니다.")
+    @GetMapping("/my")
+    public ApiResponse<?> getCurrentUser(@RequestHeader("Authorization") String token) {
+        try {
+            // ✅ "Bearer " 접두사 제거
+            String accessToken = token.replace("Bearer ", "").trim();
+
+            // ✅ JWT에서 이메일 추출
+            String email = jwtTokenProvider.getUserEmail(accessToken);
+
+            // ✅ 사용자 정보 조회
+            User user = userService.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            // ✅ DTO 변환 후 반환
+            return ApiResponse.createSuccess(ResponseUserDTO.fromEntity(user), "현재 로그인한 사용자 정보 조회 성공");
+        } catch (Exception e) {
+            log.error("현재 사용자 정보 조회 실패: {}", e.getMessage());
+            return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
+        }
+    }
+
+
 
     // == 회원 탈퇴 (논리 삭제) ==
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴(논리 삭제)를 수행합니다.")

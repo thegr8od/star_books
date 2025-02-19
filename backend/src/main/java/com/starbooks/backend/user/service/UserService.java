@@ -19,6 +19,8 @@ public interface UserService {
 
     ResponseUserDTO getUserInfo(Long userId);
 
+    ResponseUserDTO getCurrentUser(String email);
+
     void deleteUserByEmail(String email);
 
     /**
@@ -55,4 +57,6 @@ public interface UserService {
      * 회원 탈퇴 - Refresh Token을 블랙리스트에 추가 후 사용자 삭제
      */
     void withdrawUser(String email, HttpServletResponse response);
+
+
 }
