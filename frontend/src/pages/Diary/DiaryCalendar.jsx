@@ -39,6 +39,7 @@ const DiaryCalendar = () => {
         console.log("요청 데이터:", data);
 
         const response = await diaryApi.getDiariesByMonth(data);
+        console.log(response);
 
         // 서버 에러 응답 처리
         if (response.status === 500) {
@@ -57,7 +58,7 @@ const DiaryCalendar = () => {
         }
 
         // 실제 다이어리 데이터 처리
-        const diaryArray = response.data.diaries || [];
+        const diaryArray = response.data || [];
         console.log("다이어리 배열:", diaryArray);
 
         const diaryDatas = diaryArray
@@ -78,7 +79,7 @@ const DiaryCalendar = () => {
                       "0"
                     )}`
                   : oneday.diaryDate,
-                color: oneday.DiaryEmotion // emotions[0]을 DiaryEmotion으로 변경
+                color: oneday.DiaryEmotion // DiaryEmotion이 있는 경우에만 색상 설정
                   ? GetColor(
                       oneday.DiaryEmotion.xValue,
                       oneday.DiaryEmotion.yValue
