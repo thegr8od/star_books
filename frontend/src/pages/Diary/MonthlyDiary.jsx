@@ -33,6 +33,7 @@ const MonthlyDiary = () => {
       if (response.status === 200) {
         console.log("일기 조회 성공");
         setDiaries(response.data);
+        console.log(response.data)
       } else {
         console.log("일기 조회 실패");
       }
