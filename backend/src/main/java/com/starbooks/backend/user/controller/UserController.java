@@ -208,7 +208,7 @@ public class UserController {
                     .sameSite("None")
                     .path("/")
                     .maxAge(60L * 60 * 24 * 14)
-                    .domain("localhost")
+                    .domain("starbooks.site")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
