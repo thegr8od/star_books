@@ -39,7 +39,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         String email;
         String name = null;
 
-        log.info("OAUTH 연동 성공, Principal: {}", principal);
+        log.info("✅ OAUTH 연동 성공, Principal: {}", principal);
 
         // OIDC (구글) 로그인 처리
         if (principal instanceof DefaultOidcUser) {
@@ -62,41 +62,40 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
             return;
         }
 
-        // 회원가입 또는 로그인 처리
-        User user;
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (optionalUser.isPresent()) {
-            user = optionalUser.get();
-            log.info("✅ 기존 사용자 로그인: {}", email);
-        } else {
-            user = User.builder()
+        // ✅ `final`로 고정된 변수 선언
+        final String fixedName = (name != null) ? name : "Unknown User";
+
+        // ✅ 회원가입 또는 로그인 처리 (기존 사용자 확인)
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = User.builder()
                     .email(email)
                     .password(null) // OAuth2 로그인이므로 비밀번호는 null 처리
-                    .nickname(name != null ? name : "Unknown User")
+                    .nickname(fixedName) // ✅ `final String fixedName` 사용하여 오류 해결
                     .gender(Gender.OTHER) // 기본값 (필요 시 수정)
                     .snsAccount(true) // OAuth2 로그인 사용자는 snsAccount = true
                     .role(Role.member)
                     .isActive(true)
                     .build();
-
-            userRepository.save(user);
+            userRepository.save(newUser);
             log.info("🎉 신규 사용자 등록 성공: {}", email);
-        }
+            return newUser;
+        });
 
-        // ✅ JWT 토큰 생성 (user_id 포함)
-        String accessToken = tokenService.generateAccessToken(user);
-        String refreshToken = tokenService.generateRefreshToken(user);
+        log.info("✅ 로그인한 사용자: {}", user.getEmail());
+
+        // ✅ JWT 토큰 생성 (user_id, role, nickname 포함)
+        String accessToken = jwtTokenProvider.generateAccessToken(user);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user);
 
         // ✅ Refresh Token을 HttpOnly Secure 쿠키에 저장
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(true)  // 운영 환경에서는 true, 개발 환경에서는 false 가능
+                .secure(true)
                 .sameSite("None")
                 .maxAge(60 * 60 * 24 * 14) // 14일 유지
                 .path("/")
                 .domain("starbooks.site")
                 .build();
-
         response.setHeader("Set-Cookie", refreshTokenCookie.toString());
 
         // ✅ Access Token을 URL 파라미터로 전달
