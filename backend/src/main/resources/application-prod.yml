@@ -16,7 +16,15 @@ spring:
     serialization:
       write-dates-as-timestamps: true
     default-property-inclusion: non_null
-    time-zone: Asia/Seoul
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ehdgus9370@gmail.com           # 본인의 구글 이메일로 변경
+    password: ${SMTP_PASSWORD}      # 앱 비밀번호로 변경
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
   config:
     activate:
@@ -26,9 +34,6 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    hikari:
-      connection-init-sql: SET time_zone = 'Asia/Seoul'
-
 
   hikari:
     maximum-pool-size: 10
@@ -59,7 +64,7 @@ spring:
               - openid
               - profile
               - email
-            redirect-uri: "https://starbooks.site/login/oauth2/code/google"
+            redirect-uri: "https://i12d206.p.ssafy.io/login/oauth2/code/google"
             authorization-grant-type: authorization_code
           naver:
             client-id: ${NAVER_CLIENT_ID}
@@ -67,7 +72,7 @@ spring:
             scope:
               - name
               - email
-            redirect-uri: "https://starbooks.site/login/oauth2/code/naver"
+            redirect-uri: "https://i12d206.p.ssafy.io/login/oauth2/code/naver"
             authorization-grant-type: authorization_code
         provider:
           naver:
