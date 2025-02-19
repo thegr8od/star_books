@@ -68,6 +68,20 @@ const logoutMember = async () => {
   }
 };
 
+const getMemberMY = async () => {
+  const jwt = localStorage.getItem("accessToken");
+  try {
+    const response = await useAxiosInstance
+      .authApiClient(jwt)
+      .post("/member/my");
+
+    return response;
+  } catch (e) {
+    return e;
+  }
+};
+
+
 //refresh token 발급
 //post
 const refreshToken = async () => {
@@ -292,4 +306,5 @@ export default {
   sendVerification,
   verifyCode,
   resetPassword,
+  getMemberMY,
 };
