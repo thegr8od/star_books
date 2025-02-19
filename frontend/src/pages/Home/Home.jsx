@@ -24,7 +24,9 @@ const Home = () => {
         const response = await useMemberApi.getMemberMY();
 
         if(response.status === 200){
+          console.log(response.data.data.nickname);
           dispatch(setUser({ ...response.data.data, isLogin: true }));
+          console.log(user.isLogin);
         }
 
       } catch(e) {
