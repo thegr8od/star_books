@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../store/userSlice";
 //api함수
-import memberApi from "@api/useMemberApi";
+import useMemberApi from "@api/useMemberApi";
 //커스텀
 import LoginModal from "./LoginModal";
 import CustomAlert from "../../components/CustomAlert";
@@ -44,7 +44,7 @@ const Login = () => {
 
     if (validateForm()) {
       try {
-        const response = await memberApi.loginMember({
+        const response = await useMemberApi.loginMember({
           email: email,
           password: password,
         });
