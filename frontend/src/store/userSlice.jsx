@@ -2,17 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const user = createSlice({
   name: "user",
-  initialState: {
-    userId: null,
-    email: null,
-    nickname: null,
-    gender: null,
-    snsAccount: false,
-    role: null,
-    isActive: false,
-    profileImagePath: null,
-    isLogin: false,
-  },
+  initialState,
   reducers: {
     // 로그인
     setUser: (state, action) => {
@@ -29,6 +19,18 @@ const user = createSlice({
     },
   },
 });
+
+const initialState = JSON.parse(localStorage.getItem("user")) || {
+  userId: null,
+  email: null,
+  nickname: null,
+  gender: null,
+  snsAccount: false,
+  role: null,
+  isActive: false,
+  profileImagePath: null,
+  isLogin: false,
+};
 
 // Selectors
 export const selectUser = (state) => state.user;
