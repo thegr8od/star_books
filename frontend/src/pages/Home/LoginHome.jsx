@@ -12,7 +12,7 @@ function LoginHome() {
   // 네비게이션 항목 정의 - 72도 간격으로 배치
   const navItems = [
     { name: "AI채팅", angle: 270, path: "chat", delay: 0 },
-    { name: "라디오", angle: 342, path: "radio/list", delay: 0.2 },
+    { name: "라디오", angle: 342, path: "radio", delay: 0.2 },
     { name: "캘린더", angle: 54, path: "diary/calendar", delay: 0.4 },
     { name: "나의별", angle: 126, path: "diary/stars", delay: 0.6 },
     { name: "우리별", angle: 198, path: "universe", delay: 0.8 },

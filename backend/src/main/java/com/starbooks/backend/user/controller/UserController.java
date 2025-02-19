@@ -99,6 +99,11 @@ public class UserController {
             }
             User user = userOpt.get();
 
+            // 탈퇴(논리삭제)된 회원은 로그인 불가
+            if (!user.getIsActive()) {
+                return ApiResponse.createError(ErrorCode.USER_INACTIVE); // 새로운 에러코드 추가 필요
+            }
+
             // JWT 생성 (user_id 포함)
             String accessToken = tokenService.generateAccessToken(user);
             String refreshToken = tokenService.generateRefreshToken(user);
@@ -130,6 +135,7 @@ public class UserController {
         return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
     }
 
+
     // == 로그아웃 ==
     @Operation(summary = "로그아웃", description = "Refresh Token을 사용하여 로그아웃합니다.")
     @PostMapping("/logout")
@@ -152,7 +158,22 @@ public class UserController {
         return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
     }
 
-    // == 토큰 재발급 ==
+
+    // == 회원 탈퇴 (논리 삭제) ==
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴(논리 삭제)를 수행합니다.")
+    @DeleteMapping("/withdraw")
+    public ApiResponse<?> withdrawUser(@RequestParam String email, HttpServletResponse response) {
+        try {
+            userService.withdrawUser(email, response);
+            return ApiResponse.createSuccessWithNoContent("회원 탈퇴(논리 삭제)가 완료되었습니다.");
+        } catch (Exception e) {
+            log.error("회원 탈퇴 실패: {}", e.getMessage());
+            return ApiResponse.createError(ErrorCode.USER_DELETE_FAILED);
+        }
+    }
+
+
+    /// == 토큰 재발급 ==
     @Operation(summary = "토큰 재발급", description = "Refresh Token을 이용하여 새로운 Access Token을 발급합니다.")
     @PostMapping("/refresh")
     public ApiResponse<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken,
@@ -182,11 +203,16 @@ public class UserController {
             // 새 AccessToken 헤더 설정
             response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDto.getAccessToken());
 
-            return ApiResponse.createSuccessWithNoContent("Access Token 재발급 성공");
+            // JSON 응답에 accessToken 추가
+            Map<String, Object> data = new HashMap<>();
+            data.put("accessToken", tokenDto.getAccessToken());
+
+            return ApiResponse.createSuccess(data, "Access Token 재발급 성공");
         } catch (Exception e) {
             return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
         }
     }
+
 
     // == 사용자 정보 조회 ==
     @Operation(summary = "사용자 정보 조회", description = "회원 ID를 기반으로 사용자 정보를 조회합니다.")
