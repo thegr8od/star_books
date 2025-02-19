@@ -31,7 +31,10 @@ public interface UserService {
      */
     void updateUserProfileText(RequestUpdateDTO dto);
 
-    Authentication authenticateUser(String email, String password);
+    /**
+     * ✅ 일반 로그인 - Refresh Token을 HttpOnly 쿠키에 저장
+     */
+    Authentication authenticateUser(String email, String password, HttpServletResponse response); // <-- 추가됨
 
     boolean existsByEmail(String email);
 
