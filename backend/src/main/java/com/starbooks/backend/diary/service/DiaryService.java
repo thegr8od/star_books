@@ -22,10 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +44,7 @@ public class DiaryService {
     public DiaryResponse createEmptyDiary(Long userId, LocalDate diaryDate) {  // LocalDate 추가
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+        System.out.println("Current TimeZone: " + TimeZone.getDefault().getID());
 
         Diary diary = Diary.builder()
                 .user(user)
