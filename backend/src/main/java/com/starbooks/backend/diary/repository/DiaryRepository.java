@@ -31,7 +31,11 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     @Query("SELECT d FROM Diary d WHERE d.user.userId = :userId ORDER BY d.createdAt DESC")
     Page<Diary> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
 
-    List<Diary> findAllByUserAndDiaryDateBetween(User user, LocalDate start, LocalDate end);
+    @Query("SELECT d FROM Diary d WHERE d.user = :user AND d.diaryDate BETWEEN :start AND :end ORDER BY d.diaryDate ASC")
+    List<Diary> findAllByUserAndDiaryDateBetween(@Param("user") User user,
+                                                 @Param("start") LocalDate start,
+                                                 @Param("end") LocalDate end);
+
 
 
     List<Diary> findAllByUser(User user);

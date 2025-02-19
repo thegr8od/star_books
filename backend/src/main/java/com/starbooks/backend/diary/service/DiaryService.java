@@ -320,17 +320,18 @@ public class DiaryService {
      * 월별 다이어리 조회
      */
     public List<DiaryResponse> getDiariesByMonth(Long userId, int year, int month) {
-        LocalDate startDate = LocalDate.of(year, month, 1);
-        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth()); // 해당 월의 마지막 날짜
+        LocalDate start = LocalDate.of(year, month, 1);
+        LocalDate end = start.withDayOfMonth(start.lengthOfMonth()); // 해당 월의 마지막 날짜
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        List<Diary> diaries = diaryRepository.findAllByUserAndDiaryDateBetween(user, startDate, endDate);
+        List<Diary> diaries = diaryRepository.findAllByUserAndDiaryDateBetween(user, start, end);
         return diaries.stream()
                 .map(DiaryResponse::from)
                 .collect(Collectors.toList());
     }
+
 
 
     public DiaryResponse getDiary(Long diaryId) {
