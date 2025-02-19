@@ -1,37 +1,29 @@
-import { useEffect, useState } from "react";
-import { useSearchParams, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { setUser } from "../../store/userSlice";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
 import HomeBackground from "./HomeBackground";
 import LoginHome from "./LoginHome";
-import useMemberApi from "../../api/useMemberApi";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 const Home = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [searchParams] = useSearchParams();
-  const location = useLocation(); // 현재 페이지 경로 가져오기
-  const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
 
+  // 디버깅을 위한 로그
   useEffect(() => {
-    const token = searchParams.get("token");
-    const storedToken = localStorage.getItem("accessToken");
+    console.log("Current user state:", user);
+  }, [user]);
 
-    //oauth
-    if (token) {
-      // 토큰을 로컬 스토리지에 저장
-      localStorage.setItem("accessToken", token);
+  // 로딩 상태 확인
+  if (user === undefined) {
+    return <LoadingSpinner />;
+  }
 
-      setIsLoggedIn(true); // 로그인 상태 업데이트
-
-      window.location.replace("/");
-    } else if (storedToken) { //이미 oauth로 로그인한 사람 or 일반 로그인
-      // 기존 토큰이 있으면 로그인 유지
-      setIsLoggedIn(true);
-    }
-  }, [searchParams, location.pathname]); // searchParams 또는 현재 경로가 변경될 때 실행
-
-  return <>{isLoggedIn ? <LoginHome /> : <HomeBackground />}</>;
+  // user 객체가 존재하고 isLogin이 true인 경우에만 LoginHome 표시
+  return (
+    <>
+      {user && user.isLogin === true ? <LoginHome /> : <HomeBackground />}
+    </>
+  );
 };
 
 export default Home;
+
