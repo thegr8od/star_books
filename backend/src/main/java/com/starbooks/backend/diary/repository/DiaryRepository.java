@@ -18,14 +18,15 @@ import java.util.Optional;
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
-    @EntityGraph(attributePaths = {"content", "emotions", "hashtags", "image"})
+    @EntityGraph(attributePaths = {"content", "diaryEmotion", "hashtags", "image"})
     Optional<Diary> findByDiaryId(Long diaryId);
 
     @Query("SELECT e FROM DiaryEmotion e WHERE e.diary.user.userId = :userId AND e.diary.diaryDate = :diaryDate")
     Optional<DiaryEmotion> findEmotionByUserIdAndDiaryDate(@Param("userId") Long userId, @Param("diaryDate") LocalDate diaryDate);
 
-    @Query("SELECT e FROM DiaryEmotion e WHERE e.diary.diaryDate = :diaryDate")
+    @Query("SELECT e FROM DiaryEmotion e JOIN FETCH e.diary d JOIN FETCH d.user u WHERE d.diaryDate = :diaryDate")
     List<DiaryEmotion> findAllEmotionsByDate(@Param("diaryDate") LocalDate diaryDate);
+
 
     @Query("SELECT d FROM Diary d WHERE d.user.userId = :userId ORDER BY d.createdAt DESC")
     Page<Diary> findAllByUserId(@Param("userId") Long userId, Pageable pageable);

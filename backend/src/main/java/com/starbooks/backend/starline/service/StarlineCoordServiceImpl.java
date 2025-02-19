@@ -42,8 +42,15 @@ public class StarlineCoordServiceImpl implements StarlineCoordService {
         int year = starlineCoordRequests.get(0).getYear();
         int month = starlineCoordRequests.get(0).getMonth();
 
-        log.info("🔄 Deleting existing starline data for userId={}, year={}, month={}", userId, year, month);
-        starlineCoordRepository.deleteByUserIdAndYearAndMonth(userId, year, month);
+        log.info("🔄 Fetching existing starline IDs for userId={}, year={}, month={}", userId, year, month);
+        List<Long> starlineCoordIds = starlineCoordRepository.findStarlineCoordIdsForDeletion(userId, year, month);
+
+        if (!starlineCoordIds.isEmpty()) {
+            log.info("🗑 Deleting {} existing starline records.", starlineCoordIds.size());
+            starlineCoordRepository.deleteByIds(starlineCoordIds);
+        } else {
+            log.info("✅ No existing records to delete.");
+        }
 
         List<StarlineCoord> newStarlineCoords = starlineCoordRequests.stream()
                 .map(request -> StarlineCoord.builder()
@@ -55,6 +62,6 @@ public class StarlineCoordServiceImpl implements StarlineCoordService {
                 .collect(Collectors.toList());
 
         starlineCoordRepository.saveAll(newStarlineCoords);
-        log.info("✅ Updated starline data for userId={}, added {} records.", userId, newStarlineCoords.size());
+        log.info("✅ Inserted {} new records for userId={}", newStarlineCoords.size(), userId);
     }
 }
