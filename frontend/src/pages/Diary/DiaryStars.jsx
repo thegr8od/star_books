@@ -74,10 +74,15 @@ function DiaryStars() {
 
     // 컨테이너의 위치와 크기 정보를 가져옴
     const rect = container.getBoundingClientRect();
+    4;
+
+    // 터치 또는 마우스 이벤트에서 좌표 추출
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
     // 마우스 위치를 컨테이너 내부의 백분율 좌표로 변환
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const x = ((clientX - rect.left) / rect.width) * 100;
+    const y = ((clientY - rect.top) / rect.height) * 100;
 
     // 별의 위치가 컨테이너를 벗어나지 않도록 0~100 사이로 제한
     const newX = Math.max(0, Math.min(100, x));
@@ -106,16 +111,27 @@ function DiaryStars() {
       setSelectedStar(null);
     };
 
-    // 별이 선택되면서 move 모드일 때만 이벤트 리스너 추가
+    const handleTouchMove = (e) => {
+      e.preventDefault();
+      handleStarDrag(e);
+    };
+
+    const handleTouchEnd = () => {
+      setSelectedStar(null);
+    };
+
     if (selectedStar !== null && editMode === "move") {
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("touchmove", handleTouchMove, { passive: false });
+      window.addEventListener("touchend", handleTouchEnd);
     }
 
-    // 컴포넌트 언마운트 또는 의존성 변경 시 이벤트 리스너 제거
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
   }, [selectedStar, editMode, isEdit]);
 
@@ -286,6 +302,12 @@ function DiaryStars() {
                 }}
                 onMouseDown={(e) => {
                   // 편집 상태 이면서 move 모드일 경우 -> 별 이동(드래그 앤 드롭)
+                  if (isEdit && editMode === "move") {
+                    e.preventDefault();
+                    setSelectedStar(star.diaryEmotionId);
+                  }
+                }}
+                onTouchStart={(e) => {
                   if (isEdit && editMode === "move") {
                     e.preventDefault();
                     setSelectedStar(star.diaryEmotionId);

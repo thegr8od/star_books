@@ -22,6 +22,7 @@ import DiaryCalendar from "./pages/Diary/DiaryCalendar";
 import Diary from "./pages/Diary/Diary";
 import ConstellationAi from "./pages/Constellation/ConstellationAi";
 import Radio from "./pages/Radio/Radio";
+import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
@@ -33,30 +34,34 @@ function App() {
           <Route path="" element={<Home />} />
           <Route path="/oauth/redirect" element={<SocialRedirect />} />
           <Route path="signup" element={<SignUp />} />
-          {/* MyPage 관련 */}
-          <Route path="mypage" element={<MyPage />} />
-          <Route path="mypage/edit" element={<ProfileEdit />} />
-          {/* Universe 관련 */}
-          <Route path="universe" element={<Universe />} />
-          <Route path="universe/analysis" element={<UniverseAnalysis />} />
-          {/* Radio 관련 */}
-          <Route path="radio" element={<Radio />} />
-          <Route path="radio/list" element={<RadioList />} />
-          <Route path="radio/:id" element={<RadioShow />} />
-          {/* Diary 관련 */}
-          <Route element={<Diary />}>
-            <Route path="diary/calendar" element={<DiaryCalendar />} />
-            <Route path="diary/stars" element={<DiaryStars />} />
+
+          <Route element={<PrivateRoute />}>
+            {/* MyPage 관련 */}
+            <Route path="mypage" element={<MyPage />} />
+            <Route path="mypage/edit" element={<ProfileEdit />} />
+            {/* Universe 관련 */}
+            <Route path="universe" element={<Universe />} />
+            <Route path="universe/analysis" element={<UniverseAnalysis />} />
+            {/* Radio 관련 */}
+            <Route path="radio" element={<Radio />} />
+            <Route path="radio/list" element={<RadioList />} />
+            <Route path="radio/:id" element={<RadioShow />} />
+            {/* Diary 관련 */}
+            <Route element={<Diary />}>
+              <Route path="diary/calendar" element={<DiaryCalendar />} />
+              <Route path="diary/stars" element={<DiaryStars />} />
+            </Route>
+            {/* 별 보기 추가 */}
+            <Route path="diary/monthly" element={<MonthlyDiary />} />
+            <Route path="diary/write" element={<DiaryWrite />} />
+            <Route path="diary/edit/:id" element={<DiaryWrite />} />
+            {/* Constellation 관련 */}
+            <Route path="constellation/detail/:year" element={<ConstellationDetail />} />
+            <Route path="constellation/ai/gallery" element={<ConstellationAi />} />
+            {/* AI 채팅 관련 */}
+            <Route path="chat" element={<AiChat />} />
           </Route>
-          {/* 별 보기 추가 */}
-          <Route path="diary/monthly" element={<MonthlyDiary />} />
-          <Route path="diary/write" element={<DiaryWrite />} />
-          <Route path="diary/edit/:id" element={<DiaryWrite />} />
-          {/* Constellation 관련 */}
-          <Route path="constellation/detail/:year" element={<ConstellationDetail />} />
-          <Route path="constellation/ai/gallery" element={<ConstellationAi />} />
-          {/* AI 채팅 관련 */}
-          <Route path="chat" element={<AiChat />} />
+
           {/* TEST용 */}
           <Route path="color" element={<ColorTest />} />
           {/* 에러페이지 */}
