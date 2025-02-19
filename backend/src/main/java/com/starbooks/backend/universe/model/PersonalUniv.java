@@ -21,7 +21,7 @@ public class PersonalUniv {
     @Column(name = "universe_id")
     private Long universeId;  // 기본 키
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "diary_emotion_id", nullable = false, unique = true)  // ✅ Unique Key 역할
     private DiaryEmotion diaryEmotion;
 
