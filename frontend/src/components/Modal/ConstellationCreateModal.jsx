@@ -4,19 +4,27 @@ import ConstellationCreateAi from "../../pages/Constellation/ConstellationCreate
 function ConstellationCreateModal({ isOpen, onClose, constellationData }) {
   if (!isOpen) return null;
 
+  const handleClose = (status) => {
+    if (status === 'C000') {
+      onClose('C000'); // 성공 상태 전달
+    } else {
+      onClose();
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
       {/* 배경 오버레이 */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={() => handleClose()}
       />
       
       {/* 모달 컨텐츠 */}
       <div className="relative bg-[#000033] p-6 rounded-3xl w-full max-w-md mx-4">
         {/* 닫기 버튼 */}
         <button
-          onClick={onClose}
+          onClick={() => handleClose()}
           className="absolute top-4 right-4 text-white/80 hover:text-white"
         >
           <X size={24} />
@@ -31,7 +39,10 @@ function ConstellationCreateModal({ isOpen, onClose, constellationData }) {
         </div>
 
         {/* 별자리 생성 컴포넌트 */}
-        <ConstellationCreateAi constellationData={constellationData} />
+        <ConstellationCreateAi 
+          constellationData={constellationData} 
+          onClose={handleClose}
+        />
       </div>
     </div>
   );
