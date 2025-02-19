@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import MainNav from "../../components/MainNav";
 
 function LoginHome() {
   const navigate = useNavigate();
@@ -36,9 +37,13 @@ function LoginHome() {
       >
         <source src=" /videos/home.mp4.mp4" type="video/mp4" />
       </video>
-
+      
+      <div className="absolute top-0 right-0 m-4 z-30">
+        <MainNav />
+      </div>
+      
       {/* 배경 오버레이 */}
-      <div className="absolu inset-0 bg-black/30" />
+      <div className="absolute inset-0 bg-black/30 pointer-events-none z-10" />
 
       {/* 메인 컨텐츠 */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-20">

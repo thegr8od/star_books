@@ -3,10 +3,12 @@ import AiChatInterface from "./AiChatInterface";
 import { useState } from "react";
 import Modal from "../../components/Modal";
 import aiImage from "/images/ai_chat_test.png";
+import { useNavigate } from "react-router-dom";
 
 function AiChat() {
   const [selectedAi, setSelectedAi] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(true);
+  const navigate = useNavigate();
 
   // ai 캐릭터 종류 및 관련 설명
   const aiCharacters = [
@@ -36,12 +38,17 @@ function AiChat() {
     setIsModalOpen(false);
   };
 
+  const closeChatPage = () => {
+    setIsModalOpen(false);
+    navigate("/");
+  };
+
   return (
     <Layout>
       <div className="">
         <Modal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => closeChatPage()}
           title="대화할 AI를 선택해주세요."
         >
           <div className="grid grid-cols-1 gap-3">

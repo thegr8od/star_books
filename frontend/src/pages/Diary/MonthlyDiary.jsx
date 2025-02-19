@@ -75,7 +75,7 @@ const MonthlyDiary = () => {
   };
 
   return (
-    <Layout>
+    <Layout backButton={true}>
       <div className="flex flex-col h-[calc(100vh-4rem)]">
         <DiaryDate currentDate={currentDate} setCurrentDate={setCurrentDate} />
         <div className="flex-1 flex-col space-y-4 overflow-y-auto bg-neutral-100 rounded-3xl p-4" style={{ scrollbarWidth: "none" }}>
