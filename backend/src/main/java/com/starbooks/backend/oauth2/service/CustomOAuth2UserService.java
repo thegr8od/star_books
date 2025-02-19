@@ -26,15 +26,15 @@ import java.util.Optional;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final EntityManager entityManager; // 추가
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        log.info(" OAuth2 로그인 요청: {}", userRequest.getClientRegistration().getRegistrationId());
+        log.info("✅ OAuth2 로그인 요청: {}", userRequest.getClientRegistration().getRegistrationId());
 
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        log.info(" OAuth2User Attributes: {}", oAuth2User.getAttributes());
+        log.info("✅ OAuth2User Attributes: {}", oAuth2User.getAttributes());
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response;
@@ -55,36 +55,21 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             throw new OAuth2AuthenticationException("이메일이 없습니다.");
         }
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        User user;
-
-        if (optionalUser.isPresent()) {
-            user = optionalUser.get();
-            log.info("✅ 기존 유저 로그인: {}", user.getEmail());
-        } else {
-            user = User.builder()
+        // ✅ 기존 사용자 조회 또는 신규 사용자 생성
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = User.builder()
                     .email(email)
-                    .password(null)  // OAuth 로그인 사용자는 비밀번호 없음
+                    .password(null)
                     .nickname(oAuth2Response.getName() != null ? oAuth2Response.getName() : "Unknown User")
-                    .gender(Gender.OTHER)  // 기본값 설정
-                    .snsAccount(true)  // ✅ 소셜 로그인 계정임을 명확히 설정
-                    .role(Role.member)  // ✅ 일반 사용자와 동일하게 설정
-                    .isActive(true)  // ✅ 활성화된 계정으로 설정
+                    .gender(Gender.OTHER)
+                    .snsAccount(true)
+                    .role(Role.member)
+                    .isActive(true)
                     .build();
-
-            userRepository.save(user);
-            log.info("✅ 소셜 로그인 사용자 저장 완료: {}", user);
-
-
-            log.info("📥 새 유저 등록 시도: {}", user);
-            try {
-                userRepository.save(user);
-                entityManager.flush(); // 강제 Flush (JPA 영속성 컨텍스트 반영)
-                log.info("🎉 새 유저 등록 성공: {}", user.getEmail());
-            } catch (Exception e) {
-                log.error("🚨 유저 저장 실패! 에러: {}", e.getMessage(), e);
-            }
-        }
+            userRepository.save(newUser);
+            log.info("✅ 소셜 로그인 사용자 저장 완료: {}", newUser.getEmail());
+            return newUser;
+        });
 
         return new CustomOAuth2User(user, oAuth2User.getAttributes());
     }
