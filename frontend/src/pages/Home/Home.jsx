@@ -7,45 +7,31 @@ import LoginHome from "./LoginHome";
 import useMemberApi from "../../api/useMemberApi";
 
 const Home = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchParams] = useSearchParams();
   const location = useLocation(); // 현재 페이지 경로 가져오기
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
 
-  useEffect(async () => {
+  useEffect(() => {
     const token = searchParams.get("token");
+    const storedToken = localStorage.getItem("accessToken");
 
     //oauth
     if (token) {
       // 토큰을 로컬 스토리지에 저장
       localStorage.setItem("accessToken", token);
-      
-      try {
-        const response = await useMemberApi.getMemberMY();
 
-        if(response.status === 200){
-          const userData = { ...response.data.data, isLogin: true };
-        
-          // ✅ Redux 저장 전에 localStorage에도 저장
-          // localStorage.setItem("user", JSON.stringify(userData));
+      setIsLoggedIn(true); // 로그인 상태 업데이트
 
-          console.log(response.data.data.nickname);
-          dispatch(setUser(userData));
-          console.log(user.isLogin);
-        }
-
-      } catch(e) {
-        console.error("Oauth 로그인인 에러:", error);
-      }
-
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 2000);
+      window.location.replace("/");
+    } else if (storedToken) { //이미 oauth로 로그인한 사람 or 일반 로그인
+      // 기존 토큰이 있으면 로그인 유지
+      setIsLoggedIn(true);
     }
-    
   }, [searchParams, location.pathname]); // searchParams 또는 현재 경로가 변경될 때 실행
 
-  return <>{user.isLogin ? <LoginHome /> : <HomeBackground />}</>;
+  return <>{isLoggedIn ? <LoginHome /> : <HomeBackground />}</>;
 };
 
 export default Home;
