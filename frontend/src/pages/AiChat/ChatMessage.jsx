@@ -1,6 +1,4 @@
-import aiImage from "/images/ai_chat_test.png";
-
-function ChatMessage({ isBot, message }) {
+function ChatMessage({ isBot, message, aiCharacter }) {
   return (
     <div
       className={`flex w-full ${isBot ? "justify-start" : "justify-end"} mb-4`}
@@ -8,7 +6,10 @@ function ChatMessage({ isBot, message }) {
       {/* AI */}
       {isBot && (
         <div className="w-12 h-12 rounded-full bg-white items-center justify-center mr-2">
-          <img src={aiImage} alt="ai 프로필" />
+          <img
+            src={aiCharacter?.image}
+            alt={`${aiCharacter?.name || "AI"} 프로필`}
+          />
         </div>
       )}
 
