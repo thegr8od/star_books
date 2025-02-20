@@ -23,8 +23,42 @@ import Diary from "./pages/Diary/Diary";
 import ConstellationAi from "./pages/Constellation/ConstellationAi";
 import Radio from "./pages/Radio/Radio";
 import PrivateRoute from "./components/PrivateRoute";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import useMemberApi from "./api/useMemberApi";
+import { setUser, clearUser } from "./store/userSlice";
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+          const response = await useMemberApi.getMemberMY();
+          
+          if (response?.data?.data) {
+            dispatch(
+              setUser({
+                ...response.data.data,
+                isLogin: true,
+              })
+            );
+          } else {
+            throw new Error("Invalid response");
+          }
+        }
+      } catch (error) {
+        console.error("인증 에러:", error);
+        localStorage.removeItem("accessToken");
+        dispatch(clearUser());
+      }
+    };
+
+    initializeAuth();
+  }, [dispatch]);
+
   return (
     <>
       <div className="flex min-h-screen w-screen bg-gradient-to-b from-[#000054] to-[#010121]">

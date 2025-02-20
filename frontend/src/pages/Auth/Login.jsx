@@ -111,7 +111,6 @@ const Login = () => {
           dispatch(setUser({ 
             ...response.user, 
             isLogin: true,
-            isActive: true 
           }));
           setAlertMessage("로그인에 성공했습니다!");
           setShowAlert(true);

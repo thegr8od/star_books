@@ -35,7 +35,6 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
     "react-tooltip": "^5.28.0",
-    "redux-persist": "^6.0.0",
     "tailwind-scrollbar-hide": "^2.0.0",
     "three": "^0.172.0"
   },
