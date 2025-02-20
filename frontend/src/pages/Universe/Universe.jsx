@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { useNavigate } from "react-router-dom";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useSelector } from "react-redux";
 import useUniverseApi from "../../api/useUniverseApi";
 import axios from "axios";
@@ -13,6 +14,7 @@ const ParticlePlanetGallery = () => {
   const rendererRef = useRef(null);
   const controlsRef = useRef(null);
   const particleGroupRef = useRef(null);
+  const navigate = useNavigate();
 
   // 마우스가 현재 사용자 감정 파티클 위에 있는지 관리
   const [hovering, setHovering] = useState(false);
@@ -456,18 +458,44 @@ const ParticlePlanetGallery = () => {
     mountRef.current.addEventListener("pointermove", handlePointerMove);
 
     return () => {
+      // 🎯 mountRef.current가 존재할 때만 이벤트 제거
+      if (mountRef.current) {
+        mountRef.current.removeEventListener("pointermove", handlePointerMove);
+      }
+
+      // 🎯 window 이벤트 리스너도 제거
       window.removeEventListener("resize", handleResize);
-      mountRef.current.removeEventListener("pointermove", handlePointerMove);
+      // mountRef.current.removeEventListener("pointermove", handlePointerMove);
+      // 🎯 애니메이션 프레임 중지
       cancelAnimationFrame(animationFrameId);
+
+      // 🎯 렌더러가 존재하면 정리
+      if (rendererRef.current) {
+        rendererRef.current.dispose();
+      }
+
+      // 🎯 씬에서 파티클 제거 (null 체크 추가)
+      if (sceneRef.current && particleGroupRef.current) {
+        particleGroupRef.current.children.forEach((child) => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) child.material.dispose();
+        });
+        sceneRef.current.remove(particleGroupRef.current);
+      }
+
+      // 🎯 DOM에서 렌더러 제거
       if (mountRef.current && rendererRef.current) {
         mountRef.current.removeChild(rendererRef.current.domElement);
       }
-      particleGroup.children.forEach((child) => {
-        if (child.geometry) child.geometry.dispose();
-        if (child.material) child.material.dispose();
-      });
-      scene.remove(particleGroup);
-      renderer.dispose();
+      
+      // particleGroup.children.forEach((child) => {
+      //   if (child.geometry) child.geometry.dispose();
+      //   if (child.material) child.material.dispose();
+      // });
+
+      // scene.remove(particleGroup);
+      // renderer.dispose();
+      // 🎯 메모리 해제
       sceneRef.current = null;
       cameraRef.current = null;
       rendererRef.current = null;
@@ -496,6 +524,14 @@ const ParticlePlanetGallery = () => {
   return (
     <div className="relative w-full h-screen bg-black">
       <div ref={mountRef} className="w-full h-full" />
+      <div className="absolute top-4 right-4 flex gap-2 flex-col">
+        <button
+            onClick={() => navigate("/")}
+            className="bg-white/10 p-2 rounded-full hover:bg-white/50 transition-colors"
+          >
+          <X className="w-5 h-5 text-white" />
+        </button>
+      </div>
       {/* UI 메시지 오버레이 */}
       <div
         className={`absolute bottom-20 left-1/2 transform -translate-x-1/2 text-white px-4 py-2 rounded shadow-lg text-lg transition-opacity duration-500 ${

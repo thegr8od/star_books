@@ -1,27 +1,35 @@
-import aiImage from "/images/ai_chat_test.png";
+import React from "react";
 
-function ChatMessage({ isBot, message }) {
+const ChatMessage = ({ isBot, message, aiCharacter }) => {
   return (
     <div
-      className={`flex w-full ${isBot ? "justify-start" : "justify-end"} mb-4`}
+      className={`flex items-start gap-3 mb-4 ${!isBot && "flex-row-reverse"}`}
     >
-      {/* AI */}
-      {isBot && (
-        <div className="w-12 h-12 rounded-full bg-white items-center justify-center mr-2">
-          <img src={aiImage} alt="ai 프로필" />
-        </div>
-      )}
+      {/* 프로필 이미지를 동그라미로 만들고 중앙 정렬 */}
+      <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+        {isBot ? (
+          <img
+            src={aiCharacter?.image}
+            alt="AI Character"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+            U
+          </div>
+        )}
+      </div>
 
-      {/* 말풍선 */}
+      {/* 메시지 내용 */}
       <div
-        className={`max-w-[70%] rounded-lg px-4 py-2 text-white ${
-          isBot ? "bg-[#9da7d9]/50" : "bg-white/50"
+        className={`px-4 py-2 rounded-xl max-w-[70%] ${
+          isBot ? "bg-white/20 text-white" : "bg-blue-500 text-white"
         }`}
       >
-        <p className="text-md break-words">{message}</p>
+        {message}
       </div>
     </div>
   );
-}
+};
 
 export default ChatMessage;

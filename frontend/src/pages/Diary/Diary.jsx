@@ -18,7 +18,10 @@ function Diary() {
   const isCalendarMatch = useMatch({ path: "/diary/calendar", end: true });
   const currentTab = isStarsMatch ? "stars" : isCalendarMatch ? "calendar" : "";
   const [modalData, setModalData] = useState(null);
-  const [clickDay, setClickDay] = useState(null); // 클릭한 날짜를 DiaryCalendar(하위)에서 상태 넘겨줌
+  const [clickDay, setClickDay] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+
   const handleSetShowModal = (show, data) => {
     setShowModal(show);
     setModalData(data);

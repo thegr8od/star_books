@@ -6,6 +6,7 @@ import Button from "../../components/Button";
 import GetColor from "../../components/GetColor";
 import ErrorPage from "../ErrorPage";
 import useDiaryApi from "../../api/useDiaryApi";
+import DiaryColorGuide from "./DiaryColorGuide";
 
 const DiaryWrite = () => {
   const { id } = useParams();
@@ -16,7 +17,6 @@ const DiaryWrite = () => {
   const { emotions, xvalue, yvalue, diaryId, originalData } = location.state;
 
   const [text, setText] = useState("");
-  const [diaryData, setDiaryData] = useState([]);
   const [imagePreview, setImagePreview] = useState(null); // 프리뷰 이미지
   const [existingImage, setExistingImage] = useState(null); // 기존에 저장되어있는 이미지가 있을 때
   const [uploadedImageUrl, setUploadedImageUrl] = useState(null); // 업로드된 이미지 URL 저장
@@ -59,8 +59,8 @@ const DiaryWrite = () => {
   const getCurrentEmotionValues = () => {
     if (isEditMode) {
       return {
-        x: location.state.diary.emotions[0]?.xValue || 0,
-        y: location.state.diary.emotions[0]?.yValue || 0,
+        x: location.state.diary.DiaryEmotion?.xValue || 0,
+        y: location.state.diary.DiaryEmotion?.yValue || 0,
       };
     }
     return { x: xvalue, y: yvalue };
@@ -70,10 +70,13 @@ const DiaryWrite = () => {
   const getDayInfo = () => {
     const days = ["일", "월", "화", "수", "목", "금", "토"];
     let dateArray;
+
     if (isEditMode && location.state?.diary) {
+      // 수정모드
       dateArray = diary.diaryDate;
-    } else if (location.state?.diaryDate) {
-      dateArray = location.state.diaryDate;
+    } else if (location.state?.originalData) {
+      // 작성모드
+      dateArray = location.state.originalData.diaryDate;
     } else {
       const today = new Date();
       dateArray = [today.getFullYear(), today.getMonth() + 1, today.getDate()];
@@ -84,13 +87,6 @@ const DiaryWrite = () => {
     const dayName = days[date.getDay()];
     return { dayNum, dayName, month };
   };
-
-  // getDayInfo 호출을 useEffect 내부로 이동
-  const [dateInfo, setDateInfo] = useState({
-    month: 0,
-    dayNum: 0,
-    dayName: "",
-  });
 
   // 이미지 업로드
   const handleImageUpload = (e) => {
@@ -158,7 +154,12 @@ const DiaryWrite = () => {
 
     savePromise
       .then(() => {
-        navigate("/diary/calendar");
+        const formattedDate = `${dateArray[0]}-${String(dateArray[1]).padStart(2, '0')}-${String(dateArray[2]).padStart(2, '0')}`;
+        navigate("/diary/monthly",{
+          state: {
+            selectedDate: formattedDate,
+          },
+        });
       })
       .catch((error) => {
         console.error("일기 저장 실패:", error);
@@ -171,14 +172,14 @@ const DiaryWrite = () => {
   };
 
   return (
-    <Layout>
+    <Layout backButton={true}>
       <div className="h-full flex flex-col space-y-6 pt-3">
         {/* 날짜 */}
         <div className="text-white px-3 text-lg">
           <div className="flex items-baseline gap-2 border-b border-white pb-1 w-fit">
-            <span>{dateInfo.month}월</span>
-            <span>{dateInfo.dayNum}일</span>
-            <span>{dateInfo.dayName}요일</span>
+            <span>{getDayInfo().month}월</span>
+            <span>{getDayInfo().dayNum}일</span>
+            <span>{getDayInfo().dayName}요일</span>
           </div>
         </div>
 
@@ -186,11 +187,22 @@ const DiaryWrite = () => {
         <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
           {/* 감정 아이콘 */}
           <div className="flex justify-center">
-            <span
-              className="rounded-full w-6 h-6"
-              style={{ backgroundColor: GetColor(xvalue, yvalue) }}
-            />
-            {/* <span className={`rounded-full w-6 h-6 bg-[${GetColor(2, 3)}]`} /> */}
+            <DiaryColorGuide
+              color={GetColor(
+                getCurrentEmotionValues().x,
+                getCurrentEmotionValues().y
+              )}
+            >
+              <span
+                className="rounded-full w-8 h-8"
+                style={{
+                  backgroundColor: GetColor(
+                    getCurrentEmotionValues().x,
+                    getCurrentEmotionValues().y
+                  ),
+                }}
+              />
+            </DiaryColorGuide>
           </div>
 
           {/* 텍스트 입력 칸*/}
@@ -200,6 +212,7 @@ const DiaryWrite = () => {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="이곳을 클릭하여 오늘의 이야기를 적어보세요."
+              style={{ scrollbarWidth: "none" }}
             />
           </div>
 
