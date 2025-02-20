@@ -54,6 +54,8 @@ function ConstellationDetail() {
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const controlsRef = useRef(null);
+  const constellationLinesRef = useRef([]); // 별자리 선들을 저장할 ref 추가
+  const backgroundStarsRef = useRef(null); // 배경 별들을 저장할 ref 추가
 
   // month 파라미터가 없으면 전체 보기(true), 있으면 개별 보기(false)
   const [isMaximized, setIsMaximized] = useState(!month);
@@ -128,20 +130,29 @@ function ConstellationDetail() {
         return { month: monthData.month, points: [], lines: [] };
       }
 
-      // xcoord, ycoord → 좌표
+      // xcoord, ycoord를 선의 좌표와 동일한 방식으로 저장
       const points = monthData.data.map((emotion) => ({
-        x: (emotion.xcoord / 10) * 2,
-        y: (emotion.ycoord / 10) * 2,
+        x: emotion.xcoord, // 변환하지 않고 원본 값 그대로 저장
+        y: emotion.ycoord, // 변환하지 않고 원본 값 그대로 저장
         emotionId: emotion.diaryEmotionId,
+        color: emotion.color || 0xffffff,
       }));
 
       // 선: startEmotionId, endEmotionId를 points 인덱스로 매핑
-      const lines = monthData.starlines
-        .map((line) => ({
-          start: points.findIndex((p) => p.emotionId === line.startEmotionId),
-          end: points.findIndex((p) => p.emotionId === line.endEmotionId),
-        }))
-        .filter((line) => line.start !== -1 && line.end !== -1);
+      const lines = monthData.starlines.map((line) => ({
+        startX:
+          monthData.data.find((e) => e.diaryEmotionId === line.startEmotionId)
+            ?.xcoord || 0,
+        startY:
+          monthData.data.find((e) => e.diaryEmotionId === line.startEmotionId)
+            ?.ycoord || 0,
+        endX:
+          monthData.data.find((e) => e.diaryEmotionId === line.endEmotionId)
+            ?.xcoord || 0,
+        endY:
+          monthData.data.find((e) => e.diaryEmotionId === line.endEmotionId)
+            ?.ycoord || 0,
+      }));
 
       return { month: monthData.month, points, lines };
     });
@@ -152,53 +163,48 @@ function ConstellationDetail() {
     const group = new THREE.Group();
     const starCluster = new THREE.Group();
 
-    // z축 위치 계산 (입체감을 위해)
-    const calculateZ = (x, y) => {
-      const distance = Math.sqrt(x * x + y * y);
-      const maxZ = 1.5;
-      return (distance / 2) * maxZ;
+    // 0-100 범위의 좌표를 -2~2 범위로 변환하는 함수
+    const convertCoordinate = (value) => {
+      return ((value - 50) / 25) * 2;
     };
 
-    // 별자리의 중심점 계산을 위한 변수들
-    let minX = Infinity,
-      maxX = -Infinity;
-    let minY = Infinity,
-      maxY = -Infinity;
+    // z축 위치 계산 (입체감을 위해)
+    const calculateZ = (x, y) => {
+      const distanceFromCenter = Math.sqrt(x * x + y * y);
+      const maxDistance = 2;
+      const maxZ = 1.5;
+      return (distanceFromCenter / maxDistance) * maxZ;
+    };
 
-    // 각 별의 위치를 기록하여 중심점 계산
-    monthData.points.forEach((point) => {
-      minX = Math.min(minX, point.x);
-      maxX = Math.max(maxX, point.x);
-      minY = Math.min(minY, point.y);
-      maxY = Math.max(maxY, point.y);
-    });
-
-    // 별자리의 중심점 계산
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-
-    // 임의 색상
-    const starColors = [
-      0xff4444, 0x44ff44, 0x4444ff, 0xffff44, 0xff44ff, 0x44ffff, 0xffaa44,
-      0x44ffaa, 0xaa44ff, 0xffff88, 0xff88ff, 0x88ffff,
-    ];
-
-    const sphereGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+    const sphereGeometry = new THREE.SphereGeometry(0.1, 32, 32);
     const pointZValues = {};
+    const stars = [];
+    const constellationLines = [];
 
     // 각 별 생성
     monthData.points.forEach((point, idx) => {
-      const z = calculateZ(point.x, point.y);
+      // 선의 좌표와 동일한 방식으로 변환
+      const convertedX = convertCoordinate(point.x);
+      const convertedY = convertCoordinate(point.y);
+      const z = calculateZ(
+        convertCoordinate(point.x),
+        convertCoordinate(point.y)
+      );
       pointZValues[idx] = z;
+
       const starMaterial = new THREE.MeshBasicMaterial({
-        color: starColors[idx % starColors.length],
-        emissive: starColors[idx % starColors.length],
-        emissiveIntensity: 0.5,
+        color: new THREE.Color(point.color || 0xffffff),
         transparent: true,
-        opacity: 1,
+        opacity: 0,
       });
+
       const star = new THREE.Mesh(sphereGeometry, starMaterial);
-      star.position.set(point.x, point.y, z);
+      star.position.set(convertedX, convertedY, z);
+      star.userData = {
+        originalScale: star.scale.clone(),
+        pulseTime: Math.random() * Math.PI * 2,
+      };
+      stars.push(star);
       starCluster.add(star);
     });
 
@@ -206,85 +212,92 @@ function ConstellationDetail() {
     const lineMaterial = new THREE.LineBasicMaterial({
       color: 0x888888,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0,
     });
+
     monthData.lines.forEach((line) => {
-      if (monthData.points[line.start] && monthData.points[line.end]) {
-        const geometry = new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(
-            monthData.points[line.start].x,
-            monthData.points[line.start].y,
-            pointZValues[line.start]
-          ),
-          new THREE.Vector3(
-            monthData.points[line.end].x,
-            monthData.points[line.end].y,
-            pointZValues[line.end]
-          ),
-        ]);
-        const constellationLine = new THREE.Line(
-          geometry,
-          lineMaterial.clone()
-        );
-        starCluster.add(constellationLine);
-      }
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(
+          convertCoordinate(line.startX),
+          convertCoordinate(line.startY),
+          calculateZ(
+            convertCoordinate(line.startX),
+            convertCoordinate(line.startY)
+          )
+        ),
+        new THREE.Vector3(
+          convertCoordinate(line.endX),
+          convertCoordinate(line.endY),
+          calculateZ(convertCoordinate(line.endX), convertCoordinate(line.endY))
+        ),
+      ]);
+
+      const constellationLine = new THREE.Line(geometry, lineMaterial.clone());
+      constellationLines.push(constellationLine);
+      constellationLinesRef.current.push(constellationLine);
+      starCluster.add(constellationLine);
     });
-
-    // 별자리 크기 제한을 위한 스케일 계산 수정
-    const scaleConstellation = (points) => {
-      const cellWidth = LAYOUT.CELL.WIDTH;
-      const cellHeight = LAYOUT.CELL.HEIGHT;
-
-      const currentWidth = maxX - minX;
-      const currentHeight = maxY - minY;
-
-      // 스케일 계산 수정
-      const scaleX = (cellWidth * 0.8) / currentWidth;
-      const scaleY = (cellHeight * 0.8) / currentHeight;
-      const scale = Math.min(scaleX, scaleY);
-
-      // 중심점 기준으로 스케일링
-      return points.map((point) => ({
-        ...point,
-        x: (point.x - centerX) * scale,
-        y: (point.y - centerY) * scale,
-      }));
-    };
-
-    // 별자리 포인트 스케일링 적용
-    monthData.points = scaleConstellation(monthData.points);
 
     // 월 표시 레이블 생성
-    let monthLabel = null;
     const monthIndex = monthData.month - 1;
     const position = monthPositions[monthIndex];
 
-    if (monthData.points.length > 0) {
-      const labelDiv = document.createElement("div");
-      labelDiv.className =
-        "bg-white/30 text-white px-2 py-0.5 rounded-full text-[10px] font-medium";
-      labelDiv.textContent = `${monthData.month}월`;
-      monthLabel = new CSS2DObject(labelDiv);
+    const labelDiv = document.createElement("div");
+    labelDiv.className =
+      "bg-white/30 text-white px-2 py-0.5 rounded-full text-[8px]";
+    labelDiv.textContent = `${monthData.month}월`;
+    const monthLabel = new CSS2DObject(labelDiv);
+    monthLabel.position.set(0, 3.5, 0);
+    group.add(monthLabel);
 
-      // 레이블 위치 설정 (셀의 상단에 배치)
-      monthLabel.position.set(
-        position.x,
-        position.y + LAYOUT.CELL.HEIGHT / 2,
-        position.z
-      );
-    }
-
-    // 별자리 위치 설정 수정
+    // 별자리 위치 설정
     group.position.set(
       position.x,
       position.y - LAYOUT.CELL.LABEL_MARGIN,
       position.z
     );
 
-    // starCluster 위치 조정 제거 (이미 중심점 기준으로 스케일링됨)
     group.add(starCluster);
 
-    return { group, monthLabel, centerX, centerY };
+    // 페이드인 및 펄스 애니메이션
+    let startTime = null;
+    const animateConstellation = (time) => {
+      if (!startTime) startTime = time;
+      const elapsed = time - startTime;
+
+      stars.forEach((star, index) => {
+        const delay = index * 100;
+        if (elapsed > delay) {
+          const fadeProgress = Math.min((elapsed - delay) / 500, 1);
+          star.material.opacity = fadeProgress;
+
+          const pulseAmount = 0.2;
+          const pulse =
+            Math.sin(elapsed * 0.002 + star.userData.pulseTime) * pulseAmount +
+            1;
+          star.scale.set(
+            star.userData.originalScale.x * pulse,
+            star.userData.originalScale.y * pulse,
+            star.userData.originalScale.z * pulse
+          );
+        }
+      });
+
+      constellationLines.forEach((line, index) => {
+        const delay = stars.length * 100 + index * 50;
+        if (elapsed > delay) {
+          const fadeProgress = Math.min((elapsed - delay) / 300, 1);
+          line.material.opacity = fadeProgress * 0.6;
+        }
+      });
+
+      if (elapsed < (stars.length + constellationLines.length) * 100 + 1000) {
+        requestAnimationFrame(animateConstellation);
+      }
+    };
+
+    requestAnimationFrame(animateConstellation);
+    return { group };
   };
 
   // 개별 보기 모드일 때 카메라 위치 계산 함수 수정
@@ -305,26 +318,26 @@ function ConstellationDetail() {
 
     const processedData = processData();
 
-    // 만약 개별 보기 모드이고, currentIndex가 데이터 범위를 벗어나면 0으로 초기화
-    if (!isMaximized && currentIndex >= processedData.length) {
-      setCurrentIndex(0);
-    }
-
     // Scene
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
     // 배경 그라데이션
     const bgCanvas = document.createElement("canvas");
+    const bgContext = bgCanvas.getContext("2d");
     bgCanvas.width = 2;
     bgCanvas.height = 512;
-    const bgContext = bgCanvas.getContext("2d");
+
     const gradient = bgContext.createLinearGradient(0, 0, 0, 512);
     gradient.addColorStop(0, "#00001B");
     gradient.addColorStop(1, "#000000");
     bgContext.fillStyle = gradient;
     bgContext.fillRect(0, 0, 2, 512);
-    scene.background = new THREE.CanvasTexture(bgCanvas);
+
+    const texture = new THREE.CanvasTexture(bgCanvas);
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearFilter;
+    scene.background = texture;
 
     // Camera
     const camera = new THREE.PerspectiveCamera(
@@ -335,86 +348,41 @@ function ConstellationDetail() {
     );
 
     if (isMaximized) {
-      // 전체 보기 모드: 전체가 보이도록 멀리
-      camera.position.set(0, 0, 100);
+      // 전체 보기 모드
+      camera.position.set(0, 0, 40);
       camera.lookAt(0, 0, 0);
     } else {
-      // 개별 보기 모드: 현재 선택된 월의 위치로 카메라 이동
+      // 개별 보기 모드
       const safeIndex = Math.min(currentIndex, processedData.length - 1);
       const monthData = processedData[safeIndex];
-      const cameraPos = calculateCameraPosition(monthData);
-      camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
-      camera.lookAt(cameraPos.x, cameraPos.y, 0);
+      const position = monthPositions[monthData.month - 1];
+      camera.position.set(position.x, position.y, 10);
+      camera.lookAt(position.x, position.y, 0);
     }
 
     cameraRef.current = camera;
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+    });
+
+    // 크기 설정
     renderer.setSize(
       mountRef.current.clientWidth,
       mountRef.current.clientHeight
     );
+
+    // 픽셀 비율 설정
     renderer.setPixelRatio(window.devicePixelRatio > 1 ? 2 : 1);
+
+    // DOM에 추가
     mountRef.current.appendChild(renderer.domElement);
+
+    // ref에 저장
     rendererRef.current = renderer;
 
-    // OrbitControls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.screenSpacePanning = false;
-    controls.minDistance = isMaximized ? 80 : 15; // 최소 거리 감소
-    controls.maxDistance = isMaximized ? 120 : 25; // 최대 거리 감소
-    controls.enableRotate = false;
-    controls.enableZoom = true;
-    controls.zoomSpeed = 0.8;
-    controls.enablePan = false;
-
-    if (!isMaximized) {
-      // 개별 보기 모드에서는 현재 선택된 월의 위치를 바라보도록
-      const monthData = processedData[currentIndex];
-      const position = monthPositions[monthData.month - 1];
-      controls.target.set(position.x, position.y, 0);
-    } else {
-      // 전체 보기 모드에서는 중앙을 바라보도록
-      controls.target.set(0, 0, 0);
-    }
-    controlsRef.current = controls;
-
-    // 배경 별들을 담을 그룹
-    const backgroundStars = new THREE.Group();
-    scene.add(backgroundStars);
-
-    // 배경 별
-    const starsGeometry = new THREE.BufferGeometry();
-    const count = 50000;
-    const positions = new Float32Array(count * 3);
-    for (let i = 0; i < positions.length; i++) {
-      positions[i] = (Math.random() - 0.5) * 1000;
-    }
-    starsGeometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(positions, 3)
-    );
-
-    const starsMaterial = new THREE.PointsMaterial({
-      size: 0.03,
-      color: "yellow",
-      transparent: true,
-      opacity: 0.6,
-    });
-
-    const stars = new THREE.Points(starsGeometry, starsMaterial);
-    backgroundStars.add(stars); // scene 대신 backgroundStars에 추가
-
-    // 조명
-    scene.add(new THREE.AmbientLight("white", 0.5));
-    const directionalLight = new THREE.DirectionalLight("white", 1);
-    directionalLight.position.set(1, 1, 2);
-    scene.add(directionalLight);
-
-    // CSS2DRenderer
+    // ===== 2D 레이블 렌더러 설정 =====
     const labelRenderer = new CSS2DRenderer();
     labelRenderer.setSize(
       mountRef.current.clientWidth,
@@ -437,50 +405,111 @@ function ConstellationDetail() {
     const allData = processedData;
     if (isMaximized) {
       // 전체 보기
-      allData.forEach((monthData) => {
-        const { group, monthLabel } = createConstellation(monthData);
+      const cols = LAYOUT.GRID.COLS;
+      const rows = Math.ceil(allData.length / cols);
+      const spacing = LAYOUT.GRID.SPACING_X;
+      const verticalSpacing = LAYOUT.GRID.SPACING_Y;
+
+      // 연도 레이블 생성
+      const yearLabelDiv = document.createElement("div");
+      yearLabelDiv.className =
+        "bg-white/30 text-white px-3 py-1 rounded-full text-sm";
+      yearLabelDiv.textContent = year;
+      const yearLabel = new CSS2DObject(yearLabelDiv);
+      yearLabel.position.set(0, (rows * verticalSpacing) / 2 + 4, 0);
+      mainGroup.add(yearLabel);
+
+      // 격자 형태로 별자리 배치
+      allData.forEach((monthData, i) => {
+        const { group } = createConstellation(monthData);
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+
+        group.position.x = (col - (cols - 1) / 2) * spacing;
+        group.position.y = -(row - (rows - 1) / 2) * verticalSpacing;
+
         mainGroup.add(group);
-        if (monthLabel) {
-          labelGroup.add(monthLabel);
-        }
       });
     } else {
       // 개별 보기
       if (allData.length > 0) {
         const safeIndex = Math.min(currentIndex, allData.length - 1);
-        const { group, monthLabel, centerX, centerY } = createConstellation(
-          allData[safeIndex]
-        );
+        const { group } = createConstellation(allData[safeIndex]);
         mainGroup.add(group);
-        if (monthLabel) {
-          labelGroup.add(monthLabel);
-        }
 
         // 카메라가 별자리 중심을 바라보도록 설정
         const cameraPos = calculateCameraPosition(allData[safeIndex]);
         camera.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
-        camera.lookAt(cameraPos.x, centerY, 0);
-        controls.target.set(cameraPos.x, centerY, 0);
+        camera.lookAt(cameraPos.x, cameraPos.y, 0);
       }
     }
+
+    // OrbitControls 설정
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controlsRef.current = controls;
+
+    // 배경 별 생성
+    const starsGeometry = new THREE.BufferGeometry();
+    const count = 50000;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < positions.length; i++) {
+      positions[i] = (Math.random() - 0.5) * 1000;
+    }
+    starsGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(positions, 3)
+    );
+
+    const starsMaterial = new THREE.PointsMaterial({
+      size: 0.03,
+      color: "yellow",
+      transparent: true,
+      opacity: 0.6,
+    });
+
+    const stars = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(stars);
+    backgroundStarsRef.current = stars; // ref에 저장
+
+    // ===== 조명 설정 =====
+    const ambientLight = new THREE.AmbientLight("white", 0.5);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight("white", 1);
+    directionalLight.position.set(1, 1, 2);
+    scene.add(directionalLight);
 
     // 애니메이션 루프 수정
     const animate = () => {
       const animationId = requestAnimationFrame(animate);
-      controls.update();
 
-      // 배경 별들만 회전
-      backgroundStars.rotation.y += 0.0001; // 배경 별은 천천히 회전
+      // OrbitControls 업데이트
+      if (controlsRef.current) {
+        controlsRef.current.update();
+      }
 
+      // 별자리 그룹 회전
+      mainGroup.children.forEach((constellation) => {
+        constellation.rotation.y += 0.005;
+      });
+
+      // 배경 별들 회전
+      if (backgroundStarsRef.current) {
+        backgroundStarsRef.current.rotation.y += 0.0001;
+      }
+
+      // 렌더링
       renderer.render(scene, camera);
       labelRenderer.render(scene, camera);
       return animationId;
     };
     const animationId = animate();
 
-    // 리사이즈
+    // ===== 윈도우 리사이즈 핸들러 =====
     const handleResize = () => {
       if (!mountRef.current || !renderer || !camera) return;
+
       camera.aspect =
         mountRef.current.clientWidth / mountRef.current.clientHeight;
       camera.updateProjectionMatrix();
@@ -495,14 +524,27 @@ function ConstellationDetail() {
       renderer.render(scene, camera);
       labelRenderer.render(scene, camera);
     };
+
     window.addEventListener("resize", handleResize);
 
     return () => {
+      // ===== 클린업 =====
+      // 이벤트 리스너 제거
       window.removeEventListener("resize", handleResize);
+
+      // 애니메이션 정지
       cancelAnimationFrame(animationId);
+
+      // DOM 요소 제거
       mountRef.current?.removeChild(renderer.domElement);
       mountRef.current?.removeChild(labelRenderer.domElement);
+
+      // 리소스 해제
       renderer.dispose();
+
+      // ref 초기화
+      constellationLinesRef.current = [];
+      backgroundStarsRef.current = null;
     };
   }, [isMaximized, loading, currentIndex]);
 
@@ -522,7 +564,7 @@ function ConstellationDetail() {
     );
   }
 
-  // 개별 보기에서 이전 달
+  // ===== 이전/다음 별자리 핸들러 =====
   const handlePrevious = () => {
     setCurrentIndex((prev) => {
       if (prev === 0) return universeData.length - 1;
@@ -530,7 +572,6 @@ function ConstellationDetail() {
     });
   };
 
-  // 개별 보기에서 다음 달
   const handleNext = () => {
     setCurrentIndex((prev) => {
       if (prev === universeData.length - 1) return 0;
@@ -542,7 +583,7 @@ function ConstellationDetail() {
     <div className="relative w-full h-screen bg-black">
       <div ref={mountRef} className="w-full h-full" />
 
-      {/* 오른쪽 상단 버튼: 전체 보기 <-> 개별 보기 토글 */}
+      {/* 최대화/최소화 버튼 */}
       <div className="absolute top-4 right-4 flex gap-2">
         <button
           onClick={() => setIsMaximized((prev) => !prev)}
@@ -556,8 +597,8 @@ function ConstellationDetail() {
         </button>
       </div>
 
-      {/* 개별 보기 모드이면서, 데이터가 2개 이상일 때 이전/다음 버튼 표시 */}
-      {!isMaximized && universeData.length > 1 && (
+      {/* 이전/다음 버튼 (최소화 모드에서만 표시) */}
+      {!isMaximized && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
           <button
             onClick={handlePrevious}
