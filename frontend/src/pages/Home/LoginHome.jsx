@@ -68,11 +68,11 @@ function LoginHome() {
       >
         <source src=" /videos/home.mp4.mp4" type="video/mp4" />
       </video>
-      
+
       <div className="absolute top-0 right-0 m-4 z-30">
         <MainNav />
       </div>
-      
+
       {/* 배경 오버레이 */}
       <div className="absolute inset-0 bg-black/30 pointer-events-none z-10" />
 
@@ -92,17 +92,17 @@ function LoginHome() {
         <div className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] mx-auto">
           <svg
             className="absolute inset-0 w-full h-full"
-            viewBox="0 0 400 400"
+            viewBox="-200 -200 400 400"
             preserveAspectRatio="xMidYMid meet"
           >
             {navItems.map((item) => {
-              const x = 200 + radius * Math.cos((item.angle * Math.PI) / 180);
-              const y = 200 + radius * Math.sin((item.angle * Math.PI) / 180);
+              const x = radius * Math.cos((item.angle * Math.PI) / 180);
+              const y = radius * Math.sin((item.angle * Math.PI) / 180);
               return (
                 <line
                   key={item.name}
-                  x1="200"
-                  y1="200"
+                  x1="0"
+                  y1="0"
                   x2={x}
                   y2={y}
                   stroke="white"
@@ -122,14 +122,14 @@ function LoginHome() {
               <button
                 key={item.name}
                 onClick={() => navigate(item.path)}
-                className={`absolute left-[43%] top-1/2 text-white font-['양진체']
+                className={`absolute left-1/2 top-1/2 text-white font-['SBAggroM']
                                           text-base md:text-lg lg:text-xl
                                           opacity-0 cursor-pointer
                                           transition-all duration-500 ease-in-out
                                           hover:scale-110 hover:text-shadow-lg
                                           ${isLoaded ? "opacity-100" : ""}`}
                 style={{
-                  transform: `translate(${x}px, ${y}px)`,
+                  transform: `translate(calc(${x}px - 50%), calc(${y}px - 50%))`,
                   transitionDelay: `${item.delay}s`,
                 }}
               >
@@ -142,12 +142,12 @@ function LoginHome() {
       </div>
 
       <style>{`
-            @font-face {
-                font-family: '양진체';
-                src: url('https://fastly.jsdelivr.net/gh/supernovice-lab/font@0.9/yangjin.woff') format('woff');
+              @font-face {
+                font-family: 'SBAggroM';
+                src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroM.woff') format('woff');
                 font-weight: normal;
                 font-style: normal;
-          }
+                }
                 @keyframes logoEntrance {
                     0% { 
                         opacity: 0; 
