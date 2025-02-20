@@ -147,24 +147,49 @@ public class UserController {
         return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
     }
 
+
     @Operation(summary = "현재 로그인한 사용자 정보 조회", description = "Access Token을 이용해 현재 로그인한 회원 정보를 조회합니다.")
     @GetMapping("/my")
-    public ApiResponse<?> getCurrentUser(@RequestHeader("Authorization") String token) {
+    public ApiResponse<?> getCurrentUser(@RequestHeader(value = "Authorization", required = false) String token) {
         try {
-            // ✅ "Bearer " 접두사 제거
+            log.info("🔹 [getCurrentUser] Authorization 헤더: {}", token);
+
+            if (token == null || !token.startsWith("Bearer ")) {
+                log.warn("🚨 Authorization 헤더가 올바르지 않음. token={}", token);
+                return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
+            }
+
             String accessToken = token.replace("Bearer ", "").trim();
+            log.info("🔹 [getCurrentUser] Access Token: {}", accessToken);
+
+            // ✅ JWT 유효성 검증
+            if (!jwtTokenProvider.validateToken(accessToken)) {
+                log.error("🚨 JWT 토큰이 유효하지 않음.");
+                return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
+            }
 
             // ✅ JWT에서 이메일 추출
             String email = jwtTokenProvider.getUserEmail(accessToken);
+            log.info("🔹 [getCurrentUser] 추출된 이메일: {}", email);
+
+            if (email == null) {
+                log.error("🚨 JWT에서 이메일을 가져올 수 없음.");
+                return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
+            }
 
             // ✅ 사용자 정보 조회
-            User user = userService.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            Optional<User> userOpt = userService.findByEmail(email);
+            if (userOpt.isEmpty()) {
+                log.error("🚨 이메일로 사용자 조회 실패: {}", email);
+                return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
+            }
 
-            // ✅ DTO 변환 후 반환
+            User user = userOpt.get();
+            log.info("✅ [getCurrentUser] 사용자 정보 조회 성공: userId={}, email={}", user.getUserId(), user.getEmail());
+
             return ApiResponse.createSuccess(ResponseUserDTO.fromEntity(user), "현재 로그인한 사용자 정보 조회 성공");
         } catch (Exception e) {
-            log.error("현재 사용자 정보 조회 실패: {}", e.getMessage());
+            log.error("🚨 현재 사용자 정보 조회 실패: {}", e.getMessage());
             return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
         }
     }
@@ -186,44 +211,34 @@ public class UserController {
 
 
     /// == 토큰 재발급 ==
-    @Operation(summary = "토큰 재발급", description = "Refresh Token을 이용하여 새로운 Access Token을 발급합니다.")
     @PostMapping("/refresh")
     public ApiResponse<?> refreshToken(@CookieValue(name = "refreshToken", required = false) String refreshToken,
                                        HttpServletResponse response) {
-        log.info("Received refreshToken: {}", refreshToken); // 로그 추가
+        log.info("🔹 Received refreshToken: {}", refreshToken);
+
         try {
             if (refreshToken == null || refreshToken.isEmpty()) {
+                log.error("🚨 Refresh Token이 없습니다.");
                 return ApiResponse.createError(ErrorCode.REFRESH_TOKEN_BLACKLISTED);
             }
 
             ResponseRefreshTokenDTO tokenDto = tokenService.refreshToken(refreshToken);
-            if (tokenDto == null) {
+            if (tokenDto == null || tokenDto.getAccessToken() == null) {
+                log.error("🚨 Refresh Token이 유효하지 않음.");
                 return ApiResponse.createError(ErrorCode.REFRESH_TOKEN_BLACKLISTED);
             }
 
-            // 새 refreshToken 쿠키 설정
-            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", tokenDto.getRefreshToken())
-                    .httpOnly(true)
-                    .secure(true)
-                    .sameSite("None")
-                    .path("/")
-                    .maxAge(60L * 60 * 24 * 14)
-                    .domain("localhost")
-                    .build();
-            response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-
-            // 새 AccessToken 헤더 설정
-            response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDto.getAccessToken());
-
-            // JSON 응답에 accessToken 추가
+            // ✅ 새 Access Token을 응답 JSON에 포함
             Map<String, Object> data = new HashMap<>();
             data.put("accessToken", tokenDto.getAccessToken());
 
             return ApiResponse.createSuccess(data, "Access Token 재발급 성공");
         } catch (Exception e) {
+            log.error("🚨 Refresh Token 재발급 실패: {}", e.getMessage());
             return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
         }
     }
+
 
 
     // == 사용자 정보 조회 ==

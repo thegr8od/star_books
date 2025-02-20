@@ -8,7 +8,6 @@ import com.starbooks.backend.user.model.Gender;
 import com.starbooks.backend.user.model.Role;
 import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.user.repository.jpa.UserRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,15 +17,12 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -57,20 +53,24 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // ✅ 기존 사용자 조회 또는 신규 사용자 생성
         User user = userRepository.findByEmail(email).orElseGet(() -> {
+            log.info("🆕 새로운 사용자 등록: {}", email);
             User newUser = User.builder()
                     .email(email)
                     .password(null)
                     .nickname(oAuth2Response.getName() != null ? oAuth2Response.getName() : "Unknown User")
                     .gender(Gender.OTHER)
                     .snsAccount(true)
-                    .role(Role.member)
+                    .role(Role.member) // 🔹 기본 역할 설정 (ROLE 변경 가능)
                     .isActive(true)
                     .build();
+
             userRepository.save(newUser);
-            log.info("✅ 소셜 로그인 사용자 저장 완료: {}", newUser.getEmail());
             return newUser;
         });
 
+        log.info("✅ 최종 저장된 사용자 정보: 이메일={}, 역할={}", user.getEmail(), user.getRole());
+
         return new CustomOAuth2User(user, oAuth2User.getAttributes());
     }
+
 }

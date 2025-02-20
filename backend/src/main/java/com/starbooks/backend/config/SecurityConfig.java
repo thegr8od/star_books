@@ -62,7 +62,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/ws/**",
                                 "/api/radio/**",
-                                "/api/member/**",
+                                "/api/member/",
+                                "/api/member/login",
+                                "/api/member/refresh",
                                 "/api/password/reset-request", // 비밀번호 재설정 요청 허용
                                 "/api/password/**",         // 비밀번호 재설정 처리 허용
                                 "/oauth2/**",
@@ -90,7 +92,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://starbooks.site", "http://localhost:5173", "http://localhost:5174","http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("https://starbooks.site", "http://localhost:5173", "http://localhost:5174", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setExposedHeaders(List.of("Authorization")); // 🔹 추가

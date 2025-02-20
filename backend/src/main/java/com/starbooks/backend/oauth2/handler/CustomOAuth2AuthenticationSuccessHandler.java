@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Component
 @Slf4j
@@ -82,22 +81,21 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         String accessToken = jwtTokenProvider.generateAccessToken(user);
         String refreshToken = jwtTokenProvider.generateRefreshToken(user);
 
-        // ✅ 액세스 토큰을 응답 헤더에 추가 (프론트에서 로컬스토리지에 저장 가능)
-        response.addHeader("Authorization", "Bearer " + accessToken);
+        // ✅ 액세스 토큰은 URL 쿼리 파라미터로 전달 (보안에 유의, 필요 시 암호화 고려)
+        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:5173")
+                .queryParam("accessToken", accessToken)
+                .build().toUriString();
 
         // ✅ Refresh Token을 HttpOnly Secure 쿠키에 저장
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .sameSite("None")
                 .maxAge(60 * 60 * 24 * 14)
                 .path("/")
-                .domain("starbooks.site")
+                .domain("localhost")
                 .build();
         response.setHeader("Set-Cookie", refreshTokenCookie.toString());
-
-        // ✅ 프론트엔드에서 액세스 토큰을 로컬스토리지에 저장할 수 있도록 로그인 페이지로 리다이렉트
-        String targetUrl = "https://starbooks.site";
 
         log.info("✅ OAuth 로그인 완료, 리다이렉트 URL: {}", targetUrl);
         response.sendRedirect(targetUrl);
