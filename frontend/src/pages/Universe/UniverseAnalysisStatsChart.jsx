@@ -5,7 +5,7 @@ import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutl
 import GetColor from "../../components/GetColor";
 
 const UniverseAnalysisStatsChart = () => {
-  const [selectedEmotion, setSelectedEmotion] = useState("슬픔");
+  const [selectedEmotion, setSelectedEmotion] = useState("슬픈");
   const scrollContainerRef = useRef(null);
 
   const emotions = {
@@ -15,7 +15,7 @@ const UniverseAnalysisStatsChart = () => {
     화난: { color: "#b60829" },
     설레는: { color: "#dbd906" },
     불안: { color: "#e90c0d" },
-    답답한: { color: "#e90c0d"},
+    답답한: { color: "#e90c0d" },
     평온: { color: "#0eea0d" },
   };
 
