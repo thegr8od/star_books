@@ -47,7 +47,7 @@ spring:
   jpa:
     open-in-view: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: false
@@ -90,14 +90,6 @@ spring:
       host: localhost
       port: 6379
       password: ${REDIS_PASSWORD}
-
-#springdoc:
-#  swagger-ui:
-#    enabled: true
-#    path: /swagger-ui.html
-#  api-docs:
-#    enabled: true
-#    path: /v3/api-doc
 
 openai:
   api:
