@@ -97,7 +97,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         response.setHeader("Set-Cookie", refreshTokenCookie.toString());
 
         // ✅ 프론트엔드에서 액세스 토큰을 로컬스토리지에 저장할 수 있도록 로그인 페이지로 리다이렉트
-        String targetUrl = "http://localhost:9090/oauth-success";
+        String targetUrl = "https://starbooks.site";
 
         log.info("✅ OAuth 로그인 완료, 리다이렉트 URL: {}", targetUrl);
         response.sendRedirect(targetUrl);
