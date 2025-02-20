@@ -82,7 +82,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         String refreshToken = jwtTokenProvider.generateRefreshToken(user);
 
         // ✅ 액세스 토큰은 URL 쿼리 파라미터로 전달 (보안에 유의, 필요 시 암호화 고려)
-        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:5173")
+        String targetUrl = UriComponentsBuilder.fromUriString("https://starbooks.site")
                 .queryParam("accessToken", accessToken)
                 .build().toUriString();
 
@@ -93,7 +93,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
                 .sameSite("None")
                 .maxAge(60 * 60 * 24 * 14)
                 .path("/")
-                .domain("localhost")
+                .domain("starbooks.site")
                 .build();
         response.setHeader("Set-Cookie", refreshTokenCookie.toString());
 
