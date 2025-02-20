@@ -1,81 +1,72 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-//redux
+// redux
 import { useDispatch } from "react-redux";
 import { setUser, clearUser } from "../../store/userSlice";
-//api함수
-import useMemberApi from "@api/useMemberApi";
-//커스텀
+// api 함수: 객체로 import
+import memberApi from "@api/useMemberApi";
+// 커스텀
 import LoginModal from "./LoginModal";
 import CustomAlert from "../../components/CustomAlert";
-//아이콘
+// 아이콘
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState(""); //이메일
-  const [password, setPassword] = useState(""); //패스워드
-  const [showPassword, setShowPassword] = useState(false); //패스워드상태
-  const [errors, setErrors] = useState({}); //에러
-  const [isModalOpen, setIsModalOpen] = useState(false); //모달
-  const [alertMessage, setAlertMessage] = useState(""); //알람
-  const [showAlert, setShowAlert] = useState(false); //알람상태
   const dispatch = useDispatch();
+  const [email, setEmail] = useState(""); // 이메일
+  const [password, setPassword] = useState(""); // 비밀번호
+  const [showPassword, setShowPassword] = useState(false); // 패스워드 노출 상태
+  const [errors, setErrors] = useState({}); // 에러 메시지
+  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
+  const [alertMessage, setAlertMessage] = useState(""); // 알림 메시지
+  const [showAlert, setShowAlert] = useState(false); // 알림 노출 여부
 
   useEffect(() => {
-  // ❌ localStorage.clear();  <-- 일단 제거
-  dispatch(clearUser());      // 필요한 경우만 남기기
-
-  const handleOAuthLogin = async () => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-
-    if (token) {
-      try {
-        // ❌ localStorage.clear();  <-- 여기도 제거
-        // ❌ dispatch(clearUser()); <-- 굳이 필요 없다면 제거
-
-        console.log("Token received:", token);
-
-        // 이 부분에서 바로 localStorage에 저장
-        localStorage.setItem("accessToken", token);
-
-        // 토큰 디코드 및 추가 작업
-        const userData = await useMemberApi.handleOAuthToken(token);
-        console.log("User data:", userData);
-
-        // Redux 저장
-        dispatch(setUser({
-          ...userData,
-          isLogin: true,
-          isActive: true
-        }));
-
-        // URL 파라미터 제거 (옵션)
+    // 기존 사용자 정보 클리어
+    dispatch(clearUser());
+  
+    const handleOAuthLogin = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const accessToken = params.get("accessToken");
+  
+      if (accessToken) {
+        console.log("Access token received:", accessToken);
+        // 토큰을 localStorage에 저장
+        localStorage.setItem("accessToken", accessToken);
+        // URL 파라미터 제거
         window.history.replaceState({}, document.title, window.location.pathname);
-
-        setAlertMessage("로그인에 성공했습니다!");
-        setShowAlert(true);
-
-        setTimeout(() => {
-          navigate('/', { replace: true });
-        }, 2000);
-
-      } catch (error) {
-        console.error('OAuth 로그인 처리 실패:', error);
-        localStorage.clear();
-        dispatch(clearUser());
-        setAlertMessage("로그인에 실패했습니다.");
-        setShowAlert(true);
+  
+        try {
+          // /api/member/my 엔드포인트를 호출하여 사용자 정보 조회
+          const response = await memberApi.getMemberMY();
+          // 응답 데이터에서 사용자 정보를 가져와 Redux에 저장 (isLogin, isActive 업데이트)
+          dispatch(
+            setUser({
+              ...response.data.data, // 예: { userId, email, nickname, ... }
+              isLogin: true,
+              isActive: true,
+            })
+          );
+          setAlertMessage("로그인에 성공했습니다!");
+          setShowAlert(true);
+  
+          setTimeout(() => {
+            navigate("/", { replace: true });
+          }, 2000);
+        } catch (error) {
+          console.error("OAuth 사용자 정보 불러오기 실패:", error);
+          setAlertMessage("사용자 정보를 불러오는데 실패했습니다.");
+          setShowAlert(true);
+        }
       }
-    }
-  };
+    };
+  
+    handleOAuthLogin();
+  }, [navigate, dispatch]);
 
-  handleOAuthLogin();
-}, [navigate, dispatch]);
-
-  //에러
+  // 이메일/비밀번호 로그인 폼 검증
   const validateForm = () => {
     const newErrors = {};
 
@@ -100,7 +91,7 @@ const Login = () => {
         localStorage.clear();
         dispatch(clearUser());
 
-        const response = await useMemberApi.loginMember({
+        const response = await memberApi.loginMember({
           email: email,
           password: password,
         });
@@ -108,10 +99,13 @@ const Login = () => {
         console.log("로그인 응답:", response);
 
         if (response && response.user) {
-          dispatch(setUser({ 
-            ...response.user, 
-            isLogin: true,
-          }));
+          dispatch(
+            setUser({
+              ...response.user,
+              isLogin: true,
+              isActive: true,
+            })
+          );
           setAlertMessage("로그인에 성공했습니다!");
           setShowAlert(true);
 
@@ -136,7 +130,7 @@ const Login = () => {
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const handleSocialLogin = (provider) => {
     // 현재 URL을 state로 저장
-    sessionStorage.setItem('loginRedirectUrl', window.location.pathname);
+    sessionStorage.setItem("loginRedirectUrl", window.location.pathname);
     window.location.href = `${baseUrl}/oauth2/authorization/${provider}`;
   };
 
@@ -181,9 +175,7 @@ const Login = () => {
                 )}
               </button>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600/80">
-                  {errors.password}
-                </p>
+                <p className="mt-1 text-sm text-red-600/80">{errors.password}</p>
               )}
             </div>
           </div>
