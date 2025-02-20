@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { HomeOutlined, PersonOutlined, EditCalendarOutlined, PublicOutlined, AutoAwesomeOutlined, LeaderboardOutlined, ForumOutlined, LogoutOutlined, Menu as MenuIcon, ArrowBackIos, Close, AccountCircle, InsightsOutlined } from "@mui/icons-material";
+import { HomeOutlined, PersonOutlined, EditCalendarOutlined, PublicOutlined, AutoAwesomeOutlined, LeaderboardOutlined, ForumOutlined, LogoutOutlined, Menu as MenuIcon, Close, AccountCircle, InsightsOutlined } from "@mui/icons-material";
 import useMemberApi from "../api/useMemberApi";
 import { selectUserNickname, selectUserProfileImage, clearUser } from "../store/userSlice";
 
@@ -25,46 +25,19 @@ const NAV_ITEMS = [
   },
 ];
 
-// 헤더 컴포넌트
-const Header = ({
-  title = "",
-  setShowMenu,
-  backButton,
-  noShow,
-  showLeft = true, // 왼쪽 버튼 표시 여부
-  showRight = true, // 오른쪽 버튼 표시 여부
-}) => {
+const Header = ({ setShowMenu }) => {
   const navigate = useNavigate();
 
   return (
     <div className="flex justify-between items-center h-10 text-white/70">
-      {/* 왼쪽 버튼 (뒤로가기) */}
-      {showLeft &&
-        (backButton ? (
-          <button onClick={() => navigate(-1)}>
-            <ArrowBackIos fontSize="small" />
-          </button>
-        ) : noShow ? null : (
-          <button onClick={() => navigate("/")}>
-            <ArrowBackIos fontSize="small" />
-          </button>
-        ))}
-      {!showLeft && <div className="w-6" />} {/* 왼쪽 여백 유지 */}
-      {/* 제목 */}
-      <p className="text-lg">{title}</p>
-      {/* 오른쪽 버튼 (메뉴) */}
-      {showRight ? (
-        <button onClick={() => setShowMenu(true)}>
-          <MenuIcon />
-        </button>
-      ) : (
-        <div className="w-6" /> /* 오른쪽 여백 유지 */
-      )}
+      {/* 메뉴 버튼 */}
+      <button onClick={() => setShowMenu(true)}>
+        <MenuIcon />
+      </button>
     </div>
   );
 };
 
-// 프로필 컴포넌트
 const ProfileSection = () => {
   const profileImage = useSelector(selectUserProfileImage);
   const nickname = useSelector(selectUserNickname);
@@ -82,14 +55,13 @@ const ProfileSection = () => {
             <AccountCircle fontSize="large" />
           </div>
         )}
-        {/* 닉네임 - 텍스트 색상 변경 */}
+        {/* 닉네임 */}
         <p className="font-medium text-white/90">{nickname}</p>
       </div>
     </div>
   );
 };
 
-// 메뉴 아이템 컴포넌트
 const MenuItem = ({ item, onClick }) => {
   return (
     <Link to={item.path} className="flex items-center gap-3 p-3 text-gray-700 rounded-2xl hover:bg-gradient-to-r from-[#1a237e]/10 to-[#534bae]/10 hover:text-[#1a237e] transition-all duration-300" onClick={onClick}>
@@ -121,15 +93,15 @@ const LogoutButton = () => {
   );
 };
 
-// [메인] 네비게이션 컴포넌트
-const Nav = ({ backButton, noShow, showLeft = true, showRight = true }) => {
-  const title = "";
+const MainNav = () => {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
     <nav>
       {/* MenuBar */}
-      <Header title={title} setShowMenu={setShowMenu} backButton={backButton} noShow={noShow} showLeft={showLeft} showRight={showRight} />
+      <button onClick={() => setShowMenu(true)} className="p-2 text-white/70 hover:text-white transition-colors">
+        <MenuIcon />
+      </button>
 
       {/* Menu panel */}
       {showMenu && (
@@ -157,7 +129,7 @@ const Nav = ({ backButton, noShow, showLeft = true, showRight = true }) => {
             </ul>
 
             {/* 로그아웃 */}
-            <div onClick={() => setShowMenu(false)} className="p-3 border-t-2 border-gray-300 bg-white">
+            <div className="p-3 border-t-2 border-gray-300 bg-white">
               <LogoutButton />
             </div>
           </div>
@@ -167,4 +139,4 @@ const Nav = ({ backButton, noShow, showLeft = true, showRight = true }) => {
   );
 };
 
-export default Nav;
+export default MainNav;

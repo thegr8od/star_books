@@ -17,7 +17,6 @@ function ConstellationCreateAiEvent({ data }) {
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = "#000033";
     ctx.fillRect(0, 0, width, height);
-    
 
     // 좌표계 변환이 필요 없음 (이미 0-100 범위의 백분율)
     const scaleX = (x) => (x * width) / 100;
@@ -80,7 +79,12 @@ function ConstellationCreateAiEvent({ data }) {
   }, [lines, color, count]);
 
   return (
-    <canvas ref={canvasRef} width={400} height={400} className="w-full h-full rounded-2xl" />
+    <canvas
+      ref={canvasRef}
+      width={400}
+      height={400}
+      className="w-full h-full rounded-2xl"
+    />
   );
 }
 

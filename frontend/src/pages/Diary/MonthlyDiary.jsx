@@ -13,8 +13,8 @@ const MonthlyDiary = () => {
   const diaryRefs = useRef({});
 
   const [diaries, setDiaries] = useState([]); // 작성한 일기 정보
-  const [currentDate, setCurrentDate] = useState(new Date()); // 날짜(년, 월)
-  const selectedDate = location.state?.selectedDate; // 선택된 날짜 (선택된 날짜가 있으면 스크롤)
+  const [currentDate, setCurrentDate] = useState(location.state?.selectedDate ? new Date(location.state.selectedDate) : new Date()); // 날짜(년, 월)
+  const [selectedDate, setSelectedDate] = useState(location.state?.selectedDate); // 선택된 날짜 (선택된 날짜가 있으면 스크롤)
 
   // 모달 상태 추가
   const [deleteModal, setDeleteModal] = useState({
@@ -33,7 +33,7 @@ const MonthlyDiary = () => {
       if (response.status === 200) {
         console.log("일기 조회 성공");
         setDiaries(response.data);
-        console.log(response.data)
+        console.log(response.data);
       } else {
         console.log("일기 조회 실패");
       }
@@ -47,8 +47,14 @@ const MonthlyDiary = () => {
         behavior: "smooth",
         block: "start",
       });
+
+      const timer = setTimeout(() => {
+        setSelectedDate(null);
+      }, 1000);
+
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [selectedDate, diaries]);
 
   // 수정 버튼 클릭 시 -> 수정 페이지로 이동
   const handleEdit = (diary) => {
@@ -75,17 +81,17 @@ const MonthlyDiary = () => {
   };
 
   return (
-    <Layout>
+    <Layout backButton={true}>
       <div className="flex flex-col h-[calc(100vh-4rem)]">
         <DiaryDate currentDate={currentDate} setCurrentDate={setCurrentDate} />
-        <div className="flex-1 flex-col space-y-4 overflow-y-auto bg-neutral-100 rounded-3xl p-4" style={{ scrollbarWidth: "none" }}>
+        <div className="flex-1 flex-col space-y-4 overflow-y-auto bg-neutral-100 rounded-3xl p-4 scroll-container" style={{ scrollbarWidth: "none" }}>
           {diaries?.length ? (
             diaries.map((diary, index) => {
               // 요일 표시를 위해 Date 객체 생성
               const diaryDateObj = new Date(diary.diaryDate[0], diary.diaryDate[1] - 1, diary.diaryDate[2]);
               const formattedDate = `${diary.diaryDate[0]}-${String(diary.diaryDate[1]).padStart(2, "0")}-${String(diary.diaryDate[2]).padStart(2, "0")}`;
               return (
-                <div key={diary.diaryId} ref={(el) => (diaryRefs.current[formattedDate] = el)} className={`space-y-3 px-5 py-3 bg-white rounded-xl shadow-sm ${selectedDate === formattedDate ? "animate-[pulse_1s_ease-in-out_1]" : ""}`}>
+                <div key={diary.diaryId} ref={(el) => (diaryRefs.current[formattedDate] = el)} className={`space-y-3 px-5 py-3 bg-white rounded-xl shadow-sm transition-all duration-500 ${selectedDate === formattedDate ? "ring-2 ring-[#8993c7]" : ""}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex space-x-3">
                       {/* 감정 색 */}
@@ -124,8 +130,8 @@ const MonthlyDiary = () => {
 
                   {/* 사진 */}
                   {diary.imageUrl && (
-                    <div>
-                      <img src={diary.imageUrl} alt="Diary img" className="object-cover rounded-lg" />
+                    <div className="w-full">
+                      <img src={diary.imageUrl} alt="Diary img" className="h-52 object-cover rounded-lg" />
                     </div>
                   )}
 

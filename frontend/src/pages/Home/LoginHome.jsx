@@ -1,26 +1,58 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import MainNav from "../../components/MainNav";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../store/userSlice";
+import useAxiosInstance from "../../api/useAxiosInstance";
 
 function LoginHome() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    // const fetchUserInfo = async () => {
+    //   try {
+    //     const token = localStorage.getItem("accessToken");
+    //     if (!token) {
+    //       console.log("No token found");
+    //       return;
+    //     }
+
+    //     const response = await useAxiosInstance
+    //       .authApiClient(token)
+    //       .get("/member/my");
+
+    //     dispatch(setUser({
+    //       ...response.data.data,
+    //       isLogin: true
+    //     }));
+    //   } catch (error) {
+    //     console.error("Error fetching user info:", error);
+    //     // 토큰이 만료되었거나 유효하지 않은 경우
+    //     if (error.response && error.response.status === 401) {
+    //       localStorage.removeItem("accessToken");
+    //       navigate("/login");
+    //     }
+    //   }
+    // };
+
+    // fetchUserInfo();
     setIsLoaded(true);
-  }, []);
+  }, [navigate, dispatch]);
 
   // 네비게이션 항목 정의 - 72도 간격으로 배치
   const navItems = [
-    { name: "AI 채팅", angle: 270, path: "chat", delay: 0 },
+    { name: "일기", angle: 270, path: "diary/calendar", delay: 0 },
+    { name: "나의 우주", angle: 342, path: "diary/stars", delay: 0.2 },
     {
       name: "AI 별자리",
-      angle: 342,
+      angle: 54,
       path: "constellation/ai/gallery",
-      delay: 0.2,
+      delay: 0.4,
     },
-    { name: "캘린더", angle: 54, path: "diary/calendar", delay: 0.4 },
-    { name: "나의별", angle: 126, path: "diary/stars", delay: 0.6 },
-    { name: "우리별", angle: 198, path: "universe", delay: 0.8 },
+    { name: "AI 채팅", angle: 126, path: "chat", delay: 0.6 },
+    { name: "우리의 우주", angle: 198, path: "universe", delay: 0.8 },
   ];
 
   const radius = 150; // 선과 점의 위치를 동일하게 설정
@@ -36,9 +68,13 @@ function LoginHome() {
       >
         <source src=" /videos/home.mp4.mp4" type="video/mp4" />
       </video>
-
+      
+      <div className="absolute top-0 right-0 m-4 z-30">
+        <MainNav />
+      </div>
+      
       {/* 배경 오버레이 */}
-      <div className="absolu inset-0 bg-black/30" />
+      <div className="absolute inset-0 bg-black/30 pointer-events-none z-10" />
 
       {/* 메인 컨텐츠 */}
       <div className="absolute inset-0 flex flex-col items-center justify-center z-20">

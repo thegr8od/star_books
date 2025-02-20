@@ -92,9 +92,8 @@ function ConstellationCreateAi({ constellationData, onClose }) {
       // 생성된 별자리 데이터 업로드
       const response = await useGalleryApi.uploadUserConstellation(lineData);
 
-      if (response && response.status === "SUCCESS") {
-        alert("별자리가 저장되었습니다!");
-        onClose(); // 모달 닫기
+      if (response && response.status === "C000") {
+        onClose("C000"); // 성공 상태 전달
       } else {
         throw new Error(response?.message || "별자리 저장에 실패했습니다.");
       }

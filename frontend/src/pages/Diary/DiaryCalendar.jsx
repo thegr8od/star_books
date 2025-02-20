@@ -58,10 +58,10 @@ const DiaryCalendar = () => {
                       "0"
                     )}`
                   : oneday.diaryDate,
-                color: oneday.DiaryEmotion // DiaryEmotion이 있는 경우에만 색상 설정
+                color: oneday.DiaryEmotion
                   ? GetColor(
-                      oneday.DiaryEmotion.xValue,
-                      oneday.DiaryEmotion.yValue
+                      Math.ceil(oneday.DiaryEmotion.xValue),
+                      Math.ceil(oneday.DiaryEmotion.yValue)
                     )
                   : null,
               };
