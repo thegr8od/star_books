@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Component
 @Slf4j
@@ -41,16 +40,65 @@ public void onAuthenticationSuccess(HttpServletRequest request,
 
     log.info("✅ OAUTH 연동 성공, Principal: {}", principal);
 
-    if (principal instanceof DefaultOidcUser) {
-        DefaultOidcUser oidcUser = (DefaultOidcUser) principal;
-        email = oidcUser.getAttribute("email");
-        name = oidcUser.getAttribute("name");
-    } else if (principal instanceof CustomOAuth2User) {
-        CustomOAuth2User customUser = (CustomOAuth2User) principal;
-        email = customUser.getEmail();
-        name = customUser.getName();
-    } else {
-        throw new IllegalStateException("알 수 없는 사용자 유형");
+        if (principal instanceof DefaultOidcUser) {
+            DefaultOidcUser oidcUser = (DefaultOidcUser) principal;
+            email = oidcUser.getAttribute("email");
+            name = oidcUser.getAttribute("name");
+        } else if (principal instanceof CustomOAuth2User) {
+            CustomOAuth2User customUser = (CustomOAuth2User) principal;
+            email = customUser.getEmail();
+            name = customUser.getName();
+        } else {
+            throw new IllegalStateException("알 수 없는 사용자 유형");
+        }
+
+        if (email == null || email.isEmpty()) {
+            log.error("🚨 로그인 성공했지만 이메일 정보를 가져올 수 없습니다.");
+            response.sendRedirect("https://starbooks.site/error");
+            return;
+        }
+
+        final String fixedName = (name != null) ? name : "Unknown User";
+
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = User.builder()
+                    .email(email)
+                    .password(null)
+                    .nickname(fixedName)
+                    .gender(Gender.OTHER)
+                    .snsAccount(true)
+                    .role(Role.member)
+                    .isActive(true)
+                    .build();
+            userRepository.save(newUser);
+            log.info("🎉 신규 사용자 등록 성공: {}", email);
+            return newUser;
+        });
+
+        log.info("✅ 로그인한 사용자: {}", user.getEmail());
+
+        // ✅ JWT 토큰 생성
+        String accessToken = jwtTokenProvider.generateAccessToken(user);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user);
+
+        // ✅ 액세스 토큰은 URL 쿼리 파라미터로 전달 (보안에 유의, 필요 시 암호화 고려)
+        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:5173")
+                .queryParam("accessToken", accessToken)
+                .build().toUriString();
+
+        // ✅ Refresh Token을 HttpOnly Secure 쿠키에 저장
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .maxAge(60 * 60 * 24 * 14)
+                .path("/")
+                .domain("localhost")
+                .build();
+        response.setHeader("Set-Cookie", refreshTokenCookie.toString());
+
+        log.info("✅ OAuth 로그인 완료, 리다이렉트 URL: {}", targetUrl);
+        response.sendRedirect(targetUrl);
     }
 
     if (email == null || email.isEmpty()) {
