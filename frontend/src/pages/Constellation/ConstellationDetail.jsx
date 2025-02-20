@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Maximize2, Minimize2, X } from "lucide-react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {

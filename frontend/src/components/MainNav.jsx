@@ -8,11 +8,9 @@ import {
   PublicOutlined,
   AutoAwesomeOutlined,
   LeaderboardOutlined,
-  PodcastsOutlined,
   ForumOutlined,
   LogoutOutlined,
   Menu as MenuIcon,
-  ArrowBackIos,
   Close,
   AccountCircle,
 } from "@mui/icons-material";
@@ -43,74 +41,57 @@ const NAV_ITEMS = [
   },
 ];
 
-// 헤더 컴포넌트
-const Header = ({ title = "", setShowMenu, backButton, noShow }) => {
-  const navigate = useNavigate();
-
-  return (
-    <div className="flex justify-between items-center h-10 text-white/70">
-      {/* 뒤로가기 버튼 */}
-      {backButton ? (
-        <button onClick={() => navigate(-1)}>
-          <ArrowBackIos fontSize="small" />
+const Header = ({  setShowMenu }) => {
+    const navigate = useNavigate();
+  
+    return (
+      <div className="flex justify-between items-center h-10 text-white/70">
+        {/* 메뉴 버튼 */}
+        <button onClick={() => setShowMenu(true)}>
+          <MenuIcon />
         </button>
-      ) :  noShow ? ( 
-        null 
-      ) : (
-        <button onClick={() => navigate("/")}> 
-          <ArrowBackIos fontSize="small" />
-        </button> 
-      )}
-      {/* 제목(선택) */}
-      <p className="text-lg">{title}</p>
-      {/* 메뉴 버튼 */}
-      <button onClick={() => setShowMenu(true)}>
-        <MenuIcon />
-      </button>
-    </div>
-  );
-};
-
-// 프로필 컴포넌트
-const ProfileSection = () => {
-  const profileImage = useSelector(selectUserProfileImage);
-  const nickname = useSelector(selectUserNickname);
-
-  return (
-    <div className="pt-8 pb-6 px-6 bg-[#f5f5f5]">
-      <div className="flex items-center gap-4">
-        {/* 프로필이미지 */}
-        {profileImage ? (
-          <img
-            src={profileImage}
-            alt="Profile"
-            className="w-12 h-12 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#8993c7] text-white">
-            <AccountCircle fontSize="large" />
-          </div>
-        )}
-        {/* 닉네임 */}
-        <p className="font-medium text-black">{nickname}</p>
       </div>
-    </div>
-  );
+    );
 };
 
-// 메뉴 아이템 컴포넌트
+const ProfileSection = () => {
+    const profileImage = useSelector(selectUserProfileImage);
+    const nickname = useSelector(selectUserNickname);
+  
+    return (
+      <div className="pt-8 pb-6 px-6 bg-[#f5f5f5]">
+        <div className="flex items-center gap-4">
+          {/* 프로필이미지 */}
+          {profileImage ? (
+            <img
+              src={profileImage}
+              alt="Profile"
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#8993c7] text-white">
+              <AccountCircle fontSize="large" />
+            </div>
+          )}
+          {/* 닉네임 */}
+          <p className="font-medium text-black">{nickname}</p>
+        </div>
+      </div>
+    );
+  };
+
 const MenuItem = ({ item, onClick }) => {
-  return (
-    // 네비게이션 아이템 상수로 관리 (링크주소, 아이콘, 라벨명)
-    <Link
-      to={item.path}
-      className="flex items-center gap-3 p-3 text-gray-700 rounded-full hover:bg-[#8993c7] hover:text-white transition-colors"
-      onClick={onClick}
-    >
-      <span className="flex items-center justify-center">{item.icon}</span>
-      <span>{item.label}</span>
-    </Link>
-  );
+    return (
+        // 네비게이션 아이템 상수로 관리 (링크주소, 아이콘, 라벨명)
+        <Link
+            to={item.path}
+            className="flex items-center gap-3 p-3 text-gray-700 rounded-full hover:bg-[#8993c7] hover:text-white transition-colors"
+            onClick={onClick}
+        >
+            <span className="flex items-center justify-center">{item.icon}</span>
+            <span>{item.label}</span>
+        </Link>
+    );
 };
 
 const LogoutButton = () => {
@@ -138,15 +119,18 @@ const LogoutButton = () => {
   );
 };
 
-// [메인] 네비게이션 컴포넌트
-const Nav = ({backButton, noShow}) => {
-  const title = "";
+const MainNav = () => {
   const [showMenu, setShowMenu] = useState(false);
 
   return (
     <nav>
       {/* MenuBar */}
-      <Header title={title} setShowMenu={setShowMenu} backButton={backButton} noShow={noShow} />
+      <button
+        onClick={() => setShowMenu(true)}
+        className="p-2 text-white hover:text-gray-300"
+      >
+        <MenuIcon />
+      </button>
 
       {/* Menu panel */}
       {showMenu && (
@@ -189,4 +173,4 @@ const Nav = ({backButton, noShow}) => {
   );
 };
 
-export default Nav;
+export default MainNav;

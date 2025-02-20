@@ -19,7 +19,7 @@ function AiChatInterface({ aiCharacter }) {
 
   const email = useSelector(selectUserEmail);
 
-  console.log(email)
+  console.log(email);
 
   // 대화 초기화
   const handleChatReset = () => {
@@ -38,8 +38,8 @@ function AiChatInterface({ aiCharacter }) {
   };
 
   const fetchChatHistory = async (email) => {
-    try{
-      const response = await useChatbotApi.getHistory({email});
+    try {
+      const response = await useChatbotApi.getHistory({ email });
       if (response.status === 200) {
         const messageHistory = response.data.map((msg) => ({
           isBot: msg.role === "assistant",
@@ -51,27 +51,25 @@ function AiChatInterface({ aiCharacter }) {
           setMessages(messageHistory);
         }
       }
-    } catch(e) {
+    } catch (e) {
       console.log(e);
     }
-  }
+  };
 
   useEffect(() => {
     if (email) {
-      fetchChatHistory(email);  // email이 준비된 상태에서 실행
+      fetchChatHistory(email); // email이 준비된 상태에서 실행
     }
   }, [email]);
 
   // 메세지 올 때마다 스크롤 실행
   useEffect(() => {
-      // 스크롤 최하단으로 내려가도록
+    // 스크롤 최하단으로 내려가도록
     const scrollToBottom = () => {
       messageRef.current?.scrollIntoView({ behavior: "smooth" });
     };
     scrollToBottom(); // <-- 이거
   }, [messages]);
-
-  
 
   const handleSendMessage = async (e) => {
     e.preventDefault(); // 전송 버튼 눌러도 새로고침 X
@@ -82,19 +80,20 @@ function AiChatInterface({ aiCharacter }) {
     setMessages((prev) => [...prev, { isBot: false, message: inputMessage }]); // 유저가 메시지 보낼 때
     setInputMessage(""); // 초기화
     setIsLoading(true);
-    
+
     try {
-      const response = await useChatbotApi.chat(
-       {
-         email: email,
-         message: userMessage,
-         persona: aiCharacter.persona
-       }
-      )
-      if(response.status === 200){
-        setMessages((prev) => [...prev, {isBot: true, message: response.data,},]);
+      const response = await useChatbotApi.chat({
+        email: email,
+        message: userMessage,
+        persona: aiCharacter.persona,
+      });
+      if (response.status === 200) {
+        setMessages((prev) => [
+          ...prev,
+          { isBot: true, message: response.data },
+        ]);
       }
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       setMessages((prev) => [
         ...prev,
@@ -107,62 +106,59 @@ function AiChatInterface({ aiCharacter }) {
     } finally {
       setIsLoading(false);
     }
-  }
-    // 이전 채팅 기록 불러오기
-    // const fetchChatHistory = () => {
-    //   axios("/api/chat/history", {
-    //     params: { email: "user@example.com" },
-    //   }).then((response) => {
-    //     if (response.data.status === "success") {
-    //       const messageHistory = response.data.data.map((msg) => ({
-    //         isBot: msg.role === "assistant",
-    //         msg: msg.content,
-    //       }));
+  };
+  // 이전 채팅 기록 불러오기
+  // const fetchChatHistory = () => {
+  //   axios("/api/chat/history", {
+  //     params: { email: "user@example.com" },
+  //   }).then((response) => {
+  //     if (response.data.status === "success") {
+  //       const messageHistory = response.data.data.map((msg) => ({
+  //         isBot: msg.role === "assistant",
+  //         msg: msg.content,
+  //       }));
 
-    //       // 히스토리 있으면 환영 메시지 X
-    //       if (messageHistory.length > 0) {
-    //         setMessages(messageHistory);
-    //       }
-    //     }
-    //   });
-    // };
+  //       // 히스토리 있으면 환영 메시지 X
+  //       if (messageHistory.length > 0) {
+  //         setMessages(messageHistory);
+  //       }
+  //     }
+  //   });
+  // };
 
-    // 컴포넌트 마운트 시 채팅 기록 불렁괴
-    
+  // 컴포넌트 마운트 시 채팅 기록 불렁괴
 
-    // API 호출
+  // API 호출
 
-    
-    // axios
-    //   .post("api/chat/message", {
-    //     email: "user@example.com",
-    //     message: userMessage,
-    //     persona: aiCharacter.persona,
-    //   })
-    //   .then((response) => {
-    //     setMessages((prev) => [
-    //       ...prev,
-    //       {
-    //         isBot: true,
-    //         message: response.data,
-    //       },
-    //     ]);
-    //   })
-    //   .catch((error) => {
-    //     console.error("채팅 메시지 에러 : ", error);
-    //     setMessages((prev) => [
-    //       ...prev,
-    //       {
-    //         isBot: true,
-    //         message:
-    //           "죄송해요. 일시적인 오류가 발생했어요. 잠시 후 다시 시도해주세요.",
-    //       },
-    //     ]);
-    //   })
-    //   .finally(() => {
-    //     setIsLoading(false);
-    //   });
-  
+  // axios
+  //   .post("api/chat/message", {
+  //     email: "user@example.com",
+  //     message: userMessage,
+  //     persona: aiCharacter.persona,
+  //   })
+  //   .then((response) => {
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         isBot: true,
+  //         message: response.data,
+  //       },
+  //     ]);
+  //   })
+  //   .catch((error) => {
+  //     console.error("채팅 메시지 에러 : ", error);
+  //     setMessages((prev) => [
+  //       ...prev,
+  //       {
+  //         isBot: true,
+  //         message:
+  //           "죄송해요. 일시적인 오류가 발생했어요. 잠시 후 다시 시도해주세요.",
+  //       },
+  //     ]);
+  //   })
+  //   .finally(() => {
+  //     setIsLoading(false);
+  //   });
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)]">
@@ -184,7 +180,12 @@ function AiChatInterface({ aiCharacter }) {
         style={{ scrollbarWidth: "none" }}
       >
         {messages.map((msg, idx) => (
-          <ChatMessage key={idx} isBot={msg.isBot} message={msg.message} />
+          <ChatMessage
+            key={idx}
+            isBot={msg.isBot}
+            message={msg.message}
+            aiCharacter={aiCharacter}
+          />
         ))}
         {/* 스크롤 위치 잡기 */}
         <div ref={messageRef} />
