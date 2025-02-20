@@ -2,7 +2,6 @@ import Layout from "../../components/Layout";
 import AiChatInterface from "./AiChatInterface";
 import { useState } from "react";
 import Modal from "../../components/Modal";
-import aiImage from "/images/ai_chat_test.png";
 import { useNavigate } from "react-router-dom";
 
 function AiChat() {
@@ -15,20 +14,26 @@ function AiChat() {
     {
       id: 1,
       name: "공감이",
-      description: "당신의 감정을 깊이 이해하고 공감하는 AI입니다.",
-      image: "/images/ai_1.png",
+      description: "당신의 감정을 깊이 이해하고 함께 공감해드려요.",
+      image: "/images/ai_green.png",
     },
     {
       id: 2,
       name: "냉철이",
-      description: "객관적인 시각으로 조언을 제공하는 AI입니다.",
-      image: "/images/ai_2.png",
+      description: "객관적인 시각으로 명확한 조언을 건네드려요.",
+      image: "/images/ai_blue.png",
     },
     {
       id: 3,
       name: "긍정이",
       description: "긍정적인 에너지로 당신을 응원하는 AI입니다.",
-      image: "/images/ai_3.png",
+      image: "/images/ai_yellow.png",
+    },
+    {
+      id: 4,
+      name: "맞춤이",
+      description: "당신만의 개성을 담아 설정할 수 있는 맞춤형 AI입니다.",
+      image: "/images/ai_red.png",
     },
   ];
 
@@ -60,7 +65,7 @@ function AiChat() {
               >
                 <div className="w-16 h-16 rounded-full overflow-hidden mr-4">
                   <img
-                    src={aiImage}
+                    src={ai.image}
                     alt={ai.name}
                     className="w-full h-full object-cover"
                   />
