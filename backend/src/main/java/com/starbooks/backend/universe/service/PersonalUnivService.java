@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,29 +25,46 @@ public class PersonalUnivService {
 
     @Transactional(readOnly = true)
     public List<ResponsePersonalUnivDTO> getMonthlyPersonalUniv(Long userId, int year, int month) {
-        // 월의 시작 날짜: 해당 연도, 월의 1일 00:00:00
-        LocalDateTime start = LocalDateTime.of(year, month, 1, 0, 0);
 
-        // 월의 마지막 날짜: 해당 연도, 월의 마지막 날 23:59:59.999999999
-        LocalDateTime end = start.withDayOfMonth(start.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+        // 월의 시작일 (예: 2023-06-01)
+        LocalDate startDate = LocalDate.of(year, month, 1);
 
-        log.info("🔍 Fetching monthly data for userId={} from {} to {}", userId, start, end);
+        // 월의 마지막일 (예: 2023-06-30)
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
-        List<PersonalUniv> personalUnivs = personalUnivRepository.findByUserIdAndUpdatedAtBetween(userId, start, end);
+        log.info("🔍 Fetching monthly data by diary_date for userId={} from {} to {}",
+                userId, startDate, endDate);
 
-        return personalUnivs.stream().map(ResponsePersonalUnivDTO::new).collect(Collectors.toList());
+        // diary_date 기준 조회
+        List<PersonalUniv> personalUnivs =
+                personalUnivRepository.findByUserIdAndDiaryDateBetween(userId, startDate, endDate);
+
+        return personalUnivs.stream()
+                .map(ResponsePersonalUnivDTO::new)
+                .collect(Collectors.toList());
     }
+
 
 
     @Transactional(readOnly = true)
     public List<ResponsePersonalUnivDTO> getYearlyPersonalUniv(Long userId, int year) {
-        LocalDateTime start = LocalDateTime.of(year, 1, 1, 0, 0);
-        LocalDateTime end = start.plusYears(1).minusSeconds(1);
-        log.info("🔍 Searching for userId={} from {} to {}", userId, start, end); // ✅ 로그로 날짜 확인
 
-        List<PersonalUniv> personalUnivs = personalUnivRepository.findByUserIdAndUpdatedAtBetween(userId, start, end);
-        return personalUnivs.stream().map(ResponsePersonalUnivDTO::new).collect(Collectors.toList());
+        // 연초 (예: 2023-01-01)
+        LocalDate startDate = LocalDate.of(year, 1, 1);
+
+        // 연말 (예: 2023-12-31)
+        LocalDate endDate = LocalDate.of(year, 12, 31);
+
+        log.info("🔍 Searching for userId={} by diary_date from {} to {}", userId, startDate, endDate);
+
+        List<PersonalUniv> personalUnivs =
+                personalUnivRepository.findByUserIdAndDiaryDateBetween(userId, startDate, endDate);
+
+        return personalUnivs.stream()
+                .map(ResponsePersonalUnivDTO::new)
+                .collect(Collectors.toList());
     }
+
 
     @Transactional(readOnly = true)
     public ResponsePersonalUnivDTO getPersonalUniv(Long userId, Long universeId) {
@@ -86,6 +104,4 @@ public class PersonalUnivService {
 
         return responseList;
     }
-
-
 }

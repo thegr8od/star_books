@@ -8,6 +8,25 @@ livekit:
     secret: ${LIVEKIT_API_SECRET}
 
 spring:
+
+  jackson:
+    deserialization:
+      accept-single-value-as-array: true
+      accept-empty-string-as-null-object: true
+    serialization:
+      write-dates-as-timestamps: true
+    default-property-inclusion: non_null
+    time-zone: Asia/Seoul
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ehdgus9370@gmail.com           # 본인의 구글 이메일로 변경
+    password: ${SMTP_PASSWORD}      # 앱 비밀번호로 변경
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
   config:
     activate:
       on-profile: prod
@@ -17,19 +36,21 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  hikari:
-    maximum-pool-size: 10
-    minimum-idle: 2
-    idle-timeout: 30000
-    max-lifetime: 1800000
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-init-sql: SET time_zone = 'Asia/Seoul'
+
 
   jpa:
     open-in-view: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    show-sql: true
+    show-sql: false
     properties:
       hibernate.format_sql: true
       dialect: org.hibernate.dialect.MySQL8InnoDBDialect
@@ -46,7 +67,7 @@ spring:
               - openid
               - profile
               - email
-            redirect-uri: "https://i12d206.p.ssafy.io/login/oauth2/code/google"
+            redirect-uri: "https://starbooks.site/login/oauth2/code/google"
             authorization-grant-type: authorization_code
           naver:
             client-id: ${NAVER_CLIENT_ID}
@@ -54,7 +75,7 @@ spring:
             scope:
               - name
               - email
-            redirect-uri: "https://i12d206.p.ssafy.io/login/oauth2/code/naver"
+            redirect-uri: "https://starbooks.site/login/oauth2/code/naver"
             authorization-grant-type: authorization_code
         provider:
           naver:
@@ -63,19 +84,12 @@ spring:
             user-info-uri: https://openapi.naver.com/v1/nid/me
             user-name-attribute: response
 
+
   data:
     redis:
-      host: ${REDIS_HOST}
+      host: localhost
       port: 6379
       password: ${REDIS_PASSWORD}
-
-#springdoc:
-#  swagger-ui:
-#    enabled: true
-#    path: /swagger-ui.html
-#  api-docs:
-#    enabled: true
-#    path: /v3/api-doc
 
 openai:
   api:
@@ -83,7 +97,7 @@ openai:
 
 jwt:
   secret: ${JWT_SECRET_KEY}
-  accessToken-expiration: 1800000
+  accessToken-expiration: 3600000
   refreshToken-expiration: 1209600000
   oauth-sign-up-expiration: 600000
 
@@ -97,9 +111,13 @@ cloud:
     region:
       static: ap-northeast-2
 
+anthropic:
+  api:
+    key: ${ANTHROPIC_REMOVED}
+
 logging:
   level:
-    org.hibernate.SQL: debug
+    org.hibernate.SQL: off
 
 file:
   upload-dir: uploads/

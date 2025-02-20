@@ -19,6 +19,7 @@ const Button = ({
       className={`
       ${imgSrc ? "rounded-2xl" : typeClasses[type]} 
       ${className}
+      
     `}
     >
       {imgSrc && (

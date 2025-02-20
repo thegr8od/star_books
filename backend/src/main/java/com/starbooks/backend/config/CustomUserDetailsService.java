@@ -20,6 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
         // DB에서 사용자 정보 조회
+        System.out.println(userEmail + ": userEmail");
         User userEntity = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
 
@@ -28,11 +29,14 @@ public class CustomUserDetailsService implements UserDetailsService {
                 new SimpleGrantedAuthority(userEntity.getRole().name())
         );
 
-        // ✅ CustomUserDetails 반환 (userId 포함)
+        // 소셜 로그인 사용자의 경우 비밀번호가 없을 수 있으므로 null이면 빈 문자열로 대체
+        String password = userEntity.getPassword() != null ? userEntity.getPassword() : "";
+
+        // CustomUserDetails 반환 (userId 포함)
         return new CustomUserDetails(
                 userEntity.getUserId(),
                 userEntity.getEmail(),
-                userEntity.getPassword(),
+                password,
                 authorities
         );
     }

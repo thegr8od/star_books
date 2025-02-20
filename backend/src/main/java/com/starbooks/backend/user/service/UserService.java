@@ -7,6 +7,7 @@ import com.starbooks.backend.user.dto.response.ResponseUserDTO;
 import com.starbooks.backend.user.model.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -17,6 +18,8 @@ public interface UserService {
     Optional<User> findByEmail(String email);
 
     ResponseUserDTO getUserInfo(Long userId);
+
+    ResponseUserDTO getCurrentUser(String email);
 
     void deleteUserByEmail(String email);
 
@@ -30,7 +33,10 @@ public interface UserService {
      */
     void updateUserProfileText(RequestUpdateDTO dto);
 
-    Authentication authenticateUser(String email, String password);
+    /**
+     * ✅ 일반 로그인 - Refresh Token을 HttpOnly 쿠키에 저장
+     */
+    Authentication authenticateUser(String email, String password, HttpServletResponse response); // <-- 추가됨
 
     boolean existsByEmail(String email);
 
@@ -39,5 +45,18 @@ public interface UserService {
     void changePassword(RequestChangePasswordDTO dto);
 
     String getUserProfileImage(String email);
+
+    void updatePassword(User user, String newPassword);
+
+    /**
+     * 로그아웃 - Refresh Token을 블랙리스트에 추가 후 쿠키 제거
+     */
+    void logoutUser(String refreshToken, HttpServletResponse response);
+
+    /**
+     * 회원 탈퇴 - Refresh Token을 블랙리스트에 추가 후 사용자 삭제
+     */
+    void withdrawUser(String email, HttpServletResponse response);
+
 
 }

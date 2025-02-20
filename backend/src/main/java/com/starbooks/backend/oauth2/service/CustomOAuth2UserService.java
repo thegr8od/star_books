@@ -8,7 +8,6 @@ import com.starbooks.backend.user.model.Gender;
 import com.starbooks.backend.user.model.Role;
 import com.starbooks.backend.user.model.User;
 import com.starbooks.backend.user.repository.jpa.UserRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,23 +17,20 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final EntityManager entityManager; // 추가
 
     @Override
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        log.info(" OAuth2 로그인 요청: {}", userRequest.getClientRegistration().getRegistrationId());
+        log.info("✅ OAuth2 로그인 요청: {}", userRequest.getClientRegistration().getRegistrationId());
 
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        log.info(" OAuth2User Attributes: {}", oAuth2User.getAttributes());
+        log.info("✅ OAuth2User Attributes: {}", oAuth2User.getAttributes());
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response;
@@ -55,33 +51,26 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             throw new OAuth2AuthenticationException("이메일이 없습니다.");
         }
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        User user;
-
-        if (optionalUser.isPresent()) {
-            user = optionalUser.get();
-            log.info("✅ 기존 유저 로그인: {}", user.getEmail());
-        } else {
-            user = User.builder()
+        // ✅ 기존 사용자 조회 또는 신규 사용자 생성
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            log.info("🆕 새로운 사용자 등록: {}", email);
+            User newUser = User.builder()
                     .email(email)
                     .password(null)
                     .nickname(oAuth2Response.getName() != null ? oAuth2Response.getName() : "Unknown User")
                     .gender(Gender.OTHER)
-                    .snsAccount(true)  // 변경된 필드 (OAuth2 사용자는 snsAccount = true)
-                    .role(Role.member)
+                    .snsAccount(true)
+                    .role(Role.member) // 🔹 기본 역할 설정 (ROLE 변경 가능)
                     .isActive(true)
                     .build();
 
-            log.info("📥 새 유저 등록 시도: {}", user);
-            try {
-                userRepository.save(user);
-                entityManager.flush(); // 강제 Flush (JPA 영속성 컨텍스트 반영)
-                log.info("🎉 새 유저 등록 성공: {}", user.getEmail());
-            } catch (Exception e) {
-                log.error("🚨 유저 저장 실패! 에러: {}", e.getMessage(), e);
-            }
-        }
+            userRepository.save(newUser);
+            return newUser;
+        });
+
+        log.info("✅ 최종 저장된 사용자 정보: 이메일={}, 역할={}", user.getEmail(), user.getRole());
 
         return new CustomOAuth2User(user, oAuth2User.getAttributes());
     }
+
 }
