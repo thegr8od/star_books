@@ -3,7 +3,6 @@ import SendIcon from "@mui/icons-material/Send";
 import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
 import ReplayIcon from "@mui/icons-material/Replay";
 import ChatMessage from "./ChatMessage";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import { selectUserEmail } from "../../store/userSlice";
 import useChatbotApi from "../../api/useChatbotApi";

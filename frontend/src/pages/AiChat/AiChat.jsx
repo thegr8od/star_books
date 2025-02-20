@@ -15,25 +15,25 @@ function AiChat() {
       id: 1,
       name: "공감이",
       description: "당신의 감정을 깊이 이해하고 함께 공감해드려요.",
-      image: "/images/ai_green.png",
+      image: "/images/GREEN.png",
     },
     {
       id: 2,
       name: "냉철이",
       description: "객관적인 시각으로 명확한 조언을 건네드려요.",
-      image: "/images/ai_blue.png",
+      image: "/images/BLUE.png",
     },
     {
       id: 3,
       name: "긍정이",
       description: "긍정적인 에너지로 당신을 응원하는 AI입니다.",
-      image: "/images/ai_yellow.png",
+      image: "/images/RED.png",
     },
     {
       id: 4,
       name: "맞춤이",
       description: "당신만의 개성을 담아 설정할 수 있는 맞춤형 AI입니다.",
-      image: "/images/ai_red.png",
+      image: "/images/PINK.png",
     },
   ];
 
