@@ -9,7 +9,7 @@ function AiChat() {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const navigate = useNavigate();
 
-  // ai 캐릭터 종류 및 관련 설명..
+  // ai 캐릭터 종류 및 관련 설명
   const aiCharacters = [
     {
       id: 1,
