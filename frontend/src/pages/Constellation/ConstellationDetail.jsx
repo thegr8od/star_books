@@ -588,6 +588,12 @@ function ConstellationDetail() {
       {/* 최대화/최소화 버튼 */}
       <div className="absolute top-4 right-4 flex gap-2">
         <button
+          onClick={() => navigate("/")}
+          className="bg-white/10 p-2 rounded-full hover:bg-white/50 transition-colors"
+        >
+           <X className="text-white w-5 h-5" />
+        </ button>
+        <button
           onClick={() => setIsMaximized((prev) => !prev)}
           className="bg-white/10 p-2 rounded-full hover:bg-white/50 transition-colors"
         >
