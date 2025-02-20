@@ -57,6 +57,7 @@ function ConstellationDetail() {
   const controlsRef = useRef(null);
   const constellationLinesRef = useRef([]); // 별자리 선들을 저장할 ref 추가
   const backgroundStarsRef = useRef(null); // 배경 별들을 저장할 ref 추가
+  const navigate = useNavigate();
 
   // month 파라미터가 없으면 전체 보기(true), 있으면 개별 보기(false)
   const [isMaximized, setIsMaximized] = useState(!month);
@@ -552,7 +553,7 @@ function ConstellationDetail() {
 
   if (loading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
+      <div className="w-full h-screen flex items-center justify-center text-white">
         로딩 중...
       </div>
     );

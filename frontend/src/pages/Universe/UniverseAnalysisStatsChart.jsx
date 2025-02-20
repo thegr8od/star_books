@@ -9,14 +9,14 @@ const UniverseAnalysisStatsChart = () => {
   const scrollContainerRef = useRef(null);
 
   const emotions = {
-    슬픔: { color: GetColor({ x: 4, y: -5 }) },
-    기쁨: { color: GetColor({ x: 0, y: 5 }) },
-    피곤함: { color: GetColor({ x: 3, y: -1 }) },
-    화남: { color: "#ff6b6b" },
-    설렘: { color: "#f783ac" },
-    불안: { color: GetColor({ x: 4, y: 0 }) },
-    답답함: { color: GetColor({ x: 4, y: 1 }) },
-    평온: { color: GetColor({ x: 4, y: 5 }) },
+    슬픈: { color: "#5c07b1" },
+    기쁜: { color: "#e9e70c" },
+    졸린: { color: "#1fa6d6" },
+    화난: { color: "#b60829" },
+    설레는: { color: "#dbd906" },
+    불안: { color: "#e90c0d" },
+    답답한: { color: "#e90c0d"},
+    평온: { color: "#0eea0d" },
   };
 
   const chartOptions = {
@@ -54,14 +54,14 @@ const UniverseAnalysisStatsChart = () => {
   };
 
   const emotionData = {
-    기쁨: [5, 3, 7, 2, 6, 1, 4, 5, 6, 4, 3, 5],
-    설렘: [3, 5, 6, 4, 3, 5, 4, 2, 5, 6, 4, 3],
+    기쁜: [5, 3, 7, 2, 6, 1, 4, 5, 6, 4, 3, 5],
+    설레는: [3, 5, 6, 4, 3, 5, 4, 2, 5, 6, 4, 3],
     평온: [6, 5, 4, 3, 5, 6, 4, 3, 4, 5, 6, 4],
-    슬픔: [7, 2, 6, 4, 7, 0, 2, 3, 5, 7, 2, 4],
-    피곤함: [6, 4, 5, 3, 5, 2, 3, 4, 7, 5, 1, 6],
+    슬픈: [7, 2, 6, 4, 7, 0, 2, 3, 5, 7, 2, 4],
+    졸린 : [6, 4, 5, 3, 5, 2, 3, 4, 7, 5, 1, 6],
     불안: [5, 4, 3, 5, 6, 4, 2, 5, 3, 4, 6, 5],
-    답답함: [4, 3, 5, 6, 4, 3, 5, 4, 6, 5, 3, 4],
-    화남: [4, 6, 3, 5, 4, 2, 5, 6, 4, 3, 5, 4],
+    답답한: [4, 3, 5, 6, 4, 3, 5, 4, 6, 5, 3, 4],
+    화난: [4, 6, 3, 5, 4, 2, 5, 6, 4, 3, 5, 4],
   };
 
   const series = [
