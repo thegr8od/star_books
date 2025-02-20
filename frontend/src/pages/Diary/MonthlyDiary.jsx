@@ -13,7 +13,7 @@ const MonthlyDiary = () => {
   const diaryRefs = useRef({});
 
   const [diaries, setDiaries] = useState([]); // 작성한 일기 정보
-  const [currentDate, setCurrentDate] = useState(new Date()); // 날짜(년, 월)
+  const [currentDate, setCurrentDate] = useState(location.state?.selectedDate ? new Date(location.state.selectedDate) : new Date()); // 날짜(년, 월)
   const [selectedDate, setSelectedDate] = useState(location.state?.selectedDate); // 선택된 날짜 (선택된 날짜가 있으면 스크롤)
 
   // 모달 상태 추가
