@@ -9,6 +9,7 @@ import {
 } from "three/examples/jsm/renderers/CSS2DRenderer";
 import universeApi from "../../api/useUniverseApi";
 import starlineApi from "../../api/useStarlineApi";
+import GetColor from "../../components/GetColor";
 
 // 화면 비율에 따른 레이아웃 계산 상수 수정
 const LAYOUT = {
@@ -122,7 +123,6 @@ function ConstellationDetail() {
 
   // (2) API 응답 데이터를 Three.js에서 쓸 형식으로 변환
   const processData = () => {
-    // month 기준 오름차순 정렬
     const sorted = universeData.sort((a, b) => a.month - b.month);
 
     return sorted.map((monthData) => {
@@ -130,29 +130,31 @@ function ConstellationDetail() {
         return { month: monthData.month, points: [], lines: [] };
       }
 
-      // xcoord, ycoord를 선의 좌표와 동일한 방식으로 저장
-      const points = monthData.data.map((emotion) => ({
-        x: emotion.xcoord, // 변환하지 않고 원본 값 그대로 저장
-        y: emotion.ycoord, // 변환하지 않고 원본 값 그대로 저장
-        emotionId: emotion.diaryEmotionId,
-        color: emotion.color || 0xffffff,
+      // xvalue, yvalue를 GetColor에 전달하고, xcoord, ycoord를 좌표로 사용
+      const points = monthData.data.map((point) => ({
+        x: point.xcoord, // 좌표는 xcoord 사용
+        y: point.ycoord, // 좌표는 ycoord 사용
+        emotionId: point.diaryEmotionId,
+        // GetColor에는 xvalue, yvalue 전달
+        color: GetColor(point.xvalue, point.yvalue) || 0xffffff,
       }));
 
-      // 선: startEmotionId, endEmotionId를 points 인덱스로 매핑
-      const lines = monthData.starlines.map((line) => ({
-        startX:
-          monthData.data.find((e) => e.diaryEmotionId === line.startEmotionId)
-            ?.xcoord || 0,
-        startY:
-          monthData.data.find((e) => e.diaryEmotionId === line.startEmotionId)
-            ?.ycoord || 0,
-        endX:
-          monthData.data.find((e) => e.diaryEmotionId === line.endEmotionId)
-            ?.xcoord || 0,
-        endY:
-          monthData.data.find((e) => e.diaryEmotionId === line.endEmotionId)
-            ?.ycoord || 0,
-      }));
+      // 선 데이터 처리 (xcoord, ycoord 사용)
+      const lines = monthData.starlines.map((line) => {
+        const startPoint = monthData.data.find(
+          (p) => p.diaryEmotionId === line.startEmotionId
+        );
+        const endPoint = monthData.data.find(
+          (p) => p.diaryEmotionId === line.endEmotionId
+        );
+
+        return {
+          startX: startPoint?.xcoord || 0,
+          startY: startPoint?.ycoord || 0,
+          endX: endPoint?.xcoord || 0,
+          endY: endPoint?.ycoord || 0,
+        };
+      });
 
       return { month: monthData.month, points, lines };
     });
@@ -165,6 +167,7 @@ function ConstellationDetail() {
 
     // 0-100 범위의 좌표를 -2~2 범위로 변환하는 함수
     const convertCoordinate = (value) => {
+      // API에서 받은 좌표값이 이미 적절한 범위라면 변환 로직 수정
       return ((value - 50) / 25) * 2;
     };
 
@@ -183,7 +186,6 @@ function ConstellationDetail() {
 
     // 각 별 생성
     monthData.points.forEach((point, idx) => {
-      // 선의 좌표와 동일한 방식으로 변환
       const convertedX = convertCoordinate(point.x);
       const convertedY = convertCoordinate(point.y);
       const z = calculateZ(
@@ -193,7 +195,7 @@ function ConstellationDetail() {
       pointZValues[idx] = z;
 
       const starMaterial = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(point.color || 0xffffff),
+        color: new THREE.Color(point.color),
         transparent: true,
         opacity: 0,
       });
