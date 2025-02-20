@@ -43,7 +43,7 @@ public class Diary {
     private DiaryImage image;  // List<DiaryImage>에서 DiaryImage로 변경
 
 
-    @Column(name = "diary_date", nullable = false)
+    @Column(name = "diary_date", nullable = false, columnDefinition = "DATE")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  // 추가
     private LocalDate diaryDate;  // 새로운 날짜 필드 추가
 

@@ -37,7 +37,8 @@ pipeline {
                         string(credentialsId: 'LIVEKIT_API_SECRET', variable: 'LIVEKIT_API_SECRET'),
                         string(credentialsId: 'AWS_CLOUD_ACCESS_KEY', variable: 'AWS_CLOUD_ACCESS_KEY'),
                         string(credentialsId: 'AWS_CLOUD_SECRET_KEY', variable: 'AWS_CLOUD_SECRET_KEY'),
-                        string(credentialsId: 'ANTHROPIC_REMOVED', variable: 'ANTHROPIC_REMOVED')
+                        string(credentialsId: 'ANTHROPIC_REMOVED', variable: 'ANTHROPIC_REMOVED'),
+                        string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASSWORD')
                     ]) {
                         env.MATTERMOST_WEBHOOK_URL = MATTERMOST_WEBHOOK_URL
                         env.DB_URL = DB_URL
@@ -59,6 +60,7 @@ pipeline {
                         env.AWS_CLOUD_ACCESS_KEY = AWS_CLOUD_ACCESS_KEY
                         env.AWS_CLOUD_SECRET_KEY = AWS_CLOUD_SECRET_KEY
                         env.ANTHROPIC_REMOVED = ANTHROPIC_REMOVED
+                        env.SMTP_PASSWORD = SMTP_PASSWORD
                     }
                 }
             }
@@ -107,6 +109,9 @@ pipeline {
                         -e "AWS_CLOUD_ACCESS_KEY=${AWS_CLOUD_ACCESS_KEY}" \
                         -e "AWS_CLOUD_SECRET_KEY=${AWS_CLOUD_SECRET_KEY}" \
                         -e "ANTHROPIC_REMOVED=${ANTHROPIC_REMOVED}" \
+                        -e "SMTP_PASSWORD=${SMTP_PASSWORD}" \
+                        -e TZ=Asia/Seoul \
+                        -e JAVA_TOOL_OPTIONS="-Duser.timezone=Asia/Seoul" \
                         ${DOCKER_IMAGE_NAME}
                     """
                 }

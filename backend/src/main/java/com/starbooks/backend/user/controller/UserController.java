@@ -168,7 +168,7 @@ public class UserController {
                 return ApiResponse.createError(ErrorCode.INVALID_JWT_TOKEN);
             }
 
-            // ✅ JWT에서 이메일 추출
+            // 3. JWT에서 이메일 추출
             String email = jwtTokenProvider.getUserEmail(accessToken);
             log.info("🔹 [getCurrentUser] 추출된 이메일: {}", email);
 
@@ -193,6 +193,7 @@ public class UserController {
             return ApiResponse.createError(ErrorCode.USER_NOT_FOUND);
         }
     }
+
 
 
 

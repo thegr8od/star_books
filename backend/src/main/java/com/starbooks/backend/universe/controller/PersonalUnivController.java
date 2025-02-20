@@ -24,27 +24,27 @@ public class PersonalUnivController {
 
     // 유저의 월별 Personal Univ 조회
     @GetMapping("/monthly/{year}/{month}")
-    public ResponseEntity<ApiResponse<?>> getMonthlyPersonalUniv(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                 @PathVariable int year,
-                                                                 @PathVariable int month) {
-        Long userId = userDetails.getUserId();  // ✅ userId 가져오기
+    public ResponseEntity<ApiResponse<?>> getMonthlyPersonalUniv(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable int year,
+            @PathVariable int month) {
 
+        Long userId = userDetails.getUserId();
         log.info("📅 Fetching monthly personal universe data for userId={} in {}/{}", userId, year, month);
 
         List<ResponsePersonalUnivDTO> responseList = personalUnivService.getMonthlyPersonalUniv(userId, year, month);
         return ResponseEntity.ok(ApiResponse.createSuccess(responseList, "월별 개인 유니버스 데이터 조회 성공"));
     }
 
-
     // 유저의 연도별 Personal Univ 조회
     @GetMapping("/yearly/{year}")
     public ResponseEntity<ApiResponse<?>> getYearlyPersonalUniv(
-            @AuthenticationPrincipal CustomUserDetails userDetails,  // ✅ CustomUserDetails 사용
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable int year) {
 
-        Long userId = userDetails.getUserId();  // ✅ userId 가져오기
+        Long userId = userDetails.getUserId();
+        log.info("🔍 Fetching yearly data for userId={} in {}", userId, year);
 
-        log.info("🔍 Fetching yearly data for userId={}", userId);
         List<ResponsePersonalUnivDTO> responseList = personalUnivService.getYearlyPersonalUniv(userId, year);
         return ResponseEntity.ok(ApiResponse.createSuccess(responseList, "연도별 개인 유니버스 데이터 조회 성공"));
     }

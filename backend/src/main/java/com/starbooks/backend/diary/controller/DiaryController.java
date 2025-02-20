@@ -187,13 +187,13 @@ public class DiaryController {
      * 년도별 다이어리 조회
      * 예시: GET /api/diary/year/2025
      */
-    @GetMapping("/year/{year}")
-    public ResponseEntity<List<DiaryResponse>> getDiariesByYear(
-            @AuthenticationPrincipal User user,
-            @PathVariable int year) {
-        List<DiaryResponse> responses = diaryService.getDiariesByYear(user, year);
-        return ResponseEntity.ok(responses);
-    }
+//    @GetMapping("/year/{year}")
+//    public ResponseEntity<List<DiaryResponse>> getDiariesByYear(
+//            @AuthenticationPrincipal User user,
+//            @PathVariable int year) {
+//        List<DiaryResponse> responses = diaryService.getDiariesByYear(user, year);
+//        return ResponseEntity.ok(responses);
+//    }
 
     /**
      * 월별 다이어리 조회
