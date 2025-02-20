@@ -60,8 +60,8 @@ const DiaryCalendar = () => {
                   : oneday.diaryDate,
                 color: oneday.DiaryEmotion
                   ? GetColor(
-                      Math.ceil(oneday.DiaryEmotion.xValue),
-                      Math.ceil(oneday.DiaryEmotion.yValue)
+                      oneday.DiaryEmotion.xValue,
+                      oneday.DiaryEmotion.yValue
                     )
                   : null,
               };

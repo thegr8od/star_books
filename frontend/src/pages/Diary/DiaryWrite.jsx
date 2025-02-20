@@ -154,7 +154,12 @@ const DiaryWrite = () => {
 
     savePromise
       .then(() => {
-        navigate("/diary/calendar");
+        const formattedDate = `${dateArray[0]}-${String(dateArray[1]).padStart(2, '0')}-${String(dateArray[2]).padStart(2, '0')}`;
+        navigate("/diary/monthly",{
+          state: {
+            selectedDate: formattedDate,
+          },
+        });
       })
       .catch((error) => {
         console.error("일기 저장 실패:", error);
@@ -207,6 +212,7 @@ const DiaryWrite = () => {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="이곳을 클릭하여 오늘의 이야기를 적어보세요."
+              style={{ scrollbarWidth: "none" }}
             />
           </div>
 
