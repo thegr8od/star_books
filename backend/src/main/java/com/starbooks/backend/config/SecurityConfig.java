@@ -62,7 +62,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/ws/**",
                                 "/api/radio/**",
-                                "/api/member/",
+                                "/api/member/**",
                                 "/api/member/login",
                                 "/api/member/refresh",
                                 "/api/password/reset-request", // 비밀번호 재설정 요청 허용
