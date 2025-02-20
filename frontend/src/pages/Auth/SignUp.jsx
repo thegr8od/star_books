@@ -306,7 +306,7 @@ const Signup = () => {
   };
 
   return (
-    <Layout>
+    <Layout showRight={false}>
       <form className="flex flex-col h-full items-center justify-center text-white/75 max-w-[400px] mx-auto w-full px-4">
         <h1 className="my-6 text-2xl font-medium">회원가입</h1>
 

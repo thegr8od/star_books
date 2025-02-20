@@ -26,27 +26,40 @@ const NAV_ITEMS = [
 ];
 
 // 헤더 컴포넌트
-const Header = ({ title = "", setShowMenu, backButton, noShow }) => {
+const Header = ({
+  title = "",
+  setShowMenu,
+  backButton,
+  noShow,
+  showLeft = true, // 왼쪽 버튼 표시 여부
+  showRight = true, // 오른쪽 버튼 표시 여부
+}) => {
   const navigate = useNavigate();
 
   return (
     <div className="flex justify-between items-center h-10 text-white/70">
-      {/* 뒤로가기 버튼 */}
-      {backButton ? (
-        <button onClick={() => navigate(-1)}>
-          <ArrowBackIos fontSize="small" />
-        </button>
-      ) : noShow ? null : (
-        <button onClick={() => navigate("/")}>
-          <ArrowBackIos fontSize="small" />
-        </button>
-      )}
-      {/* 제목(선택) */}
+      {/* 왼쪽 버튼 (뒤로가기) */}
+      {showLeft &&
+        (backButton ? (
+          <button onClick={() => navigate(-1)}>
+            <ArrowBackIos fontSize="small" />
+          </button>
+        ) : noShow ? null : (
+          <button onClick={() => navigate("/")}>
+            <ArrowBackIos fontSize="small" />
+          </button>
+        ))}
+      {!showLeft && <div className="w-6" />} {/* 왼쪽 여백 유지 */}
+      {/* 제목 */}
       <p className="text-lg">{title}</p>
-      {/* 메뉴 버튼 */}
-      <button onClick={() => setShowMenu(true)}>
-        <MenuIcon />
-      </button>
+      {/* 오른쪽 버튼 (메뉴) */}
+      {showRight ? (
+        <button onClick={() => setShowMenu(true)}>
+          <MenuIcon />
+        </button>
+      ) : (
+        <div className="w-6" /> /* 오른쪽 여백 유지 */
+      )}
     </div>
   );
 };
@@ -109,14 +122,14 @@ const LogoutButton = () => {
 };
 
 // [메인] 네비게이션 컴포넌트
-const Nav = ({ backButton, noShow }) => {
+const Nav = ({ backButton, noShow, showLeft = true, showRight = true }) => {
   const title = "";
   const [showMenu, setShowMenu] = useState(false);
 
   return (
     <nav>
       {/* MenuBar */}
-      <Header title={title} setShowMenu={setShowMenu} backButton={backButton} noShow={noShow} />
+      <Header title={title} setShowMenu={setShowMenu} backButton={backButton} noShow={noShow} showLeft={showLeft} showRight={showRight} />
 
       {/* Menu panel */}
       {showMenu && (
