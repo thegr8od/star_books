@@ -32,7 +32,7 @@ const MoodSurvey = ({ isOpen, onClose, data }) => {
       "불안한",
       "초조한",
       "화난",
-      "짜증 나는",
+      "짜증나는",
       "답답한",
       "속상한",
       "슬픈",
@@ -41,7 +41,7 @@ const MoodSurvey = ({ isOpen, onClose, data }) => {
       "무기력한",
     ],
     중립: [
-      "그저 그런",
+      "그저그런",
       "담담한",
       "멍한",
       "고민되는 ",
