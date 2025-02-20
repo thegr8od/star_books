@@ -1,25 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  HomeOutlined,
-  PersonOutlined,
-  EditCalendarOutlined,
-  PublicOutlined,
-  AutoAwesomeOutlined,
-  LeaderboardOutlined,
-  ForumOutlined,
-  LogoutOutlined,
-  Menu as MenuIcon,
-  Close,
-  AccountCircle,
-} from "@mui/icons-material";
+import { HomeOutlined, PersonOutlined, EditCalendarOutlined, PublicOutlined, AutoAwesomeOutlined, LeaderboardOutlined, ForumOutlined, LogoutOutlined, Menu as MenuIcon, Close, AccountCircle, InsightsOutlined } from "@mui/icons-material";
 import useMemberApi from "../api/useMemberApi";
-import {
-  selectUserNickname,
-  selectUserProfileImage,
-  clearUser,
-} from "../store/userSlice";
+import { selectUserNickname, selectUserProfileImage, clearUser } from "../store/userSlice";
 
 // 네비게이션 아이템 상수
 const NAV_ITEMS = [
@@ -33,65 +17,58 @@ const NAV_ITEMS = [
     path: "/universe/analysis",
     icon: <LeaderboardOutlined />,
   },
-  { label: "AI대화", path: "/chat", icon: <ForumOutlined /> },
+  { label: "AI 채팅", path: "/chat", icon: <ForumOutlined /> },
   {
-    label: "AI 갤러리",
+    label: "AI 별자리",
     path: "/constellation/ai/gallery",
-    icon: <AutoAwesomeOutlined />,
+    icon: <InsightsOutlined />,
   },
 ];
 
-const Header = ({  setShowMenu }) => {
-    const navigate = useNavigate();
-  
-    return (
-      <div className="flex justify-between items-center h-10 text-white/70">
-        {/* 메뉴 버튼 */}
-        <button onClick={() => setShowMenu(true)}>
-          <MenuIcon />
-        </button>
-      </div>
-    );
+const Header = ({ setShowMenu }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex justify-between items-center h-10 text-white/70">
+      {/* 메뉴 버튼 */}
+      <button onClick={() => setShowMenu(true)}>
+        <MenuIcon />
+      </button>
+    </div>
+  );
 };
 
 const ProfileSection = () => {
-    const profileImage = useSelector(selectUserProfileImage);
-    const nickname = useSelector(selectUserNickname);
-  
-    return (
-      <div className="pt-8 pb-6 px-6 bg-[#f5f5f5]">
-        <div className="flex items-center gap-4">
-          {/* 프로필이미지 */}
-          {profileImage ? (
-            <img
-              src={profileImage}
-              alt="Profile"
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[#8993c7] text-white">
-              <AccountCircle fontSize="large" />
-            </div>
-          )}
-          {/* 닉네임 */}
-          <p className="font-medium text-black">{nickname}</p>
-        </div>
+  const profileImage = useSelector(selectUserProfileImage);
+  const nickname = useSelector(selectUserNickname);
+
+  return (
+    <div className="pt-10 pb-9 px-6 bg-gradient-to-br from-[#1a237e] to-[#534bae]">
+      <div className="flex items-center gap-4">
+        {/* 프로필이미지 */}
+        {profileImage ? (
+          <div className="size-14 rounded-full p-[2px] bg-gradient-to-r from-purple-400 to-pink-300">
+            <img src={profileImage} alt="Profile" className="size-full rounded-full object-cover" />
+          </div>
+        ) : (
+          <div className="size-14 rounded-full flex items-center justify-center bg-[#8993c7] text-white">
+            <AccountCircle fontSize="large" />
+          </div>
+        )}
+        {/* 닉네임 */}
+        <p className="font-medium text-white/90">{nickname}</p>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
 const MenuItem = ({ item, onClick }) => {
-    return (
-        // 네비게이션 아이템 상수로 관리 (링크주소, 아이콘, 라벨명)
-        <Link
-            to={item.path}
-            className="flex items-center gap-3 p-3 text-gray-700 rounded-full hover:bg-[#8993c7] hover:text-white transition-colors"
-            onClick={onClick}
-        >
-            <span className="flex items-center justify-center">{item.icon}</span>
-            <span>{item.label}</span>
-        </Link>
-    );
+  return (
+    <Link to={item.path} className="flex items-center gap-3 p-3 text-gray-700 rounded-2xl hover:bg-gradient-to-r from-[#1a237e]/10 to-[#534bae]/10 hover:text-[#1a237e] transition-all duration-300" onClick={onClick}>
+      <span className="flex items-center justify-center">{item.icon}</span>
+      <span>{item.label}</span>
+    </Link>
+  );
 };
 
 const LogoutButton = () => {
@@ -107,10 +84,7 @@ const LogoutButton = () => {
   };
 
   return (
-    <button
-      onClick={handleLogout}
-      className="flex items-center gap-3 p-3 w-full text-gray-700 rounded-full hover:bg-[#8993c7] hover:text-white transition-colors"
-    >
+    <button onClick={handleLogout} className="flex items-center gap-3 p-3 w-full text-gray-700 rounded-2xl hover:bg-gradient-to-r from-[#1a237e]/10 to-[#534bae]/10 hover:text-[#1a237e] transition-all duration-300">
       <span className="flex items-center justify-center">
         <LogoutOutlined />
       </span>
@@ -125,36 +99,28 @@ const MainNav = () => {
   return (
     <nav>
       {/* MenuBar */}
-      <button
-        onClick={() => setShowMenu(true)}
-        className="p-2 text-white hover:text-gray-300"
-      >
+      <button onClick={() => setShowMenu(true)} className="p-2 text-white/70 hover:text-white transition-colors">
         <MenuIcon />
       </button>
 
       {/* Menu panel */}
       {showMenu && (
-        <div
-          className="fixed inset-0 bg-black/40 z-20"
-          onClick={() => setShowMenu(false)}
-        >
-          <div
-            className="absolute top-0 right-0 z-30 w-64 lg:w-96 h-full flex flex-col bg-white"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 bg-black/30 z-20" onClick={() => setShowMenu(false)}>
+          <div className="absolute top-0 right-0 z-30 w-64 lg:w-96 h-full flex flex-col bg-gradient-to-br from-white to-gray-50 shadow-2xl animate-slideIn" onClick={(e) => e.stopPropagation()}>
             {/* 닫기 버튼 */}
-            <button
-              onClick={() => setShowMenu(false)}
-              className="absolute top-4 right-4 rounded-full text-gray-600"
-            >
+            <button onClick={() => setShowMenu(false)} className="absolute top-4 right-4 p-1.5 rounded-full text-white bg-[#1a237e]/80 hover:bg-[#1a237e] transition-colors z-10">
               <Close />
             </button>
 
             {/* 프로필 */}
-            <ProfileSection />
+            <div className="relative">
+              <ProfileSection />
+              {/* 프로필 섹션 아래 그라데이션 효과 */}
+              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent"></div>
+            </div>
 
             {/* 메뉴 아이템 */}
-            <ul className="p-2 flex-1">
+            <ul className="p-3 flex-1 space-y-1 bg-white">
               {NAV_ITEMS.map((item, index) => (
                 <li key={index}>
                   <MenuItem item={item} onClick={() => setShowMenu(false)} />
@@ -163,7 +129,7 @@ const MainNav = () => {
             </ul>
 
             {/* 로그아웃 */}
-            <div onClick={() => setShowMenu(false)} className="p-2 border-t">
+            <div className="p-3 border-t-2 border-gray-300 bg-white">
               <LogoutButton />
             </div>
           </div>
