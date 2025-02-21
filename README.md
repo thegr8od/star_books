@@ -179,7 +179,7 @@ cd backend
 Spring Security, JWT, OAuth2을 활용한 보안 강화 및 유저 API 구현
 Open API 활용 챗봇 구현
 별자리(나의 별자리, 나의 우주, AI 별자리) 구현
-러셀 감정 모델을 도입하여 데이터 처리
+해시태그 활용 러셀 감정모델 기반 감정분석
 Claud API 이미지 처리 모델 구현
 우리의 우주 UI/UX 구축
 ```
