@@ -178,7 +178,7 @@ cd backend
 - 김승준
 ```
 Spring Security, JWT, OAuth2을 활용한 보안 강화 및 유저 API 구현
-Open API 활용 챗봇 구현
+OpenAI API 활용 챗봇 구현
 별자리(나의 별자리, 나의 우주, AI 별자리) 구현
 해시태그 활용 러셀 감정모델 기반 감정분석
 Claud API 이미지 처리 모델 구현
