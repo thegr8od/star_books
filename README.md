@@ -159,7 +159,7 @@ cd backend
       <br />
       <strong>권동현</strong>
       <br />
-      💻 FE | 🔧 BE | 🛠 Infra
+      🔧 BE | 🛠 Infra
     </td>
     <td align="center">
       <img src="https://github.com/user-attachments/assets/48639e08-4756-4b9c-b351-482a7a01e51d" width="100" height="100" style="object-fit: cover; border-radius: 10px;" />
